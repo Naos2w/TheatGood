@@ -1,0 +1,100 @@
+# Single low-cost check for release PRs. No push/schedule triggers, no duplicate post-merge jobs.
+name: Lean CI
+
+on:
+  pull_request:
+    branches: [develop, staging, main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      dependency_audit:
+        description: 'Also audit production dependencies (manual runs only)'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
+# A newer commit to the same PR supersedes any older in-progress check.
+concurrency:
+  group: theatgood-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      # Route checks are cheap, and always run even for docs-only PRs.
+      # Fetch the changed file list from GitHub without checking out source or installing npm.
+      - name: Validate promotion direction and classify changes
+        id: scope
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const pr = context.payload.pull_request
+            if (!pr) {
+              core.setOutput('run_checks', 'true')
+              core.info('Manual run: executing all quality checks.')
+              return
+            }
+
+            const head = pr.head.ref
+            const base = pr.base.ref
+            const sameRepository = pr.head.repo.full_name === context.repo.owner + '/' + context.repo.repo
+            if (base === 'main' && (!sameRepository || head !== 'staging')) {
+              throw new Error('Production accepts only staging → main PRs.')
+            }
+            if (base === 'staging' && (!sameRepository || head !== 'develop')) {
+              throw new Error('UAT accepts only develop → staging PRs.')
+            }
+            if (base === 'develop' && (head === 'staging' || head === 'main')) {
+              throw new Error('Develop accepts feature/fix branches, not environment branches.')
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              ...context.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            })
+            const docsOnly = files.length > 0 && files.every((file) => {
+              const path = file.filename
+              return path === 'README.md' || path === 'TODO.md' ||
+                path.startsWith('docs/') || path.endsWith('.md')
+            })
+            core.setOutput('run_checks', docsOnly ? 'false' : 'true')
+            core.info(`${head} → ${base}; ${files.length} file(s); ${docsOnly ? 'docs-only: skip npm' : 'code/config: run npm checks'}`)
+
+      - name: Checkout code
+        if: ${{ steps.scope.outputs.run_checks == 'true' }}
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js with npm cache
+        if: ${{ steps.scope.outputs.run_checks == 'true' }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install locked dependencies
+        if: ${{ steps.scope.outputs.run_checks == 'true' }}
+        run: npm ci --include=dev --no-audit --no-fund
+
+      # npm run build already includes vue-tsc, so do not run typecheck twice.
+      - name: Lint, unit tests, typecheck, build, formatting
+        if: ${{ steps.scope.outputs.run_checks == 'true' }}
+        run: |
+          npm run lint
+          npm run test
+          npm run build
+          npm run format:check
+
+      - name: Audit production dependencies (optional manual check)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dependency_audit }}
+        run: npm audit --omit=dev --audit-level=moderate
