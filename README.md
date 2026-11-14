@@ -51,6 +51,15 @@ npm run format:check
 
 單位統一為公尺，Y 軸向上，銀幕位於 z=0、面向 +Z；各座位坐標由同一套資料產生。新增真實影廳時，須同時附上來源、查證日期及官方／估算欄位標記。
 
+## 分支與 CI
+
+- `develop`：Dev，日常功能整合（功能 PR 經 Squash Merge）。
+- `staging`：UAT，只接受 `develop` 晉升 PR（使用 Merge commit）。
+- `main`：Production，只接受 `staging` 晉升 PR（使用 Merge commit）。
+- GitHub Actions 只在 PR／手動觸發；純文件 PR 不安裝依賴；不做 Push 重複 CI 或自動部署。
+
+流程、Runner 節省策略、品質檢查與發布規則請見 [分支與 CI 規範](docs/branching-ci.md)。
+
 ## 後續
 
 Neon PostgreSQL + Drizzle、合法的台灣影城場次同步、Google 登入、私人觀影紀錄（電影、日期、影城、影廳、座位）、歷史補登與 PWA 正式部署，將依 [TODO.md](TODO.md) 逐步實作。
