@@ -145,7 +145,7 @@
 - [ ] 觀影紀錄授權與資料隔離測試，以及端到端核心使用流程測試。
 - [ ] 3D 模型延遲載入、效能評估與 WebGL fallback；支援 `prefers-reduced-motion`。
 - [ ] 完成手機／桌機響應式、基本無障礙操作與常見錯誤狀態。
-- [ ] 設定 GitHub Actions 執行 Lint / Typecheck / Test / Build。
+- [x] 設定 GitHub Actions：只在 PR／手動執行；非純文件 PR 執行 Lint、Test、Build（含 Typecheck）、Prettier；取消過時執行、快取 npm，首次雲端執行已通過。
 - [ ] 設定 Vercel 預覽與正式環境部署、必要環境變數、PWA Manifest。
 - [ ] 監控場次同步失敗率與資料新鮮度，提供合理的維護方式。
 - [ ] 核對場次、銀幕尺寸、座位圖、電影海報、3D 素材的著作權與授權範圍。
