@@ -14,13 +14,13 @@ import { RouterLink } from 'vue-router'
         </p>
         <div class="home-actions">
           <v-btn
-            to="/auditoriums/demo"
+            to="/auditoriums/tfai-small"
             color="primary"
             size="x-large"
             rounded="lg"
             class="primary-action"
           >
-            體驗 3D 選位
+            預覽真實影廳
             <v-icon end icon="mdi-arrow-top-right" />
           </v-btn>
           <RouterLink to="/cinemas" class="secondary-action">
@@ -29,7 +29,7 @@ import { RouterLink } from 'vue-router'
         </div>
         <div class="hero-note">
           <v-icon icon="mdi-information-outline" size="small" />
-          現階段提供示範模型，並非真實影廳測量資料。
+          已加入小影格官方銀幕尺寸與座號；3D 排距仍為估算。
         </div>
       </div>
       <div class="hero-art" aria-hidden="true">

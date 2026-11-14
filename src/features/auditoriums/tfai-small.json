@@ -1,0 +1,100 @@
+{
+  "modelVersion": 1,
+  "id": "tfai-small",
+  "name": "小影格",
+  "cinemaName": "國家電影及視聽文化中心",
+  "format": "4K RGB 雷射・銀幕約 1.85:1",
+  "description": "官方手冊確認銀幕 8.88 × 4.80 公尺、52 席（另有輪椅席 2 席），並附 A–F 排座位配置。座位編號參照官方平面圖；排距、座椅位置與坡度仍為幾何估算，不可視為實測視角。",
+  "confidence": "partial",
+  "sources": [
+    "https://www.tfai.org.tw/rsrc/tfai_document/國家電影及視聽文化中心設備資料手冊.pdf",
+    "https://www.tfai.org.tw/zh/page/camp.html"
+  ],
+  "publishedSeatCount": 52,
+  "provenance": {
+    "screenDimensions": "official",
+    "seatLabels": "official",
+    "spatialGeometry": "estimated",
+    "checkedAt": "2026-11-15",
+    "notes": "官方設備手冊第 2 頁（銀幕及席數）、第 4 頁（小影格座位圖）。手冊未標示座位坐標、排距、坡度、銀幕底緣高度或曲面參數；所有 3D 距離與角度皆為估算。座位配置可能隨場館調整，以現場售票系統為準。"
+  },
+  "screen": {
+    "width": 8.88,
+    "height": 4.8,
+    "centerX": 0,
+    "bottomY": 0.8,
+    "z": 0
+  },
+  "seatWidth": 0.58,
+  "seatSpacing": 0.68,
+  "aisleWidth": 0.65,
+  "eyeHeight": 1.15,
+  "rows": [
+    {
+      "label": "A",
+      "numbers": [1, 2, 3, 4, 5, 7, 8, 9, 10, 11],
+      "z": 4.7,
+      "elevation": 0,
+      "aislesAfter": [],
+      "gapAfter": [
+        {
+          "afterIndex": 4,
+          "width": 0.68
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      "z": 6.5,
+      "elevation": 0.18,
+      "aislesAfter": []
+    },
+    {
+      "label": "C",
+      "numbers": [1, 2, 5, 6, 7],
+      "z": 9.4,
+      "elevation": 0.56,
+      "aislesAfter": [],
+      "gapAfter": [
+        {
+          "afterIndex": 1,
+          "width": 1.36
+        }
+      ]
+    },
+    {
+      "label": "D",
+      "numbers": [1, 2, 5, 6, 7, 8, 9, 10],
+      "z": 11.2,
+      "elevation": 0.8,
+      "aislesAfter": [],
+      "gapAfter": [
+        {
+          "afterIndex": 1,
+          "width": 1.36
+        }
+      ]
+    },
+    {
+      "label": "E",
+      "numbers": [1, 2, 5, 6, 7, 8, 9, 10],
+      "z": 13,
+      "elevation": 1.04,
+      "aislesAfter": [],
+      "gapAfter": [
+        {
+          "afterIndex": 1,
+          "width": 1.36
+        }
+      ]
+    },
+    {
+      "label": "F",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "z": 14.8,
+      "elevation": 1.28,
+      "aislesAfter": []
+    }
+  ]
+}

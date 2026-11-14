@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "modelVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cinemaName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "format": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["measured", "partial", "estimated"]
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    },
+    "publishedSeatCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "screenDimensions": {
+          "type": "string",
+          "enum": ["official", "estimated"]
+        },
+        "seatLabels": {
+          "type": "string",
+          "enum": ["official", "estimated"]
+        },
+        "spatialGeometry": {
+          "type": "string",
+          "enum": ["official", "estimated"]
+        },
+        "checkedAt": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": ["screenDimensions", "seatLabels", "spatialGeometry", "checkedAt", "notes"],
+      "additionalProperties": false
+    },
+    "screen": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "centerX": {
+          "type": "number"
+        },
+        "bottomY": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        }
+      },
+      "required": ["width", "height", "centerX", "bottomY", "z"],
+      "additionalProperties": false
+    },
+    "seatWidth": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "seatSpacing": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "aisleWidth": {
+      "type": "number",
+      "minimum": 0
+    },
+    "eyeHeight": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "rows": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "pattern": "^[A-Z]+$"
+          },
+          "numbers": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "z": {
+            "type": "number"
+          },
+          "elevation": {
+            "type": "number"
+          },
+          "aislesAfter": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "xOffset": {
+            "type": "number"
+          },
+          "gapAfter": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "afterIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "width": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": ["afterIndex", "width"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["label", "numbers", "z", "elevation", "aislesAfter"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "modelVersion",
+    "id",
+    "name",
+    "cinemaName",
+    "format",
+    "description",
+    "confidence",
+    "sources",
+    "publishedSeatCount",
+    "provenance",
+    "screen",
+    "seatWidth",
+    "seatSpacing",
+    "aisleWidth",
+    "eyeHeight",
+    "rows"
+  ],
+  "additionalProperties": false
+}

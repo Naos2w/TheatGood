@@ -1,38 +1,11 @@
 /** Coordinates use metres: Y is up; the screen faces +Z at z=0. */
-export interface ScreenDefinition {
-  width: number
-  height: number
-  centerX: number
-  bottomY: number
-  z: number
-}
-
-export type DataConfidence = 'measured' | 'partial' | 'estimated'
-
-export interface AuditoriumRow {
-  label: string
-  numbers: number[]
-  z: number
-  elevation: number
-  /** Zero-based seat indexes after which an aisle appears. */
-  aislesAfter: number[]
-}
-
-export interface AuditoriumDefinition {
-  id: string
-  name: string
-  cinemaName: string
-  format: string
-  description: string
-  confidence: DataConfidence
-  sources: string[]
-  screen: ScreenDefinition
-  seatWidth: number
-  seatSpacing: number
-  aisleWidth: number
-  eyeHeight: number
-  rows: AuditoriumRow[]
-}
+import type { AuditoriumDefinition, ScreenDefinition } from './schema'
+export type {
+  AuditoriumDefinition,
+  AuditoriumRow,
+  ScreenDefinition,
+  DataConfidence,
+} from './schema'
 
 export interface AuditoriumSeat {
   id: string
@@ -55,13 +28,23 @@ export function createSeats(auditorium: AuditoriumDefinition): AuditoriumSeat[] 
   const seats: AuditoriumSeat[] = []
 
   for (const row of auditorium.rows) {
-    const gapWidth = row.aislesAfter.length * auditorium.aisleWidth
+    const gaps = row.gapAfter ?? []
+    const gapWidth =
+      row.aislesAfter.length * auditorium.aisleWidth +
+      gaps.reduce((total, gap) => total + gap.width, 0)
     const totalWidth = (row.numbers.length - 1) * auditorium.seatSpacing + gapWidth
 
     row.numbers.forEach((number, index) => {
       const precedingAisles = row.aislesAfter.filter((after) => after < index).length
+      const precedingGaps = gaps
+        .filter((gap) => gap.afterIndex < index)
+        .reduce((total, gap) => total + gap.width, 0)
       const x =
-        -totalWidth / 2 + index * auditorium.seatSpacing + precedingAisles * auditorium.aisleWidth
+        (row.xOffset ?? 0) -
+        totalWidth / 2 +
+        index * auditorium.seatSpacing +
+        precedingAisles * auditorium.aisleWidth +
+        precedingGaps
 
       seats.push({
         id: `${row.label}${String(number).padStart(2, '0')}`,
