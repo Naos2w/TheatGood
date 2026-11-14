@@ -10,7 +10,8 @@
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint .",
     "format:check": "prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "schema:generate": "node --experimental-strip-types scripts/generate-auditorium-schema.mjs && prettier --write public/schemas/auditorium-v1.schema.json"
   },
   "repository": {
     "type": "git",
@@ -33,7 +34,8 @@
     "three": "^0.187.0",
     "vue": "^3.5.45",
     "vue-router": "^5.5.1",
-    "vuetify": "^3.13.7"
+    "vuetify": "^3.13.7",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

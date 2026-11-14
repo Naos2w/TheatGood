@@ -18,7 +18,7 @@ import { RouterLink, RouterView } from 'vue-router'
             <RouterLink to="/history" class="site-nav__link">觀影紀錄</RouterLink>
           </nav>
           <v-btn
-            to="/auditoriums/demo"
+            to="/auditoriums/tfai-small"
             color="primary"
             rounded="lg"
             size="small"

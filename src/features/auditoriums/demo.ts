@@ -5,6 +5,7 @@ import type { AuditoriumDefinition } from './geometry'
  * Replace with source-verified data in P0.3 before claiming a real-world seat preview.
  */
 export const demoAuditorium: AuditoriumDefinition = {
+  modelVersion: 1,
   id: 'demo',
   name: '影廳視角互動展示',
   cinemaName: 'TheatGood 示範影廳',
@@ -12,6 +13,14 @@ export const demoAuditorium: AuditoriumDefinition = {
   description: '這是為了測試操作與視角計算建立的示範模型，不代表任何真實影城。',
   confidence: 'estimated',
   sources: [],
+  publishedSeatCount: 114,
+  provenance: {
+    screenDimensions: 'estimated',
+    seatLabels: 'estimated',
+    spatialGeometry: 'estimated',
+    checkedAt: '2026-11-15',
+    notes: '虛構示範影廳：所有尺寸、座位與視角均為估算資料。',
+  },
   screen: { width: 17.1, height: 9, centerX: 0, bottomY: 1.4, z: 0 },
   seatWidth: 0.7,
   seatSpacing: 0.89,

@@ -7,7 +7,6 @@ const props = defineProps<{
   seats: AuditoriumSeat[]
   selectedSeatId: string
 }>()
-
 const emit = defineEmits<{ 'select-seat': [seatId: string] }>()
 
 const rows = computed(() =>
@@ -17,8 +16,15 @@ const rows = computed(() =>
   })),
 )
 
-function isAfterAisle(row: (typeof rows.value)[number], index: number) {
-  return row.aislesAfter.includes(index - 1)
+/**
+ * Use the same X coordinates for the 2D seat map and the TresJS scene.
+ * Keep a small horizontal inset so edge seats remain clickable on phones.
+ */
+const extentX = computed(
+  () => Math.max(1, ...props.seats.map((seat) => Math.abs(seat.x))) + props.auditorium.seatWidth,
+)
+function leftPosition(seat: AuditoriumSeat) {
+  return `${50 + (seat.x / extentX.value) * 45}%`
 }
 </script>
 
@@ -30,13 +36,11 @@ function isAfterAisle(row: (typeof rows.value)[number], index: number) {
         <div class="seat-map__row-label">{{ row.label }}</div>
         <div class="seat-map__seats">
           <button
-            v-for="(seat, index) in row.seats"
+            v-for="seat in row.seats"
             :key="seat.id"
             class="seat-map__seat"
-            :class="{
-              'seat-map__seat--selected': selectedSeatId === seat.id,
-              'seat-map__seat--aisle': isAfterAisle(row, index),
-            }"
+            :class="{ 'seat-map__seat--selected': selectedSeatId === seat.id }"
+            :style="{ left: leftPosition(seat) }"
             type="button"
             :aria-label="`${seat.row} 排 ${seat.number} 號`"
             :aria-pressed="selectedSeatId === seat.id"

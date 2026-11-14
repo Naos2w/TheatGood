@@ -10,7 +10,7 @@ const router = createRouter({
       component: () => import('../features/auditoriums/CinemasPage.vue'),
     },
     {
-      path: '/auditoriums/demo',
+      path: '/auditoriums/:auditoriumId',
       name: 'viewer',
       component: () => import('../features/viewer/ViewerPage.vue'),
     },

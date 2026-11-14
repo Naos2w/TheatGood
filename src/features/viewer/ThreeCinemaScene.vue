@@ -18,6 +18,23 @@ const canvasBox = ref<HTMLElement | null>(null)
 const camera = new PerspectiveCamera(55, 16 / 9, 0.1, 180)
 const selected = computed(() => props.seats.find((seat) => seat.id === props.selectedSeatId))
 const screen = computed(() => props.auditorium.screen)
+const lastRowZ = computed(() => Math.max(...props.auditorium.rows.map((row) => row.z)))
+const roomWidth = computed(() =>
+  Math.max(screen.value.width + 3.5, ...props.seats.map((seat) => Math.abs(seat.x) * 2 + 3)),
+)
+const roomHeight = computed(() =>
+  Math.max(
+    screen.value.bottomY + screen.value.height + 2,
+    ...props.auditorium.rows.map((row) => row.elevation + 4),
+  ),
+)
+const roomDepth = computed(() => lastRowZ.value - screen.value.z + 7)
+const roomCenterZ = computed(() => (lastRowZ.value + screen.value.z + 1) / 2)
+const orbitTarget = computed<[number, number, number]>(() => [
+  0,
+  Math.max(1.2, screen.value.height * 0.25),
+  lastRowZ.value * 0.4,
+])
 let resizeObserver: ResizeObserver | undefined
 
 function updateCameraPosition() {
@@ -30,8 +47,12 @@ function updateCameraPosition() {
       screen.value.z,
     )
   } else {
-    camera.position.set(0, 13, 32)
-    camera.lookAt(0, 1.4, 9)
+    camera.position.set(
+      0,
+      Math.max(6, screen.value.bottomY + screen.value.height + 2.2),
+      lastRowZ.value + 10,
+    )
+    camera.lookAt(...orbitTarget.value)
   }
   camera.updateProjectionMatrix()
 }
@@ -47,7 +68,9 @@ function resizeCamera() {
   camera.updateProjectionMatrix()
 }
 
-watch(() => [props.cameraMode, props.selectedSeatId], updateCameraPosition, { immediate: true })
+watch(() => [props.cameraMode, props.selectedSeatId, props.auditorium.id], updateCameraPosition, {
+  immediate: true,
+})
 
 onMounted(() => {
   resizeCamera()
@@ -65,16 +88,20 @@ onUnmounted(() => resizeObserver?.disconnect())
       <TresPointLight :position="[0, 9, 9]" color="#acc4f3" :intensity="65" />
 
       <!-- Cinema floor and sidewalls. -->
-      <TresMesh :position="[0, -0.3, 12]" :rotation="[-Math.PI / 2, 0, 0]">
-        <TresPlaneGeometry :args="[28, 40]" />
+      <TresMesh :position="[0, -0.3, roomCenterZ]" :rotation="[-Math.PI / 2, 0, 0]">
+        <TresPlaneGeometry :args="[roomWidth, roomDepth]" />
         <TresMeshStandardMaterial color="#151c2d" />
       </TresMesh>
-      <TresMesh v-for="wallX in [-13.5, 13.5]" :key="wallX" :position="[wallX, 5.5, 11]">
-        <TresBoxGeometry :args="[0.28, 12, 39]" />
+      <TresMesh
+        v-for="wallX in [-roomWidth / 2, roomWidth / 2]"
+        :key="wallX"
+        :position="[wallX, roomHeight / 2, roomCenterZ]"
+      >
+        <TresBoxGeometry :args="[0.28, roomHeight, roomDepth]" />
         <TresMeshStandardMaterial color="#20293e" />
       </TresMesh>
-      <TresMesh :position="[0, 6.7, -0.3]">
-        <TresBoxGeometry :args="[27, 14.5, 0.5]" />
+      <TresMesh :position="[0, roomHeight / 2, screen.z - 0.35]">
+        <TresBoxGeometry :args="[roomWidth, roomHeight, 0.5]" />
         <TresMeshStandardMaterial color="#111927" />
       </TresMesh>
 
@@ -94,7 +121,7 @@ onUnmounted(() => resizeObserver?.disconnect())
         :key="row.label"
         :position="[0, row.elevation - 0.1, row.z]"
       >
-        <TresBoxGeometry :args="[17.2, 0.2, 2.0]" />
+        <TresBoxGeometry :args="[roomWidth - 0.7, 0.2, 1.6]" />
         <TresMeshStandardMaterial color="#273249" />
       </TresMesh>
       <TresGroup v-for="seat in seats" :key="seat.id" :position="[seat.x, seat.elevation, seat.z]">
@@ -113,15 +140,21 @@ onUnmounted(() => resizeObserver?.disconnect())
 
       <OrbitControls
         v-if="cameraMode === 'overview'"
-        :target="[0, 1.2, 8]"
-        :min-distance="7"
-        :max-distance="65"
+        :target="orbitTarget"
+        :min-distance="4"
+        :max-distance="Math.max(45, roomDepth * 2)"
         :enable-pan="false"
       />
     </TresCanvas>
     <div class="cinema-canvas__label">
       <span class="status-dot" /> {{ cameraMode === 'seat' ? 'FIRST PERSON VIEW' : 'FREE CAMERA' }}
     </div>
-    <div class="cinema-canvas__corner">THEATGOOD / DEMO MODEL</div>
+    <div class="cinema-canvas__corner">
+      {{
+        auditorium.confidence === 'partial'
+          ? 'PARTIAL OFFICIAL DATA / 3D ESTIMATE'
+          : 'THEATGOOD / DEMO MODEL'
+      }}
+    </div>
   </div>
 </template>
