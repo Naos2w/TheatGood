@@ -56,9 +56,11 @@ npm run format:check
 - `develop`：Dev，日常功能整合（功能 PR 經 Squash Merge）。
 - `staging`：UAT，只接受 `develop` 晉升 PR（使用 Merge commit）。
 - `main`：Production，只接受 `staging` 晉升 PR（使用 Merge commit）。
-- GitHub Actions 只在 PR／手動觸發；純文件 PR 不安裝依賴；不做 Push 重複 CI 或自動部署。
+- GitHub Actions 僅在 PR／手動觸發；純文件 PR 不安裝依賴，合併後不重跑 CI。
+- Vercel 採單一專案：`develop`（Dev Preview）、`staging`（UAT Preview）、`main`（Production）；功能分支不自動部署，純文件變更跳過建置。
+- Vercel `vercel.json` 支援 Vue Router 深層網址（SPA Rewrite），UAT 人工驗收後才晉升正式環境。
 
-流程、Runner 節省策略、品質檢查與發布規則請見 [分支與 CI 規範](docs/branching-ci.md)。
+完整分支保護、GitHub Runner／Vercel 節流與發布規則請見 [分支與 CI 規範](docs/branching-ci.md)。
 
 ## 後續
 
