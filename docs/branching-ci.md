@@ -1,16 +1,16 @@
 # TheatGood — 分支、CI 與發布策略
 
-> 最小化 Actions 次數：僅 PR／手動觸發，無 push、schedule、矩陣測試或自動發布。
+> 最小化 Actions 次數：GitHub CI 僅 PR／手動觸發；Vercel 只部署三個長期分支，不在功能分支建置。
 
 ## 長期分支與對應環境
 
-| 長期分支  | 用途                    | 從哪裡進入                              | 使用者驗收              | 部署           |
-| --------- | ----------------------- | --------------------------------------- | ----------------------- | -------------- |
-| `develop` | DEV：日常開發整合       | `feature/*`、`fix/*`、`chore/*` 等 → PR | 開發自測                | 未設定自動部署 |
-| `staging` | UAT：準備驗收的穩定候選 | **`develop` → PR**                      | 人工驗收後才准進 Prod   | 未設定自動部署 |
-| `main`    | PROD：正式版本原始碼    | **`staging` → PR**                      | 以已通過 UAT 的候選發布 | 未設定自動部署 |
+| 長期分支  | 用途                    | 從哪裡進入                              | 使用者驗收              | 部署                  |
+| --------- | ----------------------- | --------------------------------------- | ----------------------- | --------------------- |
+| `develop` | DEV：日常開發整合       | `feature/*`、`fix/*`、`chore/*` 等 → PR | 開發自測                | Vercel Preview（Dev） |
+| `staging` | UAT：準備驗收的穩定候選 | **`develop` → PR**                      | 人工驗收後才准進 Prod   | Vercel Preview（UAT） |
+| `main`    | PROD：正式版本原始碼    | **`staging` → PR**                      | 以已通過 UAT 的候選發布 | Vercel Production     |
 
-`main` 保留為 GitHub 預設分支（方便發行與手動執行 Workflow），不要直接在 `main` 開發。**CI 通過不是 UAT 通過，也不等於已部署**。目前沒有串接 Vercel、Neon 或任何正式環境，故上述 Dev/UAT/Prod 為程式版本的預期角色，尚非已上線網址。
+`main` 保留為 GitHub 預設分支，不要直接在 `main` 開發。**CI 通過不是 UAT 通過，也不等於已部署**。Vercel 透過同一專案的 Git 整合部署這三個分支；實際網址及 READY 狀態以 Vercel 部署紀錄為準。Neon 尚未整合。
 
 ### 一般開發到正式發布
 
@@ -19,7 +19,7 @@
 3. 需要 UAT 時開 `develop → staging` 的 PR。CI 檢查同一份候選程式碼。通過後使用 **Merge commit**（不要 squash），保留真正的祖先關係，避免下次 UAT PR 重複列出先前功能。
 4. 在 `staging` 驗收 3D Viewer、座位圖、手機操作與新功能。驗收結果及發布決定由人確認，**CI 不會自行決定 UAT 通過**。
 5. UAT 通過後開 `staging → main` 的 PR。CI 再確認正式發布版本。通過後使用 **Merge commit**（不要 squash），保留環境晉升歷史。
-6. 發布／回滾是獨立 CD 工作；本版 CI 不會自動部署，不會在合併後再次測試。未來如需 Vercel，會另外設定各分支對應的 Dev、UAT 與 Production 部署。
+6. GitHub CI 不會在合併後重跑；Vercel 對合併後的長期分支做一次部署建置。Production 必須經過 `staging` 的人工 UAT 確認才能晉升至 `main`。部署／回滾由 Vercel 管理，不在 GitHub Runner 額外重建。
 
 **緊急修復：** 先將修復 PR 合併至 `develop`，經過 `staging` UAT，再進 `main`。目前沒有繞過 UAT 的熱修捷徑。
 
@@ -66,9 +66,15 @@ npm run format:check
 
 TheatGood 目前為公開 Repo，GitHub 標準託管 Runner 的執行時間在現行政策下免費；未來若改成私有 Repo，帳號每月免費分鐘與使用量規則不同。即使免費，仍避免一個 commit 觸發多次執行。
 
-不會啟用以下項目：Push CI、每日／每週定時檢查、Pull Request Label 觸發、Matrix、依賴掃描的每次 PR 自動執行、每次合併後額外 Build、任何未經授權的自動部署。
+不會啟用以下項目：Push **CI**、每日／每週定時檢查、Pull Request Label 觸發、Matrix、依賴掃描的每次 PR 自動執行，以及功能分支的 Vercel Preview。只有 Dev/UAT/Prod 的晉升合併會觸發 Vercel 部署建置；CI 與部署 Build 是不同用途。
 
-## 下一步（獨立於本輪 CI）
+## Vercel Git 部署與費用控制
 
-- 真正部署 Dev/UAT/Prod 時，才在 Vercel 建立分支對環境的對應、變數與 Production 發布規則，避免一個 Repo 多個預覽自動部署消耗 Vercel 限額。
-- Neon 連線、登入及觀影紀錄屬於後端功能階段；CI 的品質檢查不需要 Neon 憑證。
+- 單一 Vercel 專案：`main` 指向 Production；`develop`、`staging` 分別使用 Preview 分支部署，不建立三個獨立專案。
+- `vercel.json` 的 `git.deploymentEnabled` 設定 `**: false`、`develop/staging/main: true`；所有匹配的明確 `true` 優先，因此功能分支 `feature/foo` / `fix/bar` **根本不建立部署**。
+- `scripts/vercel-ignore-build.mjs` 若只改 Markdown、`docs/` 或 `.github/` 則略過編譯；但 **Ignored Build Step 仍可能計入 Vercel 部署次數／並行名額**，故主要節流依靠前述分支白名單。
+- Vercel Production Branch 使用 GitHub 預設的 `main`；SPA Rewrite 讓 `/cinemas`、`/auditoriums/tfai-small` 等前端路由可直接開啟。
+- **Hobby 的 `develop` / `staging` 目前都屬 Preview 環境**，不是兩個完全獨立的後端。未來加入 Neon/Auth 時須使用 Git branch 專屬的 Preview 環境變數或真正獨立的 DB 分支，不可混用正式個資。
+- 只有 `staging` 通過使用者 UAT 後才能合併 `staging → main`。GitHub CI 不負責登入 Vercel，也不使用 Vercel Token。
+
+Neon 連線、登入及觀影紀錄屬於後端功能階段；目前前端部署不需要 Neon 憑證。
