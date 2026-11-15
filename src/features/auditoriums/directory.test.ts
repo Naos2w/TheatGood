@@ -18,7 +18,7 @@ describe('source-verified Taiwanese cinema directory', () => {
     expect(
       cinemaDirectory.every((entry) => entry.sourceUrls.every((url) => url.startsWith('https://'))),
     ).toBe(true)
-    expect(cinemaDirectory.every((entry) => entry.checkedAt === '2026-11-15')).toBe(true)
+    expect(cinemaDirectory.every((entry) => /^2026-11-(15|16)$/.test(entry.checkedAt))).toBe(true)
   })
 
   it('never claims an unverified auditorium has a 3D model or invented dimensions', () => {
@@ -36,6 +36,12 @@ describe('source-verified Taiwanese cinema directory', () => {
     expect(cinemaDirectory.find((hall) => hall.slug === 'nwac-reel-two')?.seatCountBasis).toBe(
       'includes-wheelchair',
     )
+    const huashanA = cinemaDirectory.find((hall) => hall.slug === 'spot-huashan-a-one')
+    const huashanB = cinemaDirectory.find((hall) => hall.slug === 'spot-huashan-a-two')
+    expect([huashanA?.screenWidthM, huashanA?.screenHeightM]).toEqual([8.8, 3.8])
+    expect([huashanB?.screenWidthM, huashanB?.screenHeightM]).toEqual([8.6, 3.4])
+    expect(huashanA?.modelId).toBeUndefined()
+    expect(huashanB?.modelId).toBeUndefined()
   })
 
   it('can search cinemas, cities and names without globally resolving ambiguous hall numbers', () => {

@@ -6,6 +6,11 @@ const router = createRouter({
     { path: '/', name: 'home', component: () => import('../features/home/HomePage.vue') },
     { path: '/cinemas', redirect: '/' },
     {
+      path: '/screenings',
+      name: 'screenings',
+      component: () => import('../features/screenings/ScreeningsPage.vue'),
+    },
+    {
       path: '/directory/:slug',
       name: 'directory-detail',
       component: () => import('../features/auditoriums/DirectoryHallPage.vue'),

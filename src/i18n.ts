@@ -4,6 +4,7 @@ export const messages = {
   'zh-TW': {
     app: {
       home: '找影廳',
+      screenings: '放映場次',
       history: '觀影紀錄',
       back: '返回',
       settings: '偏好設定',
@@ -124,6 +125,31 @@ export const messages = {
       wheelchair: '官方另列 2 席輪椅席，目前未納入模型。',
       wheelchairSpot: '光點台北官方平面圖註明後排部分座位可置換 2 個輪椅席；不應另加計席數。',
     },
+    screenings: {
+      eyebrow: 'NOW SHOWING · VERIFIED SOURCES',
+      title: '真實放映場次',
+      subtitle: '文化部開放資料目前收錄的部分台灣電影館時刻，僅顯示來源可確認的場館與影廳。',
+      refresh: '更新資料',
+      searchLabel: '電影或影廳',
+      searchPlaceholder: '搜尋電影名稱、影城或影廳',
+      cinemaLabel: '電影館',
+      allCinemas: '全部電影館',
+      dateLabel: '日期',
+      upcomingOnly: '只看未來場次',
+      loading: '正在載入文化部電影場次…',
+      unavailable: '暫時無法取得官方場次。請稍後重新整理，不能將舊資料當成目前時刻。',
+      retry: '重試',
+      empty: '目前沒有符合條件的已核對場次。可以更改日期或關閉「只看未來場次」。',
+      count: '符合條件的場次：{count} 場',
+      hallUnconfirmed: '影廳待確認',
+      venueInfo: '查看影廳資料',
+      previewSeat: '預覽座位',
+      viewSource: '查看原始公告',
+      notice:
+        '這是文化部所收錄的部分公開放映活動，不是全台院線完整場次；不提供售票剩餘座位、即時購票或未證實的影廳模型。',
+      attribution: '資料來源：文化部「電影」開放資料（政府資料開放授權條款第 1 版）',
+      updatedAt: '本頁資料擷取：{date}（台灣時間）',
+    },
     history: {
       eyebrow: 'YOUR MOVIE TIMELINE',
       title: '觀影紀錄',
@@ -137,6 +163,7 @@ export const messages = {
   'en-GB': {
     app: {
       home: 'Find cinemas',
+      screenings: 'Showtimes',
       history: 'Viewing history',
       back: 'Back',
       settings: 'Preferences',
@@ -262,6 +289,35 @@ export const messages = {
         'Two wheelchair spaces are listed separately by the venue and are not yet modelled.',
       wheelchairSpot:
         'SPOT Taipei lists two convertible wheelchair spaces among the published seats; they must not be counted twice.',
+    },
+    screenings: {
+      eyebrow: 'NOW SHOWING · VERIFIED SOURCES',
+      title: 'Real film showtimes',
+      subtitle:
+        'A partial selection of cinema screenings from Taiwan’s Ministry of Culture open data, linked only to verified venues.',
+      refresh: 'Refresh data',
+      searchLabel: 'Film or auditorium',
+      searchPlaceholder: 'Search by film, cinema or auditorium',
+      cinemaLabel: 'Cinema',
+      allCinemas: 'All cinemas',
+      dateLabel: 'Date',
+      upcomingOnly: 'Upcoming screenings only',
+      loading: 'Loading official film screenings…',
+      unavailable:
+        'The official source is temporarily unavailable. Please try again rather than relying on potentially stale times.',
+      retry: 'Try again',
+      empty:
+        'No verified screenings match these filters. Try a different date or show earlier screenings.',
+      count: '{count} matching screenings',
+      hallUnconfirmed: 'Auditorium unconfirmed',
+      venueInfo: 'Auditorium details',
+      previewSeat: 'Preview seats',
+      viewSource: 'Original listing',
+      notice:
+        'This is a partial government dataset, not every Taiwanese cinema. Ticket availability, booking and unverified 3D auditorium models are not provided.',
+      attribution:
+        'Source: Taiwan Ministry of Culture – Film open data (Government Open Data Licence v1.0)',
+      updatedAt: 'Data retrieved: {date} (Taiwan time)',
     },
     history: {
       eyebrow: 'YOUR MOVIE TIMELINE',
