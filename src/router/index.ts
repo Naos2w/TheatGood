@@ -4,11 +4,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'home', component: () => import('../features/home/HomePage.vue') },
-    {
-      path: '/cinemas',
-      name: 'cinemas',
-      component: () => import('../features/auditoriums/CinemasPage.vue'),
-    },
+    { path: '/cinemas', redirect: '/' },
     {
       path: '/auditoriums/:auditoriumId',
       name: 'viewer',
