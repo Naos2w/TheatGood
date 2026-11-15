@@ -1,11 +1,26 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#090c15" />
-    <meta name="description" content="TheatGood：台灣影廳 3D 座位觀看視角模擬。" />
-    <title>TheatGood｜找到你的觀影視角</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f6f9" />
+    <meta
+      name="description"
+      content="TheatGood — 搜尋台灣影廳，選擇座位，預覽第一人稱 3D 銀幕視角。"
+    />
+    <title>TheatGood｜好位置，先看再選</title>
+    <script>
+      try {
+        const preference = localStorage.getItem('theatgood-theme')
+        const dark =
+          preference === 'dark' ||
+          (preference !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        document.querySelector('meta[name="theme-color"]').content = dark ? '#131720' : '#f5f6f9'
+      } catch {
+        document.documentElement.dataset.theme = 'light'
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>

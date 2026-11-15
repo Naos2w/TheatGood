@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, watch } from 'vue'
 import { createPinia } from 'pinia'
 import { createVuetify } from 'vuetify'
 import { mdi } from 'vuetify/iconsets/mdi'
@@ -7,23 +7,38 @@ import '@mdi/font/css/materialdesignicons.css'
 import './style.css'
 import App from './App.vue'
 import router from './router'
+import { i18n } from './i18n'
+import { resolvedTheme } from './composables/usePreferences'
 
 const vuetify = createVuetify({
   icons: { defaultSet: 'mdi', sets: { mdi } },
   theme: {
-    defaultTheme: 'theatgood',
+    defaultTheme: resolvedTheme.value === 'dark' ? 'theatgoodDark' : 'theatgoodLight',
     themes: {
-      theatgood: {
+      theatgoodLight: {
+        dark: false,
+        colors: {
+          background: '#f5f6f9',
+          surface: '#ffffff',
+          primary: '#bd8b56',
+          secondary: '#778ca7',
+        },
+      },
+      theatgoodDark: {
         dark: true,
         colors: {
-          background: '#090c15',
-          surface: '#141a2a',
-          primary: '#c7a77b',
-          secondary: '#9ea9c5',
+          background: '#131720',
+          surface: '#242833',
+          primary: '#e5bc8a',
+          secondary: '#a9b7cc',
         },
       },
     },
   },
 })
 
-createApp(App).use(createPinia()).use(router).use(vuetify).mount('#app')
+watch(resolvedTheme, (theme) => {
+  vuetify.theme.global.name.value = theme === 'dark' ? 'theatgoodDark' : 'theatgoodLight'
+})
+
+createApp(App).use(createPinia()).use(router).use(i18n).use(vuetify).mount('#app')

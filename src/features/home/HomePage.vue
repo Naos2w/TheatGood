@@ -1,84 +1,98 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
+import { auditoriumCatalog } from '../auditoriums/catalog'
+
+const { t } = useI18n()
+const search = ref('')
+const realAuditoriums = auditoriumCatalog.filter(
+  (hall) => hall.provenance.seatLabels === 'official',
+)
+const results = computed(() => {
+  const term = search.value.trim().toLocaleLowerCase()
+  if (!term) return realAuditoriums
+  return realAuditoriums.filter((hall) =>
+    [
+      hall.name,
+      hall.cinemaName,
+      hall.id,
+      t('hall.tfaiName'),
+      t('hall.tfaiVenue'),
+      'taiwan film audiovisual institute tfai small cinema 新北市 new taipei',
+    ].some((value) => value.toLocaleLowerCase().includes(term)),
+  )
+})
 </script>
 
 <template>
-  <div class="home-page">
-    <section class="container home-hero">
-      <div class="home-hero__copy">
-        <div class="eyebrow"><span class="eyebrow__dot" /> THE NEXT WAY TO WATCH</div>
-        <h1>好位置，<br /><span>決定好電影。</span></h1>
-        <p class="hero-description">
-          不再只憑座位表猜測視角。選好影廳與座位，<br class="desktop-only" />
-          從你的視線出發，先看看銀幕在眼前的模樣。
-        </p>
-        <div class="home-actions">
-          <v-btn
-            to="/auditoriums/tfai-small"
-            color="primary"
-            size="x-large"
-            rounded="lg"
-            class="primary-action"
+  <section class="container home-page">
+    <div class="home-layout">
+      <div class="home-intro">
+        <div class="home-intro__curve" aria-hidden="true" />
+        <span class="eyebrow">{{ t('home.eyebrow') }}</span>
+        <h1>{{ t('home.headline') }}</h1>
+        <p>{{ t('home.subhead') }}</p>
+      </div>
+
+      <div class="home-discovery">
+        <label class="search-field">
+          <v-icon icon="mdi-magnify" size="24" />
+          <input
+            v-model="search"
+            type="search"
+            autocomplete="off"
+            :placeholder="t('home.search')"
+            :aria-label="t('home.searchAria')"
+          />
+          <button
+            v-if="search"
+            class="search-field__clear"
+            type="button"
+            :aria-label="t('home.clearSearch')"
+            @click="search = ''"
           >
-            預覽真實影廳
-            <v-icon end icon="mdi-arrow-top-right" />
-          </v-btn>
-          <RouterLink to="/cinemas" class="secondary-action">
-            探索影廳 <v-icon icon="mdi-arrow-right" size="small" />
+            <v-icon icon="mdi-close-circle" size="20" />
+          </button>
+        </label>
+
+        <div class="list-heading">
+          <h2>{{ t('home.available') }}</h2>
+          <span>{{ t('home.count', { count: realAuditoriums.length }) }}</span>
+        </div>
+
+        <div v-if="results.length" class="auditorium-list">
+          <RouterLink
+            v-for="hall in results"
+            :key="hall.id"
+            class="auditorium-item"
+            :to="'/auditoriums/' + hall.id"
+            :aria-label="t('home.openHall', { name: t('hall.tfaiName') })"
+          >
+            <span class="auditorium-item__visual" aria-hidden="true">
+              <span class="auditorium-item__screen" />
+              <span class="auditorium-item__floor" />
+            </span>
+            <span class="auditorium-item__content">
+              <strong>{{ t('hall.tfaiName') }}</strong>
+              <span
+                >{{ t('hall.tfaiVenue') }} ·
+                {{ t('home.hallCount', { count: hall.publishedSeatCount }) }}</span
+              >
+              <small>{{ t('app.estimated') }}</small>
+            </span>
+            <v-icon icon="mdi-chevron-right" size="23" class="auditorium-item__chevron" />
           </RouterLink>
         </div>
-        <div class="hero-note">
-          <v-icon icon="mdi-information-outline" size="small" />
-          已加入小影格官方銀幕尺寸與座號；3D 排距仍為估算。
-        </div>
-      </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="hero-art__glow" />
-        <div class="hero-art__screen">
-          <span>EVERY SEAT<br />HAS A STORY</span>
-        </div>
-        <div class="hero-art__seat-grid">
-          <div
-            v-for="n in 48"
-            :key="n"
-            class="hero-art__seat"
-            :class="{ 'hero-art__seat--chosen': n === 28 }"
-          />
-        </div>
-        <div class="hero-art__badge">SEAT 07 <span>·</span> ROW E</div>
-      </div>
-    </section>
 
-    <section class="container home-details">
-      <div class="section-heading">
-        <div>
-          <div class="eyebrow">WHAT'S INSIDE</div>
-          <h2>從選座到回憶，都是你的電影時光。</h2>
-        </div>
-        <span class="section-heading__caption">BUILT FOR CINEMA LOVERS</span>
+        <p v-else class="search-empty" role="status">
+          {{ t('home.noResults') }}
+        </p>
+        <p class="discovery-note">
+          <v-icon icon="mdi-information-outline" size="16" />
+          {{ t('app.officialNote') }}
+        </p>
       </div>
-      <div class="feature-grid">
-        <article class="feature-card">
-          <div class="feature-card__number">01 / VIEW</div>
-          <v-icon icon="mdi-cube-scan" size="36" color="primary" />
-          <h3>3D 影廳視角</h3>
-          <p>從座位圖進入 3D 模型，模擬你坐下時的銀幕角度與距離。</p>
-        </article>
-        <article class="feature-card">
-          <div class="feature-card__number">02 / SHOWTIME</div>
-          <v-icon icon="mdi-movie-open-outline" size="36" color="primary" />
-          <h3>台灣放映場次</h3>
-          <p>未來整合可核實的放映時間與影廳，直接連到對應模型。</p>
-          <span class="feature-card__stage">NEXT PHASE</span>
-        </article>
-        <article class="feature-card">
-          <div class="feature-card__number">03 / HISTORY</div>
-          <v-icon icon="mdi-ticket-confirmation-outline" size="36" color="primary" />
-          <h3>個人觀影紀錄</h3>
-          <p>留住每次看的電影、日期、影廳和座位，不需評分或寫心得。</p>
-          <span class="feature-card__stage">NEXT PHASE</span>
-        </article>
-      </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </template>
