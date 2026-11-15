@@ -1,28 +1,37 @@
 import { Pool } from 'pg'
 
-type PublishedAuditorium = {
+/**
+ * A source-verified venue isn't automatically a 3D model.
+ * Only rows with a matching current model version may offer seat previews.
+ */
+type PublishedHall = {
   slug: string
   name: string
+  nameEn: string | null
+  cinemaSlug: string
   cinemaName: string
+  cinemaNameEn: string | null
+  city: string | null
+  brand: string | null
   seatCount: number
+  wheelchairSeats: number | null
+  seatCountBasis: string
   format: string | null
-  version: number
-  confidence: string
+  screenWidthM: number | null
+  screenHeightM: number | null
+  checkedAt: string | null
   sourceUrls: string[]
+  version: number | null
+  confidence: string | null
+  hasModel: boolean
 }
 
-/**
- * Public read-only catalogue. Keep this Vercel function self-contained:
- * Vercel compiles api/*.ts to Node ESM without bundling ../db/schema.ts.
- * Drizzle remains the single owner of migrations and seeds, while this
- * endpoint queries the published columns directly with a bounded SELECT.
- */
+/** Self-contained, read-only Vercel Node function; no imported local TS modules. */
 export async function GET() {
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) {
     return Response.json({ error: 'catalog_not_configured' }, { status: 503 })
   }
-
   const pool = new Pool({
     connectionString,
     max: 1,
@@ -33,17 +42,23 @@ export async function GET() {
   try {
     const query = [
       'SELECT',
-      '  a.slug, a.name, c.name AS "cinemaName",',
-      '  a.seat_count AS "seatCount", a.format,',
-      '  v.version, v.confidence, v.source_urls AS "sourceUrls"',
+      '  a.slug, a.name, a.name_en AS "nameEn",',
+      '  c.slug AS "cinemaSlug", c.name AS "cinemaName",',
+      '  c.name_en AS "cinemaNameEn", c.city, c.brand,',
+      '  a.seat_count AS "seatCount", a.wheelchair_seats AS "wheelchairSeats",',
+      '  a.seat_count_basis AS "seatCountBasis", a.format,',
+      '  a.screen_width_m AS "screenWidthM", a.screen_height_m AS "screenHeightM",',
+      '  a.checked_at AS "checkedAt", a.source_urls AS "sourceUrls",',
+      '  v.version, v.confidence, (v.id IS NOT NULL) AS "hasModel"',
       'FROM auditoriums AS a',
       'INNER JOIN cinemas AS c ON c.id = a.cinema_id',
-      'INNER JOIN auditorium_model_versions AS v ON v.auditorium_id = a.id',
-      'WHERE a.published = TRUE AND v.is_current = TRUE',
-      'ORDER BY c.name, a.name',
-      'LIMIT 30',
+      'LEFT JOIN auditorium_model_versions AS v',
+      '  ON v.auditorium_id = a.id AND v.is_current = TRUE',
+      'WHERE a.published = TRUE',
+      'ORDER BY (v.id IS NULL), c.name, a.name',
+      'LIMIT 50',
     ].join('\n')
-    const { rows } = await pool.query<PublishedAuditorium>(query)
+    const { rows } = await pool.query<PublishedHall>(query)
 
     return Response.json(
       { auditoriums: rows },
