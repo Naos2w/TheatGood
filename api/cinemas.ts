@@ -1,11 +1,21 @@
-import { and, eq } from 'drizzle-orm'
-import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
-import { auditoriums, auditoriumModelVersions, cinemas } from '../db/schema'
+
+type PublishedAuditorium = {
+  slug: string
+  name: string
+  cinemaName: string
+  seatCount: number
+  format: string | null
+  version: number
+  confidence: string
+  sourceUrls: string[]
+}
 
 /**
- * Public, read-only catalogue endpoint. No authentication, write routes,
- * screenings, watch logs or database credentials are exposed to the browser.
+ * Public read-only catalogue. Keep this Vercel function self-contained:
+ * Vercel compiles api/*.ts to Node ESM without bundling ../db/schema.ts.
+ * Drizzle remains the single owner of migrations and seeds, while this
+ * endpoint queries the published columns directly with a bounded SELECT.
  */
 export async function GET() {
   const connectionString = process.env.DATABASE_URL
@@ -19,30 +29,21 @@ export async function GET() {
     connectionTimeoutMillis: 6000,
     idleTimeoutMillis: 1000,
   })
+
   try {
-    const db = drizzle({ client: pool })
-    const rows = await db
-      .select({
-        slug: auditoriums.slug,
-        name: auditoriums.name,
-        cinemaName: cinemas.name,
-        seatCount: auditoriums.seatCount,
-        format: auditoriums.format,
-        version: auditoriumModelVersions.version,
-        confidence: auditoriumModelVersions.confidence,
-        sourceUrls: auditoriumModelVersions.sourceUrls,
-      })
-      .from(auditoriums)
-      .innerJoin(cinemas, eq(cinemas.id, auditoriums.cinemaId))
-      .innerJoin(
-        auditoriumModelVersions,
-        and(
-          eq(auditoriumModelVersions.auditoriumId, auditoriums.id),
-          eq(auditoriumModelVersions.isCurrent, true),
-        ),
-      )
-      .where(eq(auditoriums.published, true))
-      .limit(30)
+    const query = [
+      'SELECT',
+      '  a.slug, a.name, c.name AS "cinemaName",',
+      '  a.seat_count AS "seatCount", a.format,',
+      '  v.version, v.confidence, v.source_urls AS "sourceUrls"',
+      'FROM auditoriums AS a',
+      'INNER JOIN cinemas AS c ON c.id = a.cinema_id',
+      'INNER JOIN auditorium_model_versions AS v ON v.auditorium_id = a.id',
+      'WHERE a.published = TRUE AND v.is_current = TRUE',
+      'ORDER BY c.name, a.name',
+      'LIMIT 30',
+    ].join('\n')
+    const { rows } = await pool.query<PublishedAuditorium>(query)
 
     return Response.json(
       { auditoriums: rows },
