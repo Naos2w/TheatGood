@@ -13,7 +13,7 @@
 
 - db/schema.ts: seven Drizzle tables, relationships, indexes, unique constraints and immutable model-version representation.
 - db/migrations/: Drizzle Kit SQL migrations and snapshots; commit these to Git.
-- db/seed.ts: idempotent, source-validated seed from the same local TFAI JSON used by the 2D/3D UI.
+- db/seed.ts: idempotent, source-attributed seed for five official cinema venues/nine auditoriums. Only TFAI Small Cinema and SPOT Taipei have complete seat IDs and versioned geometry; model v1 is immutable.
 - db/seed-fixture.ts: synthetic **development-only** screening with unknown auditorium (NULL). Explicitly not a real showtime.
 - db/verify.ts: live database integrity and seat-coordinate smoke test.
 - api/cinemas.ts: Vercel server-only, GET-only public catalogue (published auditoriums with current model metadata). No private tables or credentials are returned.
@@ -36,10 +36,10 @@ Running this script without the explicit flag is rejected. The test screening ha
 
 ## Public API
 
-- GET /api/cinemas returns a capped list (30) of published auditoriums and current version metadata only.
+- GET /api/cinemas returns a capped list (50) of verified published auditoriums. A left join exposes `hasModel` and optional model version, so directory-only halls are returned without fake seat geometry.
 - Without DATABASE_URL or with a database outage, the endpoint returns HTTP 503 with a stable, non-sensitive error code.
 - It does not expose screenings, watch logs, user IDs or raw database credentials.
-- The Vue frontend continues to use its bundled, Zod-validated TFAI model in P1.1; live catalogue integration follows after verified staging API availability.
+- The Vue frontend has a source-attributed 9-hall catalogue bundled for offline-friendly discovery. Exactly two Zod-validated models (TFAI Small, SPOT Taipei) support 2D/3D; the rest link to a source-only details page. Vercel's Neon read-only API returns the same published metadata with `hasModel` to allow later server-driven updates.
 
 ## Later migrations and versions
 

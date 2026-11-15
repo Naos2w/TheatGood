@@ -3,7 +3,9 @@ import { computed, onMounted, ref, shallowRef, watch, type Component } from 'vue
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import SeatMap from '../../components/SeatMap.vue'
+import { appLocale } from '../../composables/usePreferences'
 import { findAuditorium } from '../auditoriums/catalog'
+import { cinemaDirectory, directoryHallName, directoryCinemaName } from '../auditoriums/directory'
 import { calculateSightline, createSeats } from '../auditoriums/geometry'
 import { neighbouringSeat } from '../auditoriums/seat-navigation'
 import { useViewerStore } from '../../stores/viewer'
@@ -19,6 +21,9 @@ const selectedSeat = computed(
   () => seats.value.find((seat) => seat.id === store.selectedSeatId) ?? seats.value[0],
 )
 const isOfficial = computed(() => auditorium.value?.provenance.seatLabels === 'official')
+const sourceHall = computed(() =>
+  cinemaDirectory.find((item) => item.modelId === auditorium.value?.id),
+)
 const isImmersive = computed(() => route.query.view === '3d')
 const previousSeat = computed(() => neighbouringSeat(seats.value, store.selectedSeatId, -1))
 const nextSeat = computed(() => neighbouringSeat(seats.value, store.selectedSeatId, 1))
@@ -33,10 +38,14 @@ const sceneComponent = shallowRef<Component | null>(null)
 const resetViewToken = ref(0)
 
 function seatName() {
-  return auditorium.value?.id === 'tfai-small' ? t('hall.tfaiName') : t('hall.demoName')
+  return sourceHall.value
+    ? directoryHallName(sourceHall.value, appLocale.value)
+    : t('hall.demoName')
 }
 function venueName() {
-  return auditorium.value?.id === 'tfai-small' ? t('hall.tfaiVenue') : t('hall.demoVenue')
+  return sourceHall.value
+    ? directoryCinemaName(sourceHall.value, appLocale.value)
+    : t('hall.demoVenue')
 }
 
 watch(
@@ -253,7 +262,8 @@ function navigate(direction: -1 | 1) {
               </div>
             </dl>
             <p>{{ isOfficial ? t('viewer.provenance') : t('viewer.demoProvenance') }}</p>
-            <p v-if="isOfficial">{{ t('viewer.wheelchair') }}</p>
+            <p v-if="auditorium.id === 'tfai-small'">{{ t('viewer.wheelchair') }}</p>
+            <p v-if="auditorium.id === 'spot-taipei'">{{ t('viewer.wheelchairSpot') }}</p>
           </details>
         </div>
       </div>

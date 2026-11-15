@@ -36,7 +36,8 @@ export const auditoriumSchema = z
     rows: z
       .array(
         z.object({
-          label: z.string().regex(/^[A-Z]+$/),
+          // Some official Taiwanese venues use numerical rows (e.g. SPOT 1-1 through 9-9).
+          label: z.string().regex(/^(?:[A-Z]+|[1-9][0-9]?)$/),
           numbers: z.array(z.number().int().positive()).min(1),
           z: z.number(),
           elevation: z.number(),
