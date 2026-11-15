@@ -4,13 +4,13 @@
 
 以 Vue 3 / TresJS 開發，從台灣影廳的公開資料建立 3D 模型、座位圖與第一人稱視角。未來再整合真實放映場次與個人觀影紀錄；**不做評分、心得、社群或即時訂票**。
 
-## 目前可使用（P0）
+## 目前可使用（P0 + v2 UI）
 
 - **國家電影及視聽文化中心「小影格」**：官方設備手冊提供 **8.88 × 4.80 m** 銀幕、**52 席**座位圖（另有 2 輪椅席，尚未建模），可進入 3D 模型選位。
 - **TheatGood 示範影廳**：114 席完全虛構模型，供調整 3D 視角及座位引擎之用。
-- 座位 2D / 3D 共用 X 座標與座號，選位可切換第一人稱或自由視角。
+- 座位 2D / 3D 共用同一份模型座標與座號；先在 2D 選位，再進入全螢幕第一人稱 3D，並可左右切換相鄰座位。
 - 顯示與銀幕的估算距離、水平／垂直視角與偏移角。
-- 支援桌機及手機尺寸；WebGL 2 不支援時可保留 2D 座位選擇。
+- 支援手機／平板／桌面 RWD、Light／Dark／System 主題和繁體中文／英式英文；WebGL 2 不支援時仍可保留 2D 座位選擇。
 
 **資料準確度：小影格的銀幕尺寸、總席數與座號有官方來源；座距、坡度、銀幕底緣高度、曲率、人眼高度及牆面等仍屬估算。** 模型不等於現場視野，亦不提供售票座位庫存。詳細紀錄請見 [小影格資料來源](docs/auditoriums/tfai-small.md)。
 
@@ -34,7 +34,7 @@ npm run build
 npm run format:check
 ```
 
-若全域 npm 設定了 `omit=dev`，使用 `npm install --include=dev` 才會安裝 TypeScript、Vitest、ESLint 等開發工具。目前**不需要 Neon、Google 登入或 API Key**。
+若全域 npm 設定了 `omit=dev`，使用 `npm install --include=dev` 才會安裝 TypeScript、Vitest、ESLint 等開發工具。單純瀏覽現有 2D／3D 仍**不需要 Neon、Google 登入或 API Key**；執行資料庫 Migration、Seed 或伺服器端目錄 API 時才需要後端 DATABASE_URL，且**不得**使用 VITE_ 前綴。
 
 ## 檔案架構
 
@@ -64,4 +64,4 @@ npm run format:check
 
 ## 後續
 
-Neon PostgreSQL + Drizzle、合法的台灣影城場次同步、Google 登入、私人觀影紀錄（電影、日期、影城、影廳、座位）、歷史補登與 PWA 正式部署，將依 [TODO.md](TODO.md) 逐步實作。
+Neon PostgreSQL + Drizzle 的資料表、Migration、Seed 與開發／UAT 資料庫已建立，操作及安全說明見 [資料庫文件](docs/database.md)。接下來將依 [TODO.md](TODO.md) 逐步實作合法的台灣影城場次同步、Google 登入、私人觀影紀錄（電影、日期、影城、影廳、座位）、歷史補登與 PWA 正式部署。
