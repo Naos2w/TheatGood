@@ -53,6 +53,9 @@ onUnmounted(() => document.removeEventListener('pointerdown', handleOutsidePoint
             <RouterLink to="/" class="site-nav__link">
               {{ t('app.home') }}
             </RouterLink>
+            <RouterLink to="/screenings" class="site-nav__link">
+              {{ t('app.screenings') }}
+            </RouterLink>
             <RouterLink to="/history" class="site-nav__link">
               {{ t('app.history') }}
             </RouterLink>
@@ -161,6 +164,14 @@ onUnmounted(() => document.removeEventListener('pointerdown', handleOutsidePoint
         >
           <v-icon icon="mdi-magnify" size="23" />
           <span>{{ t('app.home') }}</span>
+        </RouterLink>
+        <RouterLink
+          to="/screenings"
+          class="glass-tabbar__link"
+          :class="{ 'is-active': route.name === 'screenings' }"
+        >
+          <v-icon icon="mdi-calendar-month-outline" size="23" />
+          <span>{{ t('app.screenings') }}</span>
         </RouterLink>
         <RouterLink
           to="/history"
