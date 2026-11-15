@@ -7,12 +7,14 @@
 ## 目前可使用（P0 + v2 UI）
 
 - **國家電影及視聽文化中心「小影格」**：官方設備手冊提供 **8.88 × 4.80 m** 銀幕、**52 席**座位圖（另有 2 輪椅席，尚未建模），可進入 3D 模型選位。
-- **TheatGood 示範影廳**：114 席完全虛構模型，供調整 3D 視角及座位引擎之用。
+- **光點台北電影館「光點電影院」**：官方座位圖 **83 席（含可置換的輪椅席）**、銀幕 **4.70 × 1.85 m**，保留原始 `1-1`～`9-9` 座號及中央走道；3D 排距仍為估算。
+- **官方影廳目錄**：首批 5 座場館／9 間影廳，其中只有 2 間座位資料足夠提供 3D。其餘只顯示可查證的規格，不杜撰座位圖。
+- **TheatGood 示範影廳**：114 席完全虛構模型，供測試 3D 視角引擎，不顯示在真實影廳目錄。
 - 座位 2D / 3D 共用同一份模型座標與座號；先在 2D 選位，再進入全螢幕第一人稱 3D，並可左右切換相鄰座位。
 - 顯示與銀幕的估算距離、水平／垂直視角與偏移角。
 - 支援手機／平板／桌面 RWD、Light／Dark／System 主題和繁體中文／英式英文；WebGL 2 不支援時仍可保留 2D 座位選擇。
 
-**資料準確度：小影格的銀幕尺寸、總席數與座號有官方來源；座距、坡度、銀幕底緣高度、曲率、人眼高度及牆面等仍屬估算。** 模型不等於現場視野，亦不提供售票座位庫存。詳細紀錄請見 [小影格資料來源](docs/auditoriums/tfai-small.md)。
+**資料準確度：小影格與光點台北的官方銀幕規格及座號均有來源；座距、坡度、銀幕底緣高度、曲率、人眼高度及牆面等仍屬估算。** 模型不等於現場視野，亦不提供售票座位庫存。資料來源見 [影廳目錄](docs/auditorium-directory.md)、[小影格](docs/auditoriums/tfai-small.md)、[光點台北](docs/auditoriums/spot-taipei.md)。
 
 ## 本機啟動
 
@@ -40,8 +42,10 @@ npm run format:check
 
 - `src/features/auditoriums/schema.ts`：Zod 資料驗證與跨欄位檢查。
 - `src/features/auditoriums/tfai-small.json`：小影格的來源資料與估算幾何。
+- `src/features/auditoriums/spot-taipei.json`：光點台北的官方 83 席座位編號與估算幾何。
+- `src/features/auditoriums/directory.ts`：9 間影廳、別名搜尋及資料可信度分級。
 - `src/features/auditoriums/demo.ts`：虛構示範影廳。
-- `src/features/auditoriums/catalog.ts`：可選擇的影廳目錄。
+- `src/features/auditoriums/catalog.ts`：只有確實有 3D 模型的可選座清單（含 DEMO）；其餘影廳只顯示官方資訊。
 - `src/features/auditoriums/geometry.ts`：座位座標與視角計算。
 - `src/features/viewer/`：3D 場景、Viewer UI、相機。
 - `src/components/SeatMap.vue`：依座標產生的 2D 座位圖。

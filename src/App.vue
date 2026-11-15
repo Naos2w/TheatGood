@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { usePreferences, type AppLocale, type ThemePreference } from './composables/usePreferences'
@@ -24,6 +24,19 @@ function chooseTheme(value: ThemePreference) {
 function chooseLocale(value: AppLocale) {
   appLocale.value = value
 }
+
+function handleOutsidePointer(event: PointerEvent) {
+  if (
+    settingsOpen.value &&
+    event.target instanceof Element &&
+    !event.target.closest('.settings-anchor')
+  ) {
+    settingsOpen.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('pointerdown', handleOutsidePointer))
+onUnmounted(() => document.removeEventListener('pointerdown', handleOutsidePointer))
 </script>
 
 <template>

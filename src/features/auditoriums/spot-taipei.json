@@ -1,0 +1,97 @@
+{
+  "modelVersion": 1,
+  "id": "spot-taipei",
+  "name": "光點電影院",
+  "cinemaName": "光點台北電影館",
+  "format": "DCP・35mm・16mm／銀幕 4.70 × 1.85 m",
+  "description": "光點台北官方座位圖標示九排共83席、每席1-1至9-9等官方座號、中央走道位置，以及4.70 × 1.85公尺銀幕。僅銀幕規格、座號與主要分區有官方來源；座寬、排距、坡度、觀眾眼睛高度和銀幕離地高度均為估算。7–9排左側座椅區可置換兩個輪椅席，不額外重複計入總席數。",
+  "confidence": "partial",
+  "sources": [
+    "https://www.spot.org.tw/venues/images/movie_seat.pdf",
+    "https://www.spot.org.tw/venues/venue.html"
+  ],
+  "publishedSeatCount": 83,
+  "provenance": {
+    "screenDimensions": "official",
+    "seatLabels": "official",
+    "spatialGeometry": "estimated",
+    "checkedAt": "2026-11-15",
+    "notes": "官方光點台北電影院平面圖：共83席（含可置換的2個輪椅席）、寬4.7×高1.85公尺銀幕；排別採官方1–9排，座號採官方「排-座」記法。各排前後距離、座椅位置、地坪高度、投影距離及中央走道實際寬度沒有標示，以下皆為估算。平面圖僅用於重建座號，不重製官方圖像。"
+  },
+  "screen": {
+    "width": 4.7,
+    "height": 1.85,
+    "centerX": 0,
+    "bottomY": 1.25,
+    "z": 0
+  },
+  "seatWidth": 0.54,
+  "seatSpacing": 0.62,
+  "aisleWidth": 1,
+  "eyeHeight": 1.16,
+  "rows": [
+    {
+      "label": "1",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "z": 3.4,
+      "elevation": 0,
+      "aislesAfter": [1]
+    },
+    {
+      "label": "2",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "z": 4.48,
+      "elevation": 0.11,
+      "aislesAfter": [1]
+    },
+    {
+      "label": "3",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "z": 5.56,
+      "elevation": 0.22,
+      "aislesAfter": [1]
+    },
+    {
+      "label": "4",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "z": 6.64,
+      "elevation": 0.33,
+      "aislesAfter": [1]
+    },
+    {
+      "label": "5",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "z": 7.72,
+      "elevation": 0.44,
+      "aislesAfter": [1]
+    },
+    {
+      "label": "6",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "z": 8.8,
+      "elevation": 0.55,
+      "aislesAfter": [1]
+    },
+    {
+      "label": "7",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "z": 9.88,
+      "elevation": 0.66,
+      "aislesAfter": [0]
+    },
+    {
+      "label": "8",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8],
+      "z": 10.96,
+      "elevation": 0.77,
+      "aislesAfter": [0]
+    },
+    {
+      "label": "9",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "z": 12.04,
+      "elevation": 0.88,
+      "aislesAfter": [0]
+    }
+  ]
+}

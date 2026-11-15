@@ -2,27 +2,19 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
-import { auditoriumCatalog } from '../auditoriums/catalog'
+import { appLocale } from '../../composables/usePreferences'
+import {
+  cinemaDirectory,
+  directoryCinemaName,
+  directoryHallName,
+  searchCinemaDirectory,
+} from '../auditoriums/directory'
 
 const { t } = useI18n()
 const search = ref('')
-const realAuditoriums = auditoriumCatalog.filter(
-  (hall) => hall.provenance.seatLabels === 'official',
-)
-const results = computed(() => {
-  const term = search.value.trim().toLocaleLowerCase()
-  if (!term) return realAuditoriums
-  return realAuditoriums.filter((hall) =>
-    [
-      hall.name,
-      hall.cinemaName,
-      hall.id,
-      t('hall.tfaiName'),
-      t('hall.tfaiVenue'),
-      'taiwan film audiovisual institute tfai small cinema 新北市 new taipei',
-    ].some((value) => value.toLocaleLowerCase().includes(term)),
-  )
-})
+const results = computed(() => searchCinemaDirectory(search.value))
+const modelled = computed(() => results.value.filter((hall) => hall.modelId))
+const directoryOnly = computed(() => results.value.filter((hall) => !hall.modelId))
 </script>
 
 <template>
@@ -56,41 +48,78 @@ const results = computed(() => {
           </button>
         </label>
 
-        <div class="list-heading">
-          <h2>{{ t('home.available') }}</h2>
-          <span>{{ t('home.count', { count: realAuditoriums.length }) }}</span>
+        <p class="discovery-note discovery-note--summary">
+          {{ t('home.count', { count: cinemaDirectory.length }) }}
+        </p>
+
+        <div v-if="modelled.length">
+          <div class="list-heading">
+            <h2>{{ t('home.available') }}</h2>
+            <span>{{ t('home.modelledCount', { count: modelled.length }) }}</span>
+          </div>
+          <div class="auditorium-list">
+            <RouterLink
+              v-for="hall in modelled"
+              :key="hall.slug"
+              class="auditorium-item"
+              :to="'/auditoriums/' + hall.modelId"
+              :aria-label="t('home.openHall', { name: directoryHallName(hall, appLocale) })"
+            >
+              <span class="auditorium-item__visual" aria-hidden="true">
+                <span class="auditorium-item__screen" />
+                <span class="auditorium-item__floor" />
+              </span>
+              <span class="auditorium-item__content">
+                <strong>{{ directoryHallName(hall, appLocale) }}</strong>
+                <span>
+                  {{ directoryCinemaName(hall, appLocale) }} ·
+                  {{ t('home.hallCount', { count: hall.seatCount }) }}
+                </span>
+                <small>{{ t('app.estimated') }}</small>
+              </span>
+              <v-icon icon="mdi-chevron-right" size="23" class="auditorium-item__chevron" />
+            </RouterLink>
+          </div>
         </div>
 
-        <div v-if="results.length" class="auditorium-list">
-          <RouterLink
-            v-for="hall in results"
-            :key="hall.id"
-            class="auditorium-item"
-            :to="'/auditoriums/' + hall.id"
-            :aria-label="t('home.openHall', { name: t('hall.tfaiName') })"
-          >
-            <span class="auditorium-item__visual" aria-hidden="true">
-              <span class="auditorium-item__screen" />
-              <span class="auditorium-item__floor" />
-            </span>
-            <span class="auditorium-item__content">
-              <strong>{{ t('hall.tfaiName') }}</strong>
+        <div v-if="directoryOnly.length">
+          <div class="list-heading">
+            <h2>{{ t('home.directoryOnly') }}</h2>
+            <span>{{ t('home.directoryCount', { count: directoryOnly.length }) }}</span>
+          </div>
+          <div class="auditorium-list">
+            <RouterLink
+              v-for="hall in directoryOnly"
+              :key="hall.slug"
+              class="auditorium-item auditorium-item--catalogue"
+              :to="'/directory/' + hall.slug"
+              :aria-label="t('home.viewDetails', { name: directoryHallName(hall, appLocale) })"
+            >
               <span
-                >{{ t('hall.tfaiVenue') }} ·
-                {{ t('home.hallCount', { count: hall.publishedSeatCount }) }}</span
+                class="auditorium-item__visual auditorium-item__visual--catalogue"
+                aria-hidden="true"
               >
-              <small>{{ t('app.estimated') }}</small>
-            </span>
-            <v-icon icon="mdi-chevron-right" size="23" class="auditorium-item__chevron" />
-          </RouterLink>
+                <v-icon icon="mdi-theater" size="31" />
+              </span>
+              <span class="auditorium-item__content">
+                <strong>{{ directoryHallName(hall, appLocale) }}</strong>
+                <span>
+                  {{ directoryCinemaName(hall, appLocale) }} · {{ hall.city }} ·
+                  {{ t('home.hallCount', { count: hall.seatCount }) }}
+                </span>
+                <small>{{ t('home.no3dYet') }}</small>
+              </span>
+              <v-icon icon="mdi-chevron-right" size="23" class="auditorium-item__chevron" />
+            </RouterLink>
+          </div>
         </div>
 
-        <p v-else class="search-empty" role="status">
+        <p v-if="!results.length" class="search-empty" role="status">
           {{ t('home.noResults') }}
         </p>
         <p class="discovery-note">
           <v-icon icon="mdi-information-outline" size="16" />
-          {{ t('app.officialNote') }}
+          {{ t('home.provenanceHint') }}
         </p>
       </div>
     </div>

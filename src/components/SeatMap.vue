@@ -26,7 +26,11 @@ const sheetRef = ref<HTMLDialogElement | null>(null)
 const viewportWidth = ref(360)
 const zoom = ref(1)
 const pan = reactive({ x: 0, y: 0 })
-const selectedRow = ref(props.selectedSeatId[0] ?? props.auditorium.rows[0]?.label ?? 'A')
+const selectedRow = ref(
+  props.seats.find((seat) => seat.id === props.selectedSeatId)?.row ??
+    props.auditorium.rows[0]?.label ??
+    'A',
+)
 const fitScale = computed(() => Math.min(1, Math.max(0.3, (viewportWidth.value - 12) / 680)))
 const currentScale = computed(() => fitScale.value * zoom.value)
 const viewportHeight = computed(() => Math.max(290, mapHeight.value * fitScale.value + 14))
@@ -45,7 +49,7 @@ let resizeObserver: ResizeObserver | undefined
 watch(
   () => props.selectedSeatId,
   (id) => {
-    if (id) selectedRow.value = id[0] ?? selectedRow.value
+    if (id) selectedRow.value = props.seats.find((seat) => seat.id === id)?.row ?? selectedRow.value
   },
 )
 
@@ -108,7 +112,8 @@ function pointerUp(event: PointerEvent) {
 }
 
 function openSheet() {
-  selectedRow.value = props.selectedSeatId[0] ?? rows.value[0]?.label ?? 'A'
+  selectedRow.value =
+    props.seats.find((seat) => seat.id === props.selectedSeatId)?.row ?? rows.value[0]?.label ?? 'A'
   sheetRef.value?.showModal()
 }
 

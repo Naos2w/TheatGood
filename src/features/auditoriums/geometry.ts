@@ -24,6 +24,11 @@ export interface Sightline {
   horizontalOffset: number
 }
 
+/** Preserve the venue's printed seat naming scheme, including numeric row-seat labels. */
+export function seatIdFor(row: string, number: number): string {
+  return /^\d+$/.test(row) ? `${row}-${number}` : `${row}${String(number).padStart(2, '0')}`
+}
+
 export function createSeats(auditorium: AuditoriumDefinition): AuditoriumSeat[] {
   const seats: AuditoriumSeat[] = []
 
@@ -47,7 +52,7 @@ export function createSeats(auditorium: AuditoriumDefinition): AuditoriumSeat[] 
         precedingGaps
 
       seats.push({
-        id: `${row.label}${String(number).padStart(2, '0')}`,
+        id: seatIdFor(row.label, number),
         row: row.label,
         number,
         x,
