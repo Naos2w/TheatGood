@@ -204,6 +204,12 @@ for (const h of originalHsinyi.layouts) {
   )
 }
 if (issues.length) throw new Error('Invalid source facts detected:\n' + issues.join('\n'))
+if (conflicts.length) {
+  throw new Error(
+    'Conflicting official seat grids must be manually reconciled before release:\n' +
+      conflicts.map((item) => item.hall + ' (' + item.sources.join(', ') + ')').join('\n'),
+  )
+}
 const summaries: {
   venueSlug: string
   venueName: string
