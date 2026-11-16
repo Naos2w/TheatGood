@@ -8,6 +8,7 @@ import { findAuditorium } from '../auditoriums/catalog'
 import { cinemaDirectory, directoryHallName, directoryCinemaName } from '../auditoriums/directory'
 import { calculateSightline, createSeats } from '../auditoriums/geometry'
 import { neighbouringSeat } from '../auditoriums/seat-navigation'
+import { horizontalFovPresets, type HorizontalFovPreset } from './view-projection'
 import { useViewerStore } from '../../stores/viewer'
 
 const route = useRoute()
@@ -36,6 +37,8 @@ const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
 const resetViewToken = ref(0)
+/** User-tunable 3D camera projection: not a measured eye/device calibration. */
+const horizontalFov = ref<HorizontalFovPreset>(80)
 
 function seatName() {
   return sourceHall.value
@@ -230,6 +233,7 @@ function navigate(direction: -1 | 1) {
         :seats="seats"
         :selected-seat-id="store.selectedSeatId"
         :reset-view-token="resetViewToken"
+        :horizontal-fov="horizontalFov"
       />
 
       <div class="viewer-immersive__top">
@@ -286,6 +290,15 @@ function navigate(direction: -1 | 1) {
             <summary>
               {{ t('viewer.details') }} <v-icon icon="mdi-chevron-down" size="17" />
             </summary>
+            <label class="viewer-fov-control">
+              <span>{{ t('viewer.projectionFov') }}</span>
+              <select v-model.number="horizontalFov">
+                <option v-for="angle in horizontalFovPresets" :key="angle" :value="angle">
+                  {{ angle }}°
+                </option>
+              </select>
+            </label>
+            <p class="viewer-fov-note">{{ t('viewer.projectionCaveat') }}</p>
             <dl v-if="sightline">
               <div>
                 <dt>{{ t('viewer.distance') }}</dt>

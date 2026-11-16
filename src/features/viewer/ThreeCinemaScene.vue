@@ -3,12 +3,14 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { TresCanvas } from '@tresjs/core'
 import { PerspectiveCamera, Vector3 } from 'three'
 import type { AuditoriumDefinition, AuditoriumSeat } from '../auditoriums/geometry'
+import { verticalFovFromHorizontal } from './view-projection'
 
 const props = defineProps<{
   auditorium: AuditoriumDefinition
   seats: AuditoriumSeat[]
   selectedSeatId: string
   resetViewToken: number
+  horizontalFov: number
 }>()
 
 const canvasBox = ref<HTMLElement | null>(null)
@@ -114,12 +116,13 @@ function resizeCamera() {
   const height = box.clientHeight
   if (!width || !height) return
   camera.aspect = width / height
-  camera.fov = Math.min(91, Math.max(55, 55 / Math.max(camera.aspect, 0.62)))
+  camera.fov = verticalFovFromHorizontal(props.horizontalFov, camera.aspect)
   camera.updateProjectionMatrix()
 }
 
 watch(() => [props.selectedSeatId, props.auditorium.id], moveToSelected, { immediate: true })
 watch(() => props.resetViewToken, resetView)
+watch(() => props.horizontalFov, resizeCamera)
 
 onMounted(() => {
   mounted = true

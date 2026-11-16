@@ -2,6 +2,12 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
+import SeatMap from '../../components/SeatMap.vue'
+import {
+  groupWatchFootprints,
+  footstepVisitsForSeat,
+  type SeatFootprintGroup,
+} from './seat-footprints'
 import { findAuditorium } from '../auditoriums/catalog'
 import { cinemaDirectory } from '../auditoriums/directory'
 import { createSeats } from '../auditoriums/geometry'
@@ -79,6 +85,23 @@ const records = computed(() =>
   }),
 )
 const stats = computed(() => summariseWatchHistory(store.entries))
+const footprints = computed(() => groupWatchFootprints(records.value))
+const footprintSelection = reactive<Record<string, string>>({})
+
+function currentFootprintSeat(group: SeatFootprintGroup): string {
+  const choice = footprintSelection[group.key]
+  return choice && group.modelSeats.some((seat) => seat.id === choice)
+    ? choice
+    : (Object.keys(group.visitedSeatCounts)[0] ?? group.modelSeats[0]?.id ?? '')
+}
+
+function selectFootprintSeat(groupKey: string, seatId: string) {
+  footprintSelection[groupKey] = seatId
+}
+
+function selectedFootprintVisits(group: SeatFootprintGroup) {
+  return footstepVisitsForSeat(group, currentFootprintSeat(group))
+}
 
 function resetForm() {
   Object.assign(form, emptyForm())
@@ -340,6 +363,85 @@ watch(
       <p class="manual-history__result-count">
         {{ t('history.results', { count: records.length }) }}
       </p>
+
+      <section
+        v-if="footprints.length"
+        class="manual-history__footprints"
+        aria-labelledby="footprints-heading"
+      >
+        <div class="manual-history__footprints-heading">
+          <div>
+            <h2 id="footprints-heading">{{ t('history.footprintsTitle') }}</h2>
+            <p>{{ t('history.footprintsDescription') }}</p>
+          </div>
+          <span>{{ t('history.footprintsCount', { count: footprints.length }) }}</span>
+        </div>
+        <div class="manual-history__footprint-list">
+          <article
+            v-for="group in footprints"
+            :key="group.key"
+            class="manual-history__footprint-card"
+          >
+            <header class="manual-history__footprint-card-heading">
+              <div>
+                <h3>{{ group.cinemaName }}</h3>
+                <p>{{ group.hallName || t('history.unknownHall') }}</p>
+              </div>
+              <span>{{ t('history.footprintVisits', { count: group.visits.length }) }}</span>
+            </header>
+            <template v-if="group.model && group.modelSeats.length">
+              <p class="manual-history__map-note">{{ t('history.verifiedFootprintMap') }}</p>
+              <SeatMap
+                :auditorium="group.model"
+                :seats="group.modelSeats"
+                :selected-seat-id="currentFootprintSeat(group)"
+                :visited-seat-counts="group.visitedSeatCounts"
+                @select-seat="(seatId) => selectFootprintSeat(group.key, seatId)"
+              />
+              <div class="manual-history__selected-footprint">
+                <div>
+                  <strong>{{ currentFootprintSeat(group) }}</strong>
+                  <span v-if="selectedFootprintVisits(group).length">
+                    {{
+                      t('history.seatVisitCount', { count: selectedFootprintVisits(group).length })
+                    }}
+                  </span>
+                  <span v-else>{{ t('history.notVisitedSeat') }}</span>
+                </div>
+                <RouterLink
+                  :to="{
+                    path: '/auditoriums/' + group.model.id,
+                    query: { seat: currentFootprintSeat(group) },
+                  }"
+                  class="manual-history__preview-link"
+                >
+                  <v-icon icon="mdi-eye-outline" size="18" />
+                  {{ t('history.previewSeat') }}
+                </RouterLink>
+              </div>
+              <div v-if="selectedFootprintVisits(group).length" class="manual-history__seat-films">
+                <span v-for="entry in selectedFootprintVisits(group)" :key="entry.id">
+                  {{ entry.movieTitle }} · {{ entry.watchedOn }}
+                </span>
+              </div>
+            </template>
+            <div
+              v-if="group.textOnlySeats.length || !group.model"
+              class="manual-history__text-footprints"
+            >
+              <p>{{ t(group.model ? 'history.unmappedSeatNotes' : 'history.noSeatMapYet') }}</p>
+              <div v-if="group.textOnlySeats.length" class="manual-history__text-seat-list">
+                <span v-for="seat in group.textOnlySeats" :key="seat.label">
+                  {{ seat.label }}
+                  <small>{{ t('history.seatVisitCount', { count: seat.count }) }}</small>
+                </span>
+              </div>
+              <p v-else>{{ t('history.noSeatLabel') }}</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <div v-if="records.length" class="manual-history__records">
         <article v-for="entry in records" :key="entry.id" class="manual-history__record">
           <div class="manual-history__record-main">

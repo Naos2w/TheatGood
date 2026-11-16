@@ -36,12 +36,18 @@ export interface PublishedNamedHall {
   sourceUrl: string
   sourceDate: string
   dataLevel: 'published-count-only'
+  /** Only populated when a separate operator source confirms actual screen dimensions. */
+  screenWidthM?: number
+  screenHeightM?: number
+  screenShape?: 'curved' | 'flat'
+  screenSourceUrl?: string
 }
 
 const checkedAt = '2026-11-16'
 const showtime = (id: number): string => `https://www.showtimes.com.tw/cinemas/${id}/`
 const royalUrl = 'https://www.miranewcinemas.com/Special/Index?type=royal'
 export const MIRAMAR_HALL_SOURCE = 'https://www.miramarcinemas.tw/Home/groupticket2'
+export const MIRAMAR_IMAX_SCREEN_SOURCE = 'https://www.miramarcinemas.tw/Home/imaxcinema'
 
 /** Only those halls whose labels and capacities appear explicitly in the operator's group-booking page. */
 export const miramarPublishedHalls: readonly PublishedNamedHall[] = [
@@ -62,6 +68,14 @@ export const miramarPublishedHalls: readonly PublishedNamedHall[] = [
   sourceUrl: MIRAMAR_HALL_SOURCE,
   sourceDate: checkedAt,
   dataLevel: 'published-count-only' as const,
+  ...(String(label) === 'IMAX'
+    ? {
+        screenWidthM: 28.4,
+        screenHeightM: 20.54,
+        screenShape: 'curved' as const,
+        screenSourceUrl: MIRAMAR_IMAX_SCREEN_SOURCE,
+      }
+    : {}),
 }))
 
 const observations: readonly CinemaPublishedFacts[] = [

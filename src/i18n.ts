@@ -110,6 +110,9 @@ export const messages = {
       hallNumber: '{number} 廳',
       seats: '{count} 席',
       countOnly: '官方公布席數，非座位圖',
+      screenDimensions:
+        '官方銀幕尺寸：寬 {width} × 高 {height} 公尺（弧形銀幕，尚未取得座距與坡度）',
+      screenSource: '官方銀幕資料',
       notYetVerified: '目前僅有可靠的影城分館資料，尚未取得各廳座號與席數的官方依據。',
       notice:
         '官方數據為公布的廳數、席數及廳型資訊，可能因改裝而變動；目前沒有完整排別、座號、銀幕尺寸或 3D 幾何，不能直接建立選位／視角。特殊廳名稱不代表已知座位配置。',
@@ -171,6 +174,9 @@ export const messages = {
       unavailable: '此裝置無法開啟 WebGL 2，仍可返回座位圖選位。',
       error: '無法載入 3D 畫面，請返回座位圖重試。',
       details: '觀看數據（估算）',
+      projectionFov: '3D 畫面水平視野（可調）',
+      projectionCaveat:
+        '此設定調整虛擬鏡頭的視野寬度，不是實際眼睛或手機螢幕的 1:1 校準。銀幕角度依影廳幾何計算，若排距／坡度未量測仍屬估算。',
       distance: '距離銀幕',
       horizontal: '水平視角',
       vertical: '垂直視角',
@@ -272,6 +278,19 @@ export const messages = {
       filterYear: '年份',
       allYears: '全部年份',
       results: '找到 {count} 筆觀影紀錄',
+      footprintsTitle: '我坐過的位置',
+      footprintsDescription:
+        '綠色座位是你記錄過的位置；點選座位可以回顧當時看過的電影，並返回第一人稱視角。下方顯示目前篩選條件下的足跡。',
+      footprintsCount: '{count} 間影廳的觀影足跡',
+      footprintVisits: '{count} 次觀影',
+      visitedLegend: '曾經坐過',
+      seatVisitCount: '坐過 {count} 次',
+      notVisitedSeat: '尚未記錄坐過這裡',
+      verifiedFootprintMap: '此座位圖來自有來源的影廳模型；座距與坡度可能仍為估算。',
+      noSeatMapYet: '尚未取得此影廳的完整座位配置；以下只呈現你輸入的座號，不會創造虛構座位圖。',
+      unmappedSeatNotes: '以下座號來自未對上目前模型、舊版模型或自由文字紀錄，不會誤標在座位圖上。',
+      unknownHall: '影廳未指定',
+      noSeatLabel: '尚未記錄座號',
       selfReported: '手動記錄 · 未核對電影上映場次',
       previewSeat: '回到座位視角',
       noPreview: '此座位尚無可核對的 3D 模型',
@@ -399,6 +418,9 @@ export const messages = {
       hallNumber: 'Screen {number}',
       seats: '{count} seats',
       countOnly: 'Published seat count only — not a seating plan',
+      screenDimensions:
+        'Published screen dimensions: {width} m wide × {height} m tall (curved; seat spacing and slope unverified)',
+      screenSource: 'Official screen specification',
       notYetVerified:
         'The cinema venue is verified, but per-hall seating data has not yet been confirmed from an official source.',
       notice:
@@ -462,6 +484,9 @@ export const messages = {
       unavailable: 'WebGL 2 is unavailable on this device. You can still select seats on the map.',
       error: 'The 3D scene could not be loaded. Return to the seating map and try again.',
       details: 'Viewing details (estimated)',
+      projectionFov: '3D horizontal camera field (adjustable)',
+      projectionCaveat:
+        'This setting changes the virtual lens, not a calibrated 1:1 view through your own device. Screen angles are calculated from auditorium geometry, which may still use estimated spacing and elevation.',
       distance: 'Distance to screen',
       horizontal: 'Horizontal viewing angle',
       vertical: 'Vertical viewing angle',
@@ -576,6 +601,22 @@ export const messages = {
       filterYear: 'Year',
       allYears: 'All years',
       results: '{count} viewing records found',
+      footprintsTitle: 'Seats I have visited',
+      footprintsDescription:
+        'Green seats mark positions in your history. Select a seat to see which films you watched there and revisit the sightline. Footprints reflect the filters above.',
+      footprintsCount: '{count} auditorium footprints',
+      footprintVisits: '{count} cinema visits',
+      visitedLegend: 'Previously visited',
+      seatVisitCount: '{count} visits to this seat',
+      notVisitedSeat: 'No visit recorded at this seat yet',
+      verifiedFootprintMap:
+        'This map uses an evidenced auditorium layout; seat spacing and elevation may still be estimates.',
+      noSeatMapYet:
+        'There is no verified complete layout for this auditorium. Your written seat labels are retained without inventing a seating plan.',
+      unmappedSeatNotes:
+        'These seat labels refer to an older model, unverified labels or free text. They are not placed on the current seating map.',
+      unknownHall: 'Auditorium not specified',
+      noSeatLabel: 'No seat label recorded',
       selfReported: 'Manually entered · film and showtime not verified',
       previewSeat: 'Revisit seat view',
       noPreview: 'No verified 3D model for this seat',

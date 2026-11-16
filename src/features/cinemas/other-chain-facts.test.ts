@@ -58,6 +58,23 @@ describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
     expect(halls.every((hall) => hall.dataLevel === 'published-count-only')).toBe(true)
   })
 
+  it('only adds operator-confirmed screen geometry, never fabricating seat distances or rows', () => {
+    const halls = publishedNamedHallsForCinema('miramar-dazhi')
+    const imax = halls.find((hall) => hall.label === 'IMAX')
+    expect(imax).toMatchObject({
+      publishedSeatCount: 404,
+      screenWidthM: 28.4,
+      screenHeightM: 20.54,
+      screenShape: 'curved',
+      screenSourceUrl: 'https://www.miramarcinemas.tw/Home/imaxcinema',
+    })
+    expect(halls.filter((hall) => hall.screenWidthM !== undefined)).toHaveLength(1)
+    expect(halls.find((hall) => hall.label === 'Dolby Cinema')?.screenWidthM).toBeUndefined()
+    expect(imax).not.toHaveProperty('rows')
+    expect(imax).not.toHaveProperty('seatSpacing')
+    expect(imax).not.toHaveProperty('modelId')
+  })
+
   it('preserves Showtime total-hall counts separately from reported digital hall counts', () => {
     expect(cinemaPublishedFacts['showtime-kaohsiung-dreammall']).toMatchObject({
       hallCount: 13,
