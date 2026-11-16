@@ -28,6 +28,28 @@ export interface DirectoryHall {
 }
 export const cinemaDirectory: DirectoryHall[] = [
   {
+    slug: 'vieshow-hsinyi-12',
+    cinemaSlug: 'vieshow-taipei-hsinyi',
+    cinemaName: '台北信義威秀影城',
+    cinemaNameEn: 'Vie Show Cinemas Taipei Hsin Yi',
+    brand: '威秀',
+    city: '臺北市',
+    hallName: '12 廳',
+    hallNameEn: 'Screen 12',
+    aliases: ['第12廳', '12廳', 'Screen 12', '金馬經典影展12廳'],
+    cinemaAliases: ['信義威秀', '台北信義威秀', 'Vie Show Taipei Hsin Yi'],
+    seatCount: 244,
+    wheelchairSeats: 2,
+    seatCountBasis: 'unspecified',
+    format: '一般數位影廳（2026 影展座位圖；3D 尺寸估算）',
+    modelId: 'vieshow-hsinyi-12',
+    sourceUrls: [
+      'https://tghff.tixcraft.com/activity/detail/26_ghcffp',
+      'https://www.vscinemas.com.tw/upload/biz/biz_20260528001.pdf',
+    ],
+    checkedAt: '2026-11-16',
+  },
+  {
     slug: 'tfai-small',
     cinemaSlug: 'tfai',
     cinemaName: '國家電影及視聽文化中心',

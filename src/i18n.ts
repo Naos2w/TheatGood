@@ -109,13 +109,16 @@ export const messages = {
       operatorFacts: '查看影城官方規格來源',
       hallNumber: '{number} 廳',
       seats: '{count} 席',
-      countOnly: '官方公布席數，非座位圖',
+      countOnly: '官方公布席數；若有影展參考圖，實際座號可能不同',
+      festivalMapPreview: '查看 2026 影展座位圖與估算 3D',
+      festivalMapWarning:
+        '此廳官網列 244 席，影展圖僅可辨識 234 個一般座號及 2 個輪椅位置；有 8 席差異未釐清。銀幕和座距為估算。',
       screenDimensions:
         '官方銀幕尺寸：寬 {width} × 高 {height} 公尺（弧形銀幕，尚未取得座距與坡度）',
       screenSource: '官方銀幕資料',
       notYetVerified: '目前僅有可靠的影城分館資料，尚未取得各廳座號與席數的官方依據。',
       notice:
-        '官方數據為公布的廳數、席數及廳型資訊，可能因改裝而變動；目前沒有完整排別、座號、銀幕尺寸或 3D 幾何，不能直接建立選位／視角。特殊廳名稱不代表已知座位配置。',
+        '影廳容量與廳型可能因改裝而變動。少數影廳有註明版本的影展座位圖可作估算視角，但不能視為目前全部可售座位或實測尺寸；其他影廳仍缺完整座號與 3D 幾何。特殊廳名稱不代表已知座位配置。',
       publishedSource: '查看威秀官方 2026 年影廳席數表（PDF）',
       notFound: '找不到此影城分館。',
     },
@@ -182,6 +185,12 @@ export const messages = {
       vertical: '垂直視角',
       offset: '銀幕中央偏移角',
       provenance: '銀幕尺寸與座號為官方資料；3D 距離、坡度與角度均為估算。',
+      festivalReference:
+        '2026 年金馬經典影展座位圖參考版；座號取自影展售票資訊，銀幕大小與 3D 距離均為估算，非 2026 年完整現售配置。',
+      festivalCountWarning:
+        '2026 影展圖共有 234 個一般座號及 W14／W15 兩個輪椅位置；威秀公布此廳容量為 244 席，差 8 席原因未明。請勿以此座位圖取代當次訂票畫面；3D 銀幕大小、排距和坡度均未量測。',
+      festivalWheelchair:
+        'F 排 W14、W15 為影展圖中的輪椅位置，未被當成一般座位，也不提供輪椅位置的虛構 3D。',
       demoProvenance: '這是虛構影廳的示範模型，並非現場量測。',
       wheelchair: '官方另列 2 席輪椅席，目前未納入模型。',
       wheelchairSpot: '光點台北官方平面圖註明後排部分座位可置換 2 個輪椅席；不應另加計席數。',
@@ -417,14 +426,17 @@ export const messages = {
       operatorFacts: 'Official auditorium information',
       hallNumber: 'Screen {number}',
       seats: '{count} seats',
-      countOnly: 'Published seat count only — not a seating plan',
+      countOnly: 'Operator capacity; any event diagram may differ',
+      festivalMapPreview: 'View 2026 festival seating reference and estimated 3D',
+      festivalMapWarning:
+        'The operator lists 244 seats, while the festival diagram shows 234 regular labels and 2 wheelchair spaces. The remaining eight are unresolved; screen size and spacing are estimated.',
       screenDimensions:
         'Published screen dimensions: {width} m wide × {height} m tall (curved; seat spacing and slope unverified)',
       screenSource: 'Official screen specification',
       notYetVerified:
         'The cinema venue is verified, but per-hall seating data has not yet been confirmed from an official source.',
       notice:
-        'These published auditorium and capacity figures may change with refurbishments. Complete rows, seat labels, screen dimensions and 3D geometry are not yet verified, so seat selection and 3D views remain unavailable.',
+        'Published capacities may change with refurbishments. Some auditoriums have dated festival seating references and estimated views, but these do not guarantee every currently bookable seat or measured room geometry. Other halls still lack full layouts.',
       publishedSource: 'Vie Show official 2026 capacity sheet (PDF)',
       notFound: 'This cinema venue could not be found.',
     },
@@ -493,6 +505,12 @@ export const messages = {
       offset: 'Offset from screen centre',
       provenance:
         'Screen size and seat labels are official; 3D distance, slope and viewing angles are estimated.',
+      festivalReference:
+        'Reference seating layout from the 2026 Golden Horse Classic Film Festival. Seat labels come from festival ticketing; screen dimensions and 3D distances are estimated and do not establish every currently bookable seat.',
+      festivalCountWarning:
+        'The 2026 festival chart shows 234 numbered seats plus wheelchair positions W14 and W15, while Vie Show lists 244 seats. Eight positions are unresolved. Check the live booking chart; screen dimensions, spacing and slope are estimates.',
+      festivalWheelchair:
+        'F-row W14 and W15 are wheelchair spaces in the festival chart. They are not treated as regular seats or provided with fabricated 3D positions.',
       demoProvenance: 'This is a fictional demo auditorium, not a real-world survey.',
       wheelchair:
         'Two wheelchair spaces are listed separately by the venue and are not yet modelled.',

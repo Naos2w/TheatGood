@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import { appLocale } from '../../composables/usePreferences'
 import { chainCinemas } from './chain-directory'
+import { cinemaDirectory } from '../auditoriums/directory'
 import {
   cinemaPublishedFacts,
   publishedNamedHallsForCinema,
@@ -59,6 +60,12 @@ const hasVenueMetrics = computed(
 )
 const fmt = (value: number): string => new Intl.NumberFormat(appLocale.value).format(value)
 const isNumericHall = (value: string): boolean => /^\d+$/.test(value)
+function sourcedSeatModel(hallLabel: string): string | undefined {
+  const exactHallName = isNumericHall(hallLabel) ? `${hallLabel} 廳` : hallLabel
+  return cinemaDirectory.find(
+    (entry) => entry.cinemaSlug === slug.value && entry.hallName === exactHallName,
+  )?.modelId
+}
 </script>
 
 <template>
@@ -151,6 +158,18 @@ const isNumericHall = (value: string): boolean => /^\d+$/.test(value)
               }}
             </strong>
             <small>{{ t('chainDetail.countOnly') }}</small>
+            <template v-if="sourcedSeatModel(hall.label)">
+              <RouterLink
+                class="chain-cinema-page__reference-preview"
+                :to="'/auditoriums/' + sourcedSeatModel(hall.label)"
+              >
+                <v-icon icon="mdi-seat-outline" size="16" />
+                {{ t('chainDetail.festivalMapPreview') }}
+              </RouterLink>
+              <small class="chain-cinema-page__reference-warning">
+                {{ t('chainDetail.festivalMapWarning') }}
+              </small>
+            </template>
             <small
               v-if="hall.screenWidthM && hall.screenHeightM"
               class="chain-cinema-page__screen-fact"
