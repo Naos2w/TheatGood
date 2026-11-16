@@ -1,9 +1,22 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { chainCinemas, searchChainCinemas, type ChainBrand } from './chain-directory'
+import type { GeoPoint } from '../auditoriums/proximity'
+import { appLocale } from '../../composables/usePreferences'
+import {
+  chainCinemas,
+  searchChainCinemas,
+  type ChainBrand,
+  type ChainCinema,
+} from './chain-directory'
+import { chainDistanceKm, sortChainsByDistance, verifiedChainPositions } from './chain-positions'
 
-const props = defineProps<{ query: string; city: string }>()
+const props = defineProps<{
+  query: string
+  city: string
+  origin: GeoPoint | null
+  sortByDistance: boolean
+}>()
 const { t } = useI18n()
 const selectedBrand = ref<ChainBrand | 'all'>('all')
 const expanded = ref(false)
@@ -16,9 +29,26 @@ const brandNames = [
 ] as const
 
 const filtered = computed(() => searchChainCinemas(props.query, selectedBrand.value, props.city))
-const visible = computed(() => (expanded.value ? filtered.value : filtered.value.slice(0, 8)))
+const ordered = computed(() =>
+  props.sortByDistance && props.origin
+    ? sortChainsByDistance(filtered.value, props.origin)
+    : filtered.value,
+)
+const visible = computed(() => (expanded.value ? ordered.value : ordered.value.slice(0, 8)))
 const moreAvailable = computed(() => filtered.value.length > 8)
 const total = chainCinemas.length
+const verifiedCount = Object.keys(verifiedChainPositions).length
+
+function formattedDistance(cinema: ChainCinema): string | undefined {
+  if (!props.origin) return undefined
+  const distance = chainDistanceKm(cinema, props.origin)
+  return distance === undefined
+    ? undefined
+    : new Intl.NumberFormat(appLocale.value, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }).format(distance)
+}
 </script>
 
 <template>
@@ -50,17 +80,35 @@ const total = chainCinemas.length
         <div class="chain-cinema__details">
           <strong>{{ cinema.name }}</strong>
           <span>{{ cinema.city }} · {{ cinema.address }}</span>
+          <span v-if="formattedDistance(cinema)" class="chain-cinema__distance">
+            {{ t('home.distanceKm', { distance: formattedDistance(cinema) }) }}
+          </span>
+          <small v-else-if="origin && sortByDistance">{{
+            t('home.chainLocationUnverified')
+          }}</small>
           <small>{{ t('home.chainNoModel') }}</small>
         </div>
-        <a
-          :href="cinema.sourceUrl"
-          :aria-label="t('home.chainSourceAria', { name: cinema.name })"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="chain-cinema__link"
-        >
-          <v-icon icon="mdi-open-in-new" size="18" />
-        </a>
+        <div class="chain-cinema__actions">
+          <a
+            v-if="verifiedChainPositions[cinema.slug]"
+            :href="verifiedChainPositions[cinema.slug]?.sourceUrl"
+            :aria-label="t('home.chainMapAria', { name: cinema.name })"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="chain-cinema__link"
+          >
+            <v-icon icon="mdi-map-marker-outline" size="18" />
+          </a>
+          <a
+            :href="cinema.sourceUrl"
+            :aria-label="t('home.chainSourceAria', { name: cinema.name })"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="chain-cinema__link"
+          >
+            <v-icon icon="mdi-open-in-new" size="18" />
+          </a>
+        </div>
       </article>
     </div>
     <p v-else class="search-empty">{{ t('home.chainNoResults') }}</p>
@@ -78,7 +126,12 @@ const total = chainCinemas.length
 
     <p class="discovery-note">
       <v-icon icon="mdi-information-outline" size="16" />
-      <span>{{ t('home.chainDisclaimer') }}</span>
+      <span>
+        {{ t('home.chainDisclaimer', { count: verifiedCount, total }) }}
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">
+          © OpenStreetMap contributors · ODbL
+        </a>
+      </span>
     </p>
   </section>
 </template>

@@ -71,11 +71,13 @@ export const messages = {
       chainMiranew: '美麗新',
       chainNoModel: '已核對分館 · 影廳座位模型待查證',
       chainSourceAria: '開啟 {name} 官方影城資料',
+      chainMapAria: '開啟 {name} 的已核對地圖點位',
+      chainLocationUnverified: '距離待核實，仍可依品牌與地區搜尋',
       chainMore: '查看其餘 {count} 間分館',
       chainLess: '收合分館列表',
       chainNoResults: '沒有符合目前搜尋／地區與品牌條件的連鎖影城。',
       chainDisclaimer:
-        '此處為官方分館目錄，並非 3D 座位圖或即時放映場次。缺少可靠的完整座位配置時不會顯示虛構座位；定位距離排序目前僅適用於下方已核對座標的影廳。',
+        '目前 {count}／{total} 間連鎖分館具有已核對的地圖點位；定位後依場館直線距離排序，未核實分館排最後但仍可搜尋。地點不等於出入口，非交通里程，也不代表已有 3D／場次。地圖資料：',
     },
     directory: {
       sourceOnly: '僅收錄官方資訊',
@@ -249,11 +251,13 @@ export const messages = {
       chainMiranew: 'Miranew',
       chainNoModel: 'Verified venue · seating model not yet verified',
       chainSourceAria: 'Open the official venue information for {name}',
+      chainMapAria: 'Open the verified map point for {name}',
+      chainLocationUnverified: 'Distance unverified; venue remains searchable',
       chainMore: 'Show {count} more venues',
       chainLess: 'Show fewer venues',
       chainNoResults: 'No major-chain venues match the current search, area and brand.',
       chainDisclaimer:
-        'These are sourced venue listings, not confirmed 3D seating plans or live showtimes. Exact seat layouts are not invented; distance sorting currently applies only to the verified auditoriums listed below.',
+        '{count} of {total} chain venues now have verified map points. With location permission, venues are ranked by approximate straight-line distance; unverified locations remain listed last. These are not travel distances, entrance locations, 3D seat models or live showtimes. Map data:',
     },
     directory: {
       sourceOnly: 'Official information only',

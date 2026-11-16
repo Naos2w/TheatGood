@@ -641,6 +641,17 @@ a {
   color: var(--tg-muted);
   font-size: 10px;
 }
+.chain-cinema__details .chain-cinema__distance {
+  color: var(--tg-accent);
+  font-size: 12px;
+  font-weight: 720;
+}
+.chain-cinema__actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
 .chain-cinema__link {
   width: 44px;
   height: 44px;

@@ -173,7 +173,12 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
         >
           {{ locationMessage }}
         </p>
-        <ChainDirectorySection :query="search" :city="cityFilter" />
+        <ChainDirectorySection
+          :query="search"
+          :city="cityFilter"
+          :origin="currentPosition"
+          :sort-by-distance="sortMode === 'distance'"
+        />
 
         <p class="discovery-note discovery-note--summary">
           {{ t('home.resultCount', { count: results.length, total: cinemaDirectory.length }) }}
