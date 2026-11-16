@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
+import { publishedHallsForCinema } from './vieshow-halls'
 import type { GeoPoint } from '../auditoriums/proximity'
 import { appLocale } from '../../composables/usePreferences'
 import {
@@ -78,7 +80,10 @@ function formattedDistance(cinema: ChainCinema): string | undefined {
           <v-icon icon="mdi-movie-open-outline" size="22" />
         </span>
         <div class="chain-cinema__details">
-          <strong>{{ cinema.name }}</strong>
+          <RouterLink class="chain-cinema__name" :to="'/cinemas/' + cinema.slug">
+            {{ cinema.name }}
+            <v-icon icon="mdi-chevron-right" size="16" />
+          </RouterLink>
           <span>{{ cinema.city }} · {{ cinema.address }}</span>
           <span v-if="formattedDistance(cinema)" class="chain-cinema__distance">
             {{ t('home.distanceKm', { distance: formattedDistance(cinema) }) }}
@@ -86,7 +91,14 @@ function formattedDistance(cinema: ChainCinema): string | undefined {
           <small v-else-if="origin && sortByDistance">{{
             t('home.chainLocationUnverified')
           }}</small>
-          <small>{{ t('home.chainNoModel') }}</small>
+          <small v-if="publishedHallsForCinema(cinema.slug).length">
+            {{
+              t('home.chainPublishedHallCounts', {
+                count: publishedHallsForCinema(cinema.slug).length,
+              })
+            }}
+          </small>
+          <small v-else>{{ t('home.chainNoModel') }}</small>
         </div>
         <div class="chain-cinema__actions">
           <a
