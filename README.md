@@ -37,6 +37,7 @@ npm run lint
 npm run test
 npm run build
 npm run format:check
+npm run db:screenings:sync # 只讀預覽官方電影場次；不連線／不修改資料庫
 ```
 
 若全域 npm 設定了 `omit=dev`，使用 `npm install --include=dev` 才會安裝 TypeScript、Vitest、ESLint 等開發工具。單純瀏覽現有 2D／3D 仍**不需要 Neon、Google 登入或 API Key**；執行資料庫 Migration、Seed 或伺服器端目錄 API 時才需要後端 DATABASE_URL，且**不得**使用 VITE_ 前綴。
@@ -72,4 +73,4 @@ npm run format:check
 
 ## 後續
 
-Neon PostgreSQL + Drizzle 的資料表、Migration、Seed 與開發／UAT 資料庫已建立，操作及安全說明見 [資料庫文件](docs/database.md)。文化部場次目前為**即時讀取的唯讀 API**，尚未進資料庫；接下來將依 [TODO.md](TODO.md) 完成來源可靠性與存檔／取消規則、Google 登入、私人觀影紀錄（電影、日期、影城、影廳、座位）、歷史補登與 PWA 正式部署。
+Neon PostgreSQL + Drizzle 的資料表、Migration、Seed 與開發／UAT 資料庫已建立，操作及安全說明見 [資料庫文件](docs/database.md)。文化部場次目前仍由**即時唯讀 API**提供；已新增受控的 `develop` 歷史場次同步 CLI（預設不寫入），但尚未執行真實寫入／定時排程。後續依 [TODO.md](TODO.md) 完成開發庫實跑與重跑驗證、取消／來源更新規則、Google 登入、私人觀影紀錄（電影、日期、影城、影廳、座位）及 PWA 正式部署。
