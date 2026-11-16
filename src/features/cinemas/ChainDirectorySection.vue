@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
-import { publishedHallsForCinema } from './vieshow-halls'
+import { cinemaPublishedFacts, publishedNamedHallsForCinema } from './other-chain-facts'
 import type { GeoPoint } from '../auditoriums/proximity'
 import { appLocale } from '../../composables/usePreferences'
 import {
@@ -91,12 +91,15 @@ function formattedDistance(cinema: ChainCinema): string | undefined {
           <small v-else-if="origin && sortByDistance">{{
             t('home.chainLocationUnverified')
           }}</small>
-          <small v-if="publishedHallsForCinema(cinema.slug).length">
+          <small v-if="publishedNamedHallsForCinema(cinema.slug).length">
             {{
               t('home.chainPublishedHallCounts', {
-                count: publishedHallsForCinema(cinema.slug).length,
+                count: publishedNamedHallsForCinema(cinema.slug).length,
               })
             }}
+          </small>
+          <small v-else-if="cinemaPublishedFacts[cinema.slug]?.hallCount">
+            {{ t('home.chainVenueFactsOnly') }}
           </small>
           <small v-else>{{ t('home.chainNoModel') }}</small>
         </div>

@@ -786,6 +786,41 @@ a {
   color: var(--tg-muted);
   font-size: 12px;
 }
+.chain-cinema-page__formats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  margin: 18px 0 26px;
+  border: 1px solid var(--tg-border);
+  background: var(--tg-surface);
+  border-radius: 18px;
+}
+.chain-cinema-page__formats strong {
+  font-size: 13px;
+  color: var(--tg-text);
+}
+.chain-cinema-page__formats > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.chain-cinema-page__formats > div span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 10px;
+  padding: 5px 10px;
+  color: var(--tg-accent);
+  background: var(--tg-secondary);
+  font-size: 12px;
+  font-weight: 690;
+}
+.chain-cinema-page__formats small {
+  color: var(--tg-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
 .chain-cinema-page__subheading {
   display: flex;
   align-items: center;
