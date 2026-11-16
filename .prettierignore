@@ -4,3 +4,8 @@ dist/
 coverage/
 package-lock.json
 TODO.md
+# Source-attributed research snapshots; generated from official seat tables
+src/features/cinemas/data/vieshow-collection-*.json
+src/features/cinemas/data/vieshow-snapshots-2026-11-16/
+src/features/cinemas/data/vieshow-coverage-2026-11-16.json
+src/features/cinemas/data/vieshow-snapshot-conflicts-2026-11-16.json

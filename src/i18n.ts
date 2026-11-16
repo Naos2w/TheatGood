@@ -109,19 +109,19 @@ export const messages = {
     },
     vieshowSeatRefs: {
       eyebrow: 'VIE SHOW · OFFICIAL SEAT GRID',
-      title: '信義威秀實際座號與走道參考圖',
+      title: '威秀／MUVIE 官方座位配置參考圖',
       description:
-        '從威秀公開場次的「座位圖」取得每個座號的格線位置，已與官方公布的逐廳席數核對。以下依座號資料重新繪製，非售票畫面或即時票況。',
-      hallCount: '{count} 間已確認廳號的影廳',
+        '從威秀公開場次的座位預覽取得每個座號、走道缺口與相對格線；逐廳比對 2026 年 5 月官方席數，保留不一致之處。以下是重新繪製的 2D 資料參考圖，不包含即時票況。',
+      hallCount: '已採樣 {count} 種影廳配置',
       selectHall: '選擇要查看的影廳',
-      hallOption: '第 {number} 廳 · {count} 個座號',
+      hallOption: '{hall} · {count} 個座號',
       regularSeats: '{count} 個一般座號',
       wheelchairMarkers: '{count} 個輪椅位置標示',
       checkedAt: '採樣日期：{date}',
       notice:
         '官方座位圖可確認排別、座號與走道，但尚無銀幕寬高、首排距離、排距、坡度及視線遮擋的實測資料。這是 2D 位置參考，未開放精確 3D。',
       scrollMap: '可水平捲動的威秀影廳座位配置圖',
-      mapLabel: '威秀第 {number} 廳，包含 {count} 個有編號座位的參考圖',
+      mapLabel: '威秀 {hall}，包含 {count} 個編號座位的參考圖',
       screenDirection: '銀幕方向（依官網）',
       wheelchairMarker: '輪椅位置（無座號）',
       regularLegend: '有編號的一般座位',
@@ -131,7 +131,19 @@ export const messages = {
       openOfficial: '開啟原始場次座位圖',
       caution:
         '原場次連結可能過期；座位配置可能因改裝變更。輪椅標示是否納入官方席數尚待確認；不存售出／可售狀態、不推算未量測的空間距離。',
-      hasReference: '已收錄官方逐座號 2D 參考圖（見上方）',
+      hasReference: '已收錄逐座號 2D 參考圖（見上方）',
+      hasCountMismatch: '已收錄 2D 參考圖，與官方席數有差異（見上方）',
+      coverage: '已對應官方公布廳號：{matched}／{published} 間。',
+      unmappedCount: '尚有 {count} 個官方廳號未配對現售座位圖。',
+      loading: '正在載入這間影城的座位配置…',
+      failed: '無法載入座位配置，請重新整理頁面。',
+      noLayouts: '目前沒有可核實的座位配置。',
+      visualRow: '視覺第 {number} 列（官網座號為數字）',
+      countDifference:
+        '本場次圖共有 {observed} 個編號座位；2026 年官方公布 {published} 席。差異尚未查清，請勿當成完整現售容量。',
+      exactCount: '本場次的編號座位數與 2026 年官方公布席數相符。',
+      wheelchairCountMatch: '計入輪椅標示後與官方席數相符，但其計數方式尚未確認。',
+      notPublished: '此廳名稱／編號不在 2026 年 5 月官方逐廳席數表中，暫無可直接對應的容量。',
     },
     chainDetail: {
       back: '返回影城列表',
@@ -476,19 +488,19 @@ export const messages = {
     },
     vieshowSeatRefs: {
       eyebrow: 'VIE SHOW · OFFICIAL SEAT GRID',
-      title: 'Vie Show Hsin Yi seating references',
+      title: 'Vie Show and MUVIE seating references',
       description:
-        'Each labelled seat and its relative grid position were observed on the operator’s public seating previews and checked against published per-screen capacities. The maps are original redraws, not ticketing views or live inventory.',
-      hallCount: '{count} screens with confirmed hall numbers',
+        'These original 2D redraws preserve numbered seats, aisle gaps and relative grid positions from public Vie Show previews. Capacity differences against the operator’s May 2026 records are shown rather than guessed away. No live ticket inventory is stored.',
+      hallCount: '{count} observed auditorium layouts',
       selectHall: 'Choose a screen to inspect',
-      hallOption: 'Screen {number} · {count} labelled seats',
+      hallOption: '{hall} · {count} numbered seats',
       regularSeats: '{count} numbered seats',
       wheelchairMarkers: '{count} wheelchair markers',
       checkedAt: 'Observed: {date}',
       notice:
         'The operator’s seating plan confirms rows, labels and aisle gaps, but physical screen dimensions, front-row distance, seat pitch, rake and sightline obstructions remain unmeasured. This is a 2D reference, not a calibrated 3D model.',
       scrollMap: 'Horizontally scrollable Vie Show seat-layout reference',
-      mapLabel: 'Vie Show Screen {number} seating reference with {count} numbered seats',
+      mapLabel: 'Vie Show {hall} seating reference with {count} numbered seats',
       screenDirection: 'Screen direction (as published)',
       wheelchairMarker: 'Wheelchair position (no seat label)',
       regularLegend: 'Numbered seat',
@@ -498,7 +510,21 @@ export const messages = {
       openOfficial: 'Open original session seat map',
       caution:
         'Source session links can expire, and seating may change. Whether wheelchair markers are included in published capacities is unconfirmed; no ticket availability or unmeasured spatial distances are retained.',
-      hasReference: 'Official 2D seat-label reference available above',
+      hasReference: 'Source-linked 2D seating reference available above',
+      hasCountMismatch: '2D seating reference available, with capacity discrepancy noted above',
+      coverage: '{matched} of {published} published numbered halls mapped.',
+      unmappedCount: '{count} published hall numbers still lack a confirmed match.',
+      loading: 'Loading the cinema’s seating references…',
+      failed: 'Unable to load the seating data; please refresh the page.',
+      noLayouts: 'No verified seating layouts available for this location yet.',
+      visualRow: 'Visual grid row {number} (numeric seat labels)',
+      countDifference:
+        'This session chart has {observed} numbered seats, while the operator published {published} seats in May 2026. The discrepancy is unresolved.',
+      exactCount: 'The numbered seat count matches the operator’s published 2026 capacity.',
+      wheelchairCountMatch:
+        'Including wheelchair markers would match the published count; inclusion rules remain unverified.',
+      notPublished:
+        'This hall designation does not match a numbered hall in the May 2026 capacity sheet. No permanent capacity mapping is claimed.',
     },
     chainDetail: {
       back: 'Back to cinema directory',
