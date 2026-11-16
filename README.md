@@ -8,8 +8,9 @@
 
 - **國家電影及視聽文化中心「小影格」**：官方設備手冊提供 **8.88 × 4.80 m** 銀幕、**52 席**座位圖（另有 2 輪椅席，尚未建模），可進入 3D 模型選位。
 - **光點台北電影館「光點電影院」**：官方座位圖 **83 席（含可置換的輪椅席）**、銀幕 **4.70 × 1.85 m**，保留原始 `1-1`～`9-9` 座號及中央走道；3D 排距仍為估算。
-- **官方影廳目錄**：首批 5 座場館／9 間影廳，其中只有 2 間座位資料足夠提供 3D。其餘只顯示可查證的規格，不杜撰座位圖。
-- **附近影城探索**：支援關鍵字、地區、3D 可用性篩選；按一下定位按鈕、授權瀏覽器定位後，可按場館的直線距離排序（非交通時間）。不要求定位即可搜尋，座標來源可追溯；定位只在瀏覽器本頁使用。
+- **連鎖影城優先入口**：已由官方據點頁核對威秀（含 MUVIE）22、秀泰 15、美麗華 1、美麗新 2，共 **40 個分館**，首頁優先提供品牌／地區／名稱搜尋與官方連結。每個分館有獨立資料頁；其中威秀 22 座場館依 2026/05/21 官方席數表收錄 **229 筆廳號／公布座位數**。這不是可選位的完整座位圖，尚未聲稱可訂位、即時營業或已連接場次。資料與停業注意事項見 [連鎖影城來源](docs/chain-directory.md)。
+- **官方影廳目錄**：另有原始 5 座文化電影場館／9 間影廳，其中 2 間座位資料足夠提供 3D。其餘只顯示可查證的規格，不杜撰座位圖。
+- **附近影城探索**：支援關鍵字、地區、品牌與 3D 可用性篩選；按一下定位按鈕授權後，對**36/40 個有可追溯 OSM 點位的連鎖分館**及既有 5 座文化電影場館進行直線距離排序（非交通里程）。其餘 4 間分館仍可搜尋、列在距離排序後方，且不顯示捏造的里程。定位只在瀏覽器本頁計算。
 - **真實放映場次（P1.3 初版）**：`/screenings` 從文化部「電影」開放資料的 `/api/screenings` 查詢部分可核對的高雄市電影館／內惟藝術中心場次，支援電影名稱、電影館與日期篩選，保留原始公告來源。**非全台院線場次，也沒有售票庫存或已持久化的歷史紀錄**；來源與限制見 [場次資料文件](docs/showtime-sources.md)。
 - **光點華山電影館規格**：官方銀幕尺寸已查證 A One 8.8 × 3.8 m、A Two 8.6 × 3.4 m，但仍缺完整座號資料，暫不開放這兩廳的 3D。
 - **TheatGood 示範影廳**：114 席完全虛構模型，供測試 3D 視角引擎，不顯示在真實影廳目錄。
@@ -40,14 +41,16 @@ npm run format:check
 npm run db:screenings:sync # 只讀預覽官方電影場次；不連線／不修改資料庫
 ```
 
-若全域 npm 設定了 `omit=dev`，使用 `npm install --include=dev` 才會安裝 TypeScript、Vitest、ESLint 等開發工具。單純瀏覽現有 2D／3D 仍**不需要 Neon、Google 登入或 API Key**；執行資料庫 Migration、Seed 或伺服器端目錄 API 時才需要後端 DATABASE_URL，且**不得**使用 VITE_ 前綴。
+若全域 npm 設定了 `omit=dev`，使用 `npm install --include=dev` 才會安裝 TypeScript、Vitest、ESLint 等開發工具。單純瀏覽現有 2D／3D 仍**不需要 Neon、Google 登入或 API Key**；執行資料庫 Migration、Seed 或伺服器端目錄 API 時才需要後端 DATABASE*URL，且**不得**使用 VITE* 前綴。
 
 ## 檔案架構
 
 - `src/features/auditoriums/schema.ts`：Zod 資料驗證與跨欄位檢查。
 - `src/features/auditoriums/tfai-small.json`：小影格的來源資料與估算幾何。
 - `src/features/auditoriums/spot-taipei.json`：光點台北的官方 83 席座位編號與估算幾何。
-- `src/features/auditoriums/directory.ts`：9 間影廳、別名搜尋及資料可信度分級。
+- `src/features/cinemas/chain-directory.ts`：40 個四大品牌商業連鎖影城分館與官方來源，和影廳／座位模型分層維護。
+- `src/features/cinemas/vieshow-halls.ts`：威秀 2026 年官方逐廳座位數快照（229 筆）；不包含座號、3D 幾何或售票庫存。
+- `src/features/auditoriums/directory.ts`：既有 9 間影廳、別名搜尋及資料可信度分級。
 - `api/screenings.ts` 與 `src/features/screenings/`：文化部電影開放資料的唯讀 API、場次正規化與前端查詢頁。
 - `src/features/auditoriums/demo.ts`：虛構示範影廳。
 - `src/features/auditoriums/catalog.ts`：只有確實有 3D 模型的可選座清單（含 DEMO）；其餘影廳只顯示官方資訊。

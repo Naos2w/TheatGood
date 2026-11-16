@@ -546,6 +546,342 @@ a {
   padding: 30px 0;
   color: var(--tg-muted);
 }
+.chain-directory {
+  margin-top: 32px;
+}
+.chain-directory__heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.chain-directory__heading h2 {
+  font-size: 19px;
+  font-weight: 770;
+  margin: 0 0 7px;
+  letter-spacing: -0.4px;
+}
+.chain-directory__heading p {
+  font-size: 12px;
+  color: var(--tg-muted);
+  line-height: 1.65;
+  margin: 0;
+}
+.chain-directory__total {
+  flex: 0 0 auto;
+  color: var(--tg-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  padding-top: 4px;
+}
+.chain-directory__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 17px 0 11px;
+  color: var(--tg-muted);
+  font-size: 12px;
+}
+.chain-directory__brand select {
+  flex: 1;
+  min-width: 0;
+  background: var(--tg-surface);
+  border: 1px solid var(--tg-border);
+  border-radius: 12px;
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--tg-text);
+  font: inherit;
+  font-size: 13px;
+}
+.chain-directory__brand select:focus-visible,
+.chain-directory__more:focus-visible,
+.chain-cinema__link:focus-visible {
+  outline: 3px solid var(--tg-accent);
+  outline-offset: 2px;
+}
+.chain-directory__list {
+  border-top: 1px solid var(--tg-border);
+}
+.chain-cinema {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--tg-border);
+}
+.chain-cinema__symbol {
+  display: grid;
+  place-items: center;
+  flex: 0 0 45px;
+  width: 45px;
+  height: 47px;
+  border-radius: 13px;
+  background: var(--tg-secondary);
+  color: var(--tg-accent);
+}
+.chain-cinema__details {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.chain-cinema__details strong {
+  color: var(--tg-text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.chain-cinema__details > span {
+  color: var(--tg-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.chain-cinema__details small {
+  color: var(--tg-muted);
+  font-size: 10px;
+}
+.chain-cinema__details .chain-cinema__distance {
+  color: var(--tg-accent);
+  font-size: 12px;
+  font-weight: 720;
+}
+.chain-cinema__actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
+.chain-cinema__link {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: var(--tg-accent);
+  border: 1px solid var(--tg-border);
+}
+.chain-directory__more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 47px;
+  border: 1px solid var(--tg-border);
+  background: var(--tg-surface);
+  color: var(--tg-text);
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 12px;
+}
+@media (max-width: 600px) {
+  .chain-directory__heading {
+    display: block;
+  }
+  .chain-directory__total {
+    display: block;
+    padding-top: 8px;
+  }
+  .chain-cinema__symbol {
+    flex-basis: 40px;
+    width: 40px;
+  }
+}
+
+.chain-cinema__name {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 3px;
+  min-height: 25px;
+  color: var(--tg-text);
+  font-size: 14px;
+  font-weight: 730;
+  line-height: 1.45;
+}
+.chain-cinema__name:hover {
+  color: var(--tg-accent);
+}
+.chain-cinema__name:focus-visible {
+  outline: 3px solid var(--tg-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.chain-cinema-page {
+  max-width: 900px;
+  padding-top: clamp(38px, 7vh, 90px);
+  padding-bottom: 140px;
+}
+.chain-cinema-page > .eyebrow {
+  display: block;
+  margin-top: 35px;
+}
+.chain-cinema-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 17px 0 28px;
+}
+.chain-cinema-page__header h1 {
+  margin: 0 0 12px;
+  font-size: clamp(29px, 4vw, 45px);
+  letter-spacing: -1.4px;
+  line-height: 1.2;
+}
+.chain-cinema-page__header p {
+  display: flex;
+  gap: 6px;
+  align-items: start;
+  max-width: 640px;
+  color: var(--tg-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.chain-cinema-page__header p .v-icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+.chain-cinema-page__source-link {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid var(--tg-border);
+  padding: 9px 14px;
+  border-radius: 13px;
+  color: var(--tg-accent);
+  background: var(--tg-surface);
+  font-size: 12px;
+  font-weight: 700;
+}
+.chain-cinema-page__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0 32px;
+}
+.chain-cinema-page__summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 22px;
+  border: 1px solid var(--tg-border);
+  background: var(--tg-surface);
+  border-radius: 19px;
+}
+.chain-cinema-page__summary strong {
+  color: var(--tg-text);
+  font-size: clamp(27px, 4vw, 38px);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.chain-cinema-page__summary span {
+  color: var(--tg-muted);
+  font-size: 12px;
+}
+.chain-cinema-page__subheading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 23px 0 13px;
+}
+.chain-cinema-page__subheading h2 {
+  font-size: 19px;
+  font-weight: 730;
+  margin: 0;
+}
+.chain-cinema-page__subheading span {
+  color: var(--tg-muted);
+  font-size: 12px;
+}
+.chain-cinema-page__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+.chain-cinema-page__hall {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 17px;
+  border: 1px solid var(--tg-border);
+  border-radius: 16px;
+  background: var(--tg-surface);
+}
+.chain-cinema-page__hall > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.chain-cinema-page__hall strong {
+  font-size: 15px;
+  color: var(--tg-text);
+}
+.chain-cinema-page__hall small {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--tg-muted);
+}
+.chain-cinema-page__hall > span {
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 770;
+  color: var(--tg-accent);
+}
+.chain-cinema-page__provenance {
+  display: flex;
+  align-items: start;
+  gap: 11px;
+  margin-top: 25px;
+  border-top: 1px solid var(--tg-border);
+  padding-top: 18px;
+  color: var(--tg-muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.chain-cinema-page__provenance > .v-icon {
+  flex: 0 0 19px;
+  margin-top: 2px;
+}
+.chain-cinema-page__provenance a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 12px;
+  color: var(--tg-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.chain-cinema-page__empty {
+  border: 1px solid var(--tg-border);
+  border-radius: 18px;
+  background: var(--tg-surface);
+  padding: 24px;
+  color: var(--tg-muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+@media (max-width: 600px) {
+  .chain-cinema-page__list {
+    grid-template-columns: 1fr;
+  }
+  .chain-cinema-page__header {
+    align-items: start;
+  }
+  .chain-cinema-page__summary > div {
+    padding: 17px;
+  }
+}
 
 .viewer-page {
   min-height: 100dvh;
