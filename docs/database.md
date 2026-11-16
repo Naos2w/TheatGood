@@ -34,6 +34,18 @@ To insert the one intentional synthetic test screening into the **develop** bran
 
 Running this script without the explicit flag is rejected. The test screening has status=fixture, its title is marked NOT REAL and its auditorium_id remains NULL because a hall number was not supplied.
 
+## Real showtime snapshots — manually gated develop import (P1.3)
+
+The culture feed is still displayed live by `GET /api/screenings`. A separate CLI can now **optionally** preserve source observations in Neon **develop only**; this is not automatically deployed or scheduled. No new database tables or migrations are needed.
+
+1. Default, **read-only, no DATABASE_URL required**: `npm run db:screenings:sync`. It retrieves the public culture feed and prints only counts and time bounds with `write:false`.
+2. For an explicitly approved development import, supply a **direct** Neon `develop` connection string in the local `DATABASE_URL` environment variable (never commit it). Set `NEON_DEV_BRANCH_ID=br-super-mode-a1vmn1ny` and `THEATGOOD_ALLOW_SCREENING_SYNC=yes`, then run `npm run db:screenings:sync -- --write`. On PowerShell, set these as `$env:VARIABLE = 'value'` for the current session and clear the opt-in afterwards.
+3. The CLI first checks the configured connection hostname against the verified **develop** compute endpoint, then inside a single PostgreSQL transaction checks `neon.branch_id` and `neon.endpoint_id`. It acquires an advisory transaction lock before any inserts.
+4. `screening_sources(provider, source_key)` prevents duplicates. Re-seen records update their last fetched time, and corrected metadata updates the existing screening. New event times or hall labels are **new observations** because the culture feed has no stable screening-instance ID.
+5. Missing events are **not automatically cancelled or deleted**: a partial or stale government feed cannot prove cancellation. Past rows remain available for later viewing-history features. No public write API, production connection, authenticated watch-log write, or Cron is added.
+
+This script is covered by synthetic transaction tests and a live **read-only** feed preview. Until a separate authenticated develop import is actually executed and its row counts checked twice, do not claim the real showtimes are persisted.
+
 ## Public API
 
 - GET /api/cinemas returns a capped list (50) of verified published auditoriums. A left join exposes `hasModel` and optional model version, so directory-only halls are returned without fake seat geometry.

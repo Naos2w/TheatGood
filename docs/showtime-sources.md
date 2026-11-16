@@ -20,8 +20,16 @@
 - `/screenings` 使用伺服器 API，支援電影名稱／影城／日期篩選、只看未來場次和來源連結，保留官方資料授權標示。只有影廳目前存在正式 3D 模型時才顯示座位預覽入口。
 - 不在 PR、Build 或測試期間呼叫正式 Neon；無遠端資料寫入、排程或自動取消。
 
+## 受控保存到 Neon develop（手動，尚未啟用寫入）
+
+- `npm run db:screenings:sync`：只讀預覽官方 JSON、正規化場次數量及日期範圍，完全不連 Neon。
+- `npm run db:screenings:sync -- --write`：只有在明確提供 `THEATGOOD_ALLOW_SCREENING_SYNC=yes`、正確的 `NEON_DEV_BRANCH_ID` 和 **develop** 直連的 `DATABASE_URL` 時才能運作。核對已知 Endpoint hostname 及資料庫內部 `neon.branch_id`／`neon.endpoint_id` 後才開始匯入；正式／UAT 網址會被拒絕。
+- 以一個資料庫交易和 advisory lock 匯入，同一 `provider + source_key` 不重複；已知場次可修正電影名稱與來源欄位，並更新 `fetched_at`。只有新觀察才插入新 `screenings`；已消失的活動不自動刪除或取消。
+- 已有 7 項同步邏輯回歸測試，及官方資料唯讀實跑。**尚未取得 PC2 的 develop 資料庫憑證，也未執行任何真實寫入**；同步是否能成功持久化仍待安全環境實測與重跑驗證。
+- 無新增正式 Serverless 寫入 Endpoint／排程，無修改 Production，所有 `watch_logs` 保持受保護。
+
 ## 限制與下一步
 
 文化部提供的是**部分文化場館電影欣賞活動**，不是威秀、秀泰、國賓等全院線的售票場次，也可能缺少廳號與放映格式。API 每次是官方目前公開資料的快照，**沒有持久化歷史、沒有資料庫去重／取消事件、沒有保證保留已過期場次**。不能因本期來源未列某場次就宣稱「已取消」。
 
-後續再進行 P1.3 Neon develop 專用冪等匯入、歷史場次儲存、來源取消與更新策略、排程同步及回歸測試；需先驗證來源快照的時間範圍與刪除語義。TMDB 商用條款、API Key 與電影 ID 對照尚未接入，不可直接假設活動名稱就是 TMDB 電影名。正式環境、個資及跨帳號紀錄仍需 P2 驗收。
+後續須先在 Neon develop 安全執行一次受控寫入並重跑，確認場次數量、唯一鍵與時間欄位，再設計歷史場次的查詢 API、取消／異動策略和排程同步；需先驗證來源快照的時間範圍與刪除語義。TMDB 商用條款、API Key 與電影 ID 對照尚未接入，不可直接假設活動名稱就是 TMDB 電影名。正式環境、個資及跨帳號紀錄仍需 P2 驗收。
