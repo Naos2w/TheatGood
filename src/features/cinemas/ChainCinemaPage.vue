@@ -2,19 +2,61 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
+import { appLocale } from '../../composables/usePreferences'
 import { chainCinemas } from './chain-directory'
 import {
-  publishedHallsForCinema,
-  publishedSeatTotal,
-  VIESHOW_HALL_SOURCE,
-  VIESHOW_HALL_SOURCE_DATE,
-} from './vieshow-halls'
+  cinemaPublishedFacts,
+  publishedNamedHallsForCinema,
+  publishedNamedHallSeatSum,
+} from './other-chain-facts'
+import { VIESHOW_HALL_SOURCE, VIESHOW_HALL_SOURCE_DATE } from './vieshow-halls'
 
 const route = useRoute()
 const { t } = useI18n()
 const cinema = computed(() => chainCinemas.find((venue) => venue.slug === route.params.slug))
-const halls = computed(() => publishedHallsForCinema(cinema.value?.slug ?? ''))
-const seatTotal = computed(() => publishedSeatTotal(cinema.value?.slug ?? ''))
+const slug = computed(() => cinema.value?.slug ?? '')
+const halls = computed(() => publishedNamedHallsForCinema(slug.value))
+const facts = computed(() => cinemaPublishedFacts[slug.value])
+
+const summaryHallCount = computed(() => halls.value.length || facts.value?.hallCount)
+const summarySeatCount = computed(() =>
+  halls.value.length ? publishedNamedHallSeatSum(slug.value) : facts.value?.publishedSeatCount,
+)
+const summaryHallLabel = computed(() => {
+  if (halls.value.length) return 'chainDetail.publishedHalls'
+  switch (facts.value?.hallCountScope) {
+    case 'entire-cinema':
+      return 'chainDetail.entireCinemaHalls'
+    case 'digital-halls':
+      return 'chainDetail.digitalHalls'
+    case 'royal-only':
+      return 'chainDetail.royalHalls'
+    default:
+      return 'chainDetail.publishedHalls'
+  }
+})
+const summarySeatLabel = computed(() => {
+  if (halls.value.length) return 'chainDetail.publishedSeats'
+  return facts.value?.hallCountScope === 'royal-only'
+    ? 'chainDetail.royalSeats'
+    : 'chainDetail.entireCinemaSeats'
+})
+const provenanceUrl = computed(() =>
+  halls.value.length && cinema.value?.brand === 'vieshow'
+    ? VIESHOW_HALL_SOURCE
+    : (facts.value?.sourceUrl ?? cinema.value?.sourceUrl ?? ''),
+)
+const provenanceDate = computed(() =>
+  halls.value.length && cinema.value?.brand === 'vieshow'
+    ? VIESHOW_HALL_SOURCE_DATE
+    : facts.value?.checkedAt,
+)
+const namedFormats = computed(() => facts.value?.namedFormats ?? [])
+const hasVenueMetrics = computed(
+  () => summaryHallCount.value !== undefined || summarySeatCount.value !== undefined,
+)
+const fmt = (value: number): string => new Intl.NumberFormat(appLocale.value).format(value)
+const isNumericHall = (value: string): boolean => /^\d+$/.test(value)
 </script>
 
 <template>
@@ -32,7 +74,7 @@ const seatTotal = computed(() => publishedSeatTotal(cinema.value?.slug ?? ''))
           <p><v-icon icon="mdi-map-marker-outline" size="16" /> {{ cinema.address }}</p>
         </div>
         <a
-          :href="cinema.sourceUrl"
+          :href="facts?.sourceUrl ?? cinema.sourceUrl"
           target="_blank"
           rel="noopener noreferrer"
           class="chain-cinema-page__source-link"
@@ -42,49 +84,86 @@ const seatTotal = computed(() => publishedSeatTotal(cinema.value?.slug ?? ''))
         </a>
       </header>
 
-      <div v-if="halls.length" class="chain-cinema-page__summary">
-        <div>
-          <strong>{{ halls.length }}</strong>
-          <span>{{ t('chainDetail.publishedHalls') }}</span>
+      <div v-if="hasVenueMetrics" class="chain-cinema-page__summary">
+        <div v-if="summaryHallCount !== undefined">
+          <strong>{{ fmt(summaryHallCount) }}</strong>
+          <span>{{ t(summaryHallLabel) }}</span>
         </div>
-        <div>
-          <strong>{{ seatTotal.toLocaleString() }}</strong>
-          <span>{{ t('chainDetail.publishedSeats') }}</span>
+        <div v-if="summarySeatCount !== undefined">
+          <strong>{{ fmt(summarySeatCount) }}</strong>
+          <span>{{ t(summarySeatLabel) }}</span>
         </div>
+      </div>
+
+      <div v-if="namedFormats.length && !halls.length" class="chain-cinema-page__formats">
+        <strong>{{ t('chainDetail.venueFormats') }}</strong>
+        <div>
+          <span v-for="format in namedFormats" :key="format">{{ format }}</span>
+        </div>
+        <small>{{ t('chainDetail.formatWarning') }}</small>
       </div>
 
       <div class="chain-cinema-page__subheading">
         <h2>{{ t('chainDetail.hallList') }}</h2>
-        <span v-if="halls.length">{{
-          t('chainDetail.countsAsOf', { date: VIESHOW_HALL_SOURCE_DATE })
-        }}</span>
+        <span v-if="provenanceDate">
+          {{
+            t(
+              halls.length && cinema.brand === 'vieshow'
+                ? 'chainDetail.countsAsOf'
+                : 'chainDetail.checkedOn',
+              { date: provenanceDate },
+            )
+          }}
+        </span>
       </div>
 
       <div v-if="halls.length" class="chain-cinema-page__list">
-        <article v-for="hall in halls" :key="hall.hallNumber" class="chain-cinema-page__hall">
+        <article v-for="hall in halls" :key="hall.label" class="chain-cinema-page__hall">
           <div>
-            <strong>{{ t('chainDetail.hallNumber', { number: hall.hallNumber }) }}</strong>
+            <strong>
+              {{
+                isNumericHall(hall.label)
+                  ? t('chainDetail.hallNumber', { number: hall.label })
+                  : hall.label
+              }}
+            </strong>
             <small>{{ t('chainDetail.countOnly') }}</small>
           </div>
-          <span>{{ t('chainDetail.seats', { count: hall.publishedSeatCount }) }}</span>
+          <span>{{ t('chainDetail.seats', { count: fmt(hall.publishedSeatCount) }) }}</span>
         </article>
       </div>
 
       <p v-else class="chain-cinema-page__empty">
-        {{ t('chainDetail.notYetVerified') }}
+        {{
+          t(
+            hasVenueMetrics || namedFormats.length
+              ? 'chainDetail.noHallBreakdown'
+              : 'chainDetail.notYetVerified',
+          )
+        }}
       </p>
 
       <div class="chain-cinema-page__provenance">
         <v-icon icon="mdi-information-outline" size="19" />
         <div>
           <p>{{ t('chainDetail.notice') }}</p>
-          <a
-            v-if="halls.length"
-            :href="VIESHOW_HALL_SOURCE"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ t('chainDetail.publishedSource') }}
+          <p v-if="facts?.hallCountScope === 'royal-only'">
+            {{
+              t(
+                cinema.slug === 'miranew-taimall'
+                  ? 'chainDetail.royalScopeNote'
+                  : 'chainDetail.dazhiScopeNote',
+              )
+            }}
+          </p>
+          <a :href="provenanceUrl" target="_blank" rel="noopener noreferrer">
+            {{
+              t(
+                cinema.brand === 'vieshow'
+                  ? 'chainDetail.publishedSource'
+                  : 'chainDetail.operatorFacts',
+              )
+            }}
             <v-icon icon="mdi-open-in-new" size="14" />
           </a>
         </div>
