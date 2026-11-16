@@ -13,6 +13,8 @@ import {
 import { VIESHOW_HALL_SOURCE, VIESHOW_HALL_SOURCE_DATE } from './vieshow-halls'
 import { officialShowtimeLink } from './official-showtimes'
 import MiranewSeatReferenceGallery from './MiranewSeatReferenceGallery.vue'
+import VieShowSeatReferenceGallery from './VieShowSeatReferenceGallery.vue'
+import { vieshowSeatReferenceForHall } from './vieshow-seat-layouts'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -61,6 +63,11 @@ const hasVenueMetrics = computed(
 )
 const fmt = (value: number): string => new Intl.NumberFormat(appLocale.value).format(value)
 const isNumericHall = (value: string): boolean => /^\d+$/.test(value)
+function hasVieshowReference(hallLabel: string): boolean {
+  return (
+    isNumericHall(hallLabel) && Boolean(vieshowSeatReferenceForHall(slug.value, Number(hallLabel)))
+  )
+}
 function sourcedSeatModel(hallLabel: string): string | undefined {
   const exactHallName = isNumericHall(hallLabel) ? `${hallLabel} 廳` : hallLabel
   return cinemaDirectory.find(
@@ -135,6 +142,7 @@ function sourcedSeatModel(hallLabel: string): string | undefined {
       </div>
 
       <MiranewSeatReferenceGallery :cinema-slug="slug" />
+      <VieShowSeatReferenceGallery :cinema-slug="slug" />
 
       <div class="chain-cinema-page__subheading">
         <h2>{{ t('chainDetail.hallList') }}</h2>
@@ -161,6 +169,9 @@ function sourcedSeatModel(hallLabel: string): string | undefined {
               }}
             </strong>
             <small>{{ t('chainDetail.countOnly') }}</small>
+            <small v-if="hasVieshowReference(hall.label)" class="chain-cinema-page__screen-fact">
+              {{ t('vieshowSeatRefs.hasReference') }}
+            </small>
             <template v-if="sourcedSeatModel(hall.label)">
               <RouterLink
                 class="chain-cinema-page__reference-preview"

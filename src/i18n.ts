@@ -107,6 +107,32 @@ export const messages = {
       caution:
         '場次連結日後可能失效；官方座位圖可能隨改裝改變。未取得確切廳號、實際銀幕尺寸、排距與坡度，不能把本排列樣本當成精準的 3D 視角。',
     },
+    vieshowSeatRefs: {
+      eyebrow: 'VIE SHOW · OFFICIAL SEAT GRID',
+      title: '信義威秀實際座號與走道參考圖',
+      description:
+        '從威秀公開場次的「座位圖」取得每個座號的格線位置，已與官方公布的逐廳席數核對。以下依座號資料重新繪製，非售票畫面或即時票況。',
+      hallCount: '{count} 間已確認廳號的影廳',
+      selectHall: '選擇要查看的影廳',
+      hallOption: '第 {number} 廳 · {count} 個座號',
+      regularSeats: '{count} 個一般座號',
+      wheelchairMarkers: '{count} 個輪椅位置標示',
+      checkedAt: '採樣日期：{date}',
+      notice:
+        '官方座位圖可確認排別、座號與走道，但尚無銀幕寬高、首排距離、排距、坡度及視線遮擋的實測資料。這是 2D 位置參考，未開放精確 3D。',
+      scrollMap: '可水平捲動的威秀影廳座位配置圖',
+      mapLabel: '威秀第 {number} 廳，包含 {count} 個有編號座位的參考圖',
+      screenDirection: '銀幕方向（依官網）',
+      wheelchairMarker: '輪椅位置（無座號）',
+      regularLegend: '有編號的一般座位',
+      showSeatList: '展開逐排完整座號',
+      rowLabel: '{label} 排',
+      sourceNote: '資料源：威秀公開場次座位預覽。',
+      openOfficial: '開啟原始場次座位圖',
+      caution:
+        '原場次連結可能過期；座位配置可能因改裝變更。輪椅標示是否納入官方席數尚待確認；不存售出／可售狀態、不推算未量測的空間距離。',
+      hasReference: '已收錄官方逐座號 2D 參考圖（見上方）',
+    },
     chainDetail: {
       back: '返回影城列表',
       eyebrow: 'CHAIN CINEMA · VERIFIED COUNTS',
@@ -447,6 +473,32 @@ export const messages = {
       openOfficial: 'Open original public booking seat chart',
       caution:
         'Session links may expire and seating can change. Permanent hall numbers, measured screen dimensions, row spacing and slope are unknown, so these patterns are not presented as calibrated 3D sightlines.',
+    },
+    vieshowSeatRefs: {
+      eyebrow: 'VIE SHOW · OFFICIAL SEAT GRID',
+      title: 'Vie Show Hsin Yi seating references',
+      description:
+        'Each labelled seat and its relative grid position were observed on the operator’s public seating previews and checked against published per-screen capacities. The maps are original redraws, not ticketing views or live inventory.',
+      hallCount: '{count} screens with confirmed hall numbers',
+      selectHall: 'Choose a screen to inspect',
+      hallOption: 'Screen {number} · {count} labelled seats',
+      regularSeats: '{count} numbered seats',
+      wheelchairMarkers: '{count} wheelchair markers',
+      checkedAt: 'Observed: {date}',
+      notice:
+        'The operator’s seating plan confirms rows, labels and aisle gaps, but physical screen dimensions, front-row distance, seat pitch, rake and sightline obstructions remain unmeasured. This is a 2D reference, not a calibrated 3D model.',
+      scrollMap: 'Horizontally scrollable Vie Show seat-layout reference',
+      mapLabel: 'Vie Show Screen {number} seating reference with {count} numbered seats',
+      screenDirection: 'Screen direction (as published)',
+      wheelchairMarker: 'Wheelchair position (no seat label)',
+      regularLegend: 'Numbered seat',
+      showSeatList: 'Expand all seat labels by row',
+      rowLabel: 'Row {label}',
+      sourceNote: 'Source: Vie Show public showtime seat preview.',
+      openOfficial: 'Open original session seat map',
+      caution:
+        'Source session links can expire, and seating may change. Whether wheelchair markers are included in published capacities is unconfirmed; no ticket availability or unmeasured spatial distances are retained.',
+      hasReference: 'Official 2D seat-label reference available above',
     },
     chainDetail: {
       back: 'Back to cinema directory',
