@@ -28,11 +28,20 @@
 - 已有 7 項同步邏輯回歸測試，及官方資料唯讀實跑。**尚未取得 PC2 的 develop 資料庫憑證，也未執行任何真實寫入**；同步是否能成功持久化仍待安全環境實測與重跑驗證。
 - 無新增正式 Serverless 寫入 Endpoint／排程，無修改 Production，所有 `watch_logs` 保持受保護。
 
-## 四大商業影城場次來源研究（尚未授權同步）
+## 四大商業影城：官方場次**外部入口**（2026-11-16 查證）
 
-- [秀泰影城官方分館場次頁](https://www.showtimes.com.tw/cinemas/) 公開展示分館與短期場次，但沒有確認可供第三方程式存取、定期抓取及重發布的 API 授權，暫只連官方來源；不做自動爬取／持久化。
-- [美麗華官方場次入口](https://www.miramarcinemas.tw/Home/Index) 與 [美麗新官方場次入口](https://www.miranewcinemas.com/Booking/Timetable) 可讓使用者前往營運商場次頁，並不表示 TheatGood 已取得第三方重發布權限。威秀亦需相同的使用條款確認。
-- 目前僅靜態保存四大品牌的**影城／影廳規格事實**（廳數、官方席數、特色規格與來源），沒有把官網短期排片當作已授權的場次 Feed。下一步需分別核對來源許可、時間範圍、時區、更新與取消語義，再實作正式 Adapter。
+已在 `src/features/cinemas/official-showtimes.ts` 靜態整理並覆蓋 **40／40 間分館**。每個連結都只在使用者主動點擊時開啟官方網站，不在 TheatGood 擷取影片清單、時刻、場次 ID、票價、售票庫存或實際座位圖。
+
+| 品牌        | 已對應 | 外部來源／範圍                                                                                                                                                                                                                                                                                                        |
+| ----------- | -----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 威秀／MUVIE |     22 | 威秀官網的 `/theater/detail.aspx?id=...` 分館場次頁 20 個與 `/theater/detail2.aspx?id=...` MUVIE 分館場次頁 2 個。[官方據點列表](https://www.vscinemas.com.tw/theater/)；[MUVIE 松仁](https://www.vscinemas.com.tw/theater/detail2.aspx?id=23)；[MUVIE 台中](https://www.vscinemas.com.tw/theater/detail2.aspx?id=12) |
+| 秀泰        |     15 | 秀泰 `/cinemas/{id}/` 各分館自有時刻頁，逐一對照[官方據點列表](https://www.showtimes.com.tw/cinemas/)                                                                                                                                                                                                                 |
+| 美麗華      |      1 | [美麗華官方場次](https://www.miramarcinemas.tw/Timetable/Index)                                                                                                                                                                                                                                                       |
+| 美麗新      |      2 | 兩間都跳轉同一個[官方場次頁](https://www.miranewcinemas.com/Booking/Timetable)，**需由使用者在官網選擇分館**；不捏造未驗證的分館 deep link                                                                                                                                                                            |
+
+**場次的營業日與曆日不一定相同。** [威秀官方訂票 QA](https://www.vscinemas.com.tw/qa/qalist.aspx?A=2) 明示官網場次營業日目前採 06:00～翌日 05:59，APP 以日曆日期 00:00～23:59 顯示；[美麗華場次頁](https://www.miramarcinemas.tw/Timetable/Index) 與 [美麗新場次頁](https://www.miranewcinemas.com/Booking/Timetable) 也說明營業日跨午夜規則。因此不應從官網畫面隨意自行解析或改成 UTC 時間，必須在取得授權 Adapter 後依品牌校驗日期／時間。
+
+**授權現況：** 官網公開展示場次與影城可供使用者正常瀏覽，不等於授權第三方定期爬取、儲存、重新發布、使用售票 Session ID 或直接操作訂票。本 PR 只保存分館名稱對應的官方**連結**。四品牌合法場次 API、資料使用條款、取消／更新語義仍未確認，不把商業官網任何時刻誤認為本產品已同步。正式場次 Adapter 未建立，Neon、文化部資料與正式部署均保持原樣。
 
 ## 限制與下一步
 

@@ -747,6 +747,13 @@ a {
   flex: 0 0 auto;
   margin-top: 2px;
 }
+.chain-cinema-page__header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.chain-cinema-page__showtime-link,
 .chain-cinema-page__source-link {
   display: inline-flex;
   gap: 7px;
@@ -760,6 +767,22 @@ a {
   background: var(--tg-surface);
   font-size: 12px;
   font-weight: 700;
+}
+.chain-cinema-page__showtime-link {
+  color: #fff;
+  background: var(--tg-accent);
+  border-color: var(--tg-accent);
+}
+.chain-cinema-page__showtime-link:focus-visible,
+.chain-cinema-page__source-link:focus-visible {
+  outline: 3px solid var(--tg-accent);
+  outline-offset: 2px;
+}
+.chain-cinema-page__official-note {
+  margin: -13px 0 20px;
+  color: var(--tg-muted);
+  font-size: 12px;
+  line-height: 1.65;
 }
 .chain-cinema-page__summary {
   display: grid;
@@ -1629,6 +1652,193 @@ a {
 .screenings-refresh:disabled {
   opacity: 0.5;
   cursor: wait;
+}
+.official-showtimes {
+  padding-bottom: 35px;
+  margin-bottom: 35px;
+  border-bottom: 1px solid var(--tg-border);
+}
+.official-showtimes__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.official-showtimes__heading h2,
+.public-showtimes__heading h2 {
+  color: var(--tg-text);
+  margin: 11px 0 9px;
+  font-size: clamp(21px, 3vw, 27px);
+  letter-spacing: -0.55px;
+}
+.official-showtimes__heading p,
+.public-showtimes__heading p {
+  margin: 0;
+  max-width: 650px;
+  font-size: 13px;
+  color: var(--tg-muted);
+  line-height: 1.7;
+}
+.official-showtimes__count {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--tg-muted);
+  white-space: nowrap;
+  margin-top: 20px;
+}
+.official-showtimes__filters {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 12px;
+  padding: 17px;
+  border: 1px solid var(--tg-border);
+  border-radius: 19px;
+  background: var(--tg-surface);
+  margin-bottom: 16px;
+}
+.official-showtimes__filters label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--tg-muted);
+}
+.official-showtimes__filters :is(input, select) {
+  min-height: 44px;
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--tg-border);
+  border-radius: 12px;
+  background: var(--tg-secondary);
+  color: var(--tg-text);
+  padding: 0 11px;
+  font: inherit;
+  font-size: 13px;
+}
+.official-showtimes__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+.official-showtimes__cinema {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  gap: 15px;
+  border: 1px solid var(--tg-border);
+  background: var(--tg-surface);
+  border-radius: 16px;
+  padding: 16px;
+}
+.official-showtimes__cinema > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.official-showtimes__cinema strong {
+  color: var(--tg-text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.official-showtimes__cinema span,
+.official-showtimes__cinema small {
+  color: var(--tg-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.official-showtimes__actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.official-showtimes__actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--tg-border);
+  border-radius: 11px;
+  color: var(--tg-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+.official-showtimes__actions a:last-child {
+  color: var(--tg-accent);
+  border-color: var(--tg-accent);
+}
+.official-showtimes__actions a:focus-visible,
+.official-showtimes__more:focus-visible {
+  outline: 3px solid var(--tg-accent);
+  outline-offset: 2px;
+}
+.official-showtimes__more {
+  display: flex;
+  width: 100%;
+  min-height: 45px;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 0;
+  border: 1px solid var(--tg-border);
+  background: var(--tg-surface);
+  color: var(--tg-text);
+  border-radius: 13px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+.official-showtimes__disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: var(--tg-muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin-top: 17px;
+}
+.official-showtimes__disclaimer .v-icon {
+  flex: 0 0 17px;
+  margin-top: 2px;
+}
+.public-showtimes__heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 19px;
+}
+@media (max-width: 720px) {
+  .official-showtimes__list {
+    grid-template-columns: 1fr;
+  }
+  .official-showtimes__filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .official-showtimes__filters label:first-child {
+    grid-column: 1 / -1;
+  }
+  .official-showtimes__heading {
+    flex-direction: column;
+    gap: 0;
+  }
+  .official-showtimes__count {
+    margin: 10px 0 0;
+  }
+  .public-showtimes__heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .public-showtimes__heading .screenings-refresh {
+    align-self: flex-start;
+  }
 }
 .screenings-filters {
   display: grid;

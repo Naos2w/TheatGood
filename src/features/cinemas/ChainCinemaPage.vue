@@ -10,11 +10,13 @@ import {
   publishedNamedHallSeatSum,
 } from './other-chain-facts'
 import { VIESHOW_HALL_SOURCE, VIESHOW_HALL_SOURCE_DATE } from './vieshow-halls'
+import { officialShowtimeLink } from './official-showtimes'
 
 const route = useRoute()
 const { t } = useI18n()
 const cinema = computed(() => chainCinemas.find((venue) => venue.slug === route.params.slug))
 const slug = computed(() => cinema.value?.slug ?? '')
+const showtime = computed(() => officialShowtimeLink(slug.value))
 const halls = computed(() => publishedNamedHallsForCinema(slug.value))
 const facts = computed(() => cinemaPublishedFacts[slug.value])
 
@@ -73,16 +75,37 @@ const isNumericHall = (value: string): boolean => /^\d+$/.test(value)
           <h1>{{ cinema.name }}</h1>
           <p><v-icon icon="mdi-map-marker-outline" size="16" /> {{ cinema.address }}</p>
         </div>
-        <a
-          :href="facts?.sourceUrl ?? cinema.sourceUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="chain-cinema-page__source-link"
-        >
-          {{ t('chainDetail.officialSite') }}
-          <v-icon icon="mdi-open-in-new" size="16" />
-        </a>
+        <div class="chain-cinema-page__header-actions">
+          <a
+            v-if="showtime"
+            :href="showtime.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="chain-cinema-page__showtime-link"
+          >
+            {{ t('chainDetail.officialShowtimes') }}
+            <v-icon icon="mdi-open-in-new" size="16" />
+          </a>
+          <a
+            :href="facts?.sourceUrl ?? cinema.sourceUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="chain-cinema-page__source-link"
+          >
+            {{ t('chainDetail.officialSite') }}
+            <v-icon icon="mdi-open-in-new" size="16" />
+          </a>
+        </div>
       </header>
+      <p v-if="showtime" class="chain-cinema-page__official-note">
+        {{
+          t(
+            showtime.scope === 'brand'
+              ? 'chainDetail.chooseOfficialVenue'
+              : 'chainDetail.showtimesExternalNote',
+          )
+        }}
+      </p>
 
       <div v-if="hasVenueMetrics" class="chain-cinema-page__summary">
         <div v-if="summaryHallCount !== undefined">
