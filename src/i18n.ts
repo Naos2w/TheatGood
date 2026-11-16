@@ -119,7 +119,7 @@ export const messages = {
       wheelchairMarkers: '{count} 個輪椅位置標示',
       checkedAt: '採樣日期：{date}',
       notice:
-        '官方座位圖可確認排別、座號與走道，但尚無銀幕寬高、首排距離、排距、坡度及視線遮擋的實測資料。這是 2D 位置參考，未開放精確 3D。',
+        '官方座位圖可確認座號與走道，但絕大多數銀幕尺寸、首排距離、排距、坡度及遮擋尚無實測資料。3D 僅提供清楚標示估算參數的概念模擬，不是精確視野。',
       scrollMap: '可水平捲動的威秀影廳座位配置圖',
       mapLabel: '威秀 {hall}，包含 {count} 個編號座位的參考圖',
       screenDirection: '銀幕方向（依官網）',
@@ -144,6 +144,46 @@ export const messages = {
       exactCount: '本場次的編號座位數與 2026 年官方公布席數相符。',
       wheelchairCountMatch: '計入輪椅標示後與官方席數相符，但其計數方式尚未確認。',
       notPublished: '此廳名稱／編號不在 2026 年 5 月官方逐廳席數表中，暫無可直接對應的容量。',
+    },
+    vieshow3d: {
+      loading: '正在載入影廳座位與模擬場景…',
+      notFound: '找不到這間影廳的已確認座位配置。',
+      backToCinema: '返回影城資料',
+      description:
+        '座號與走道沿用威秀公開座位圖；3D 空間參數尚未完成現場量測，提供可調整的概念視角。',
+      simulationWarning: '本視角為估算模擬，不代表真實銀幕與座位間的實測距離或最佳座位。',
+      numberedSeats: '{count} 個有編號座位',
+      pickSeat: '選擇座位',
+      tapSeats: '點選圖上的座位或使用下方清單',
+      selectSeat: '選取座位 {label}，{row}',
+      selectedSeat: '目前選擇座位',
+      preview3d: '進入座位 3D 視角模擬',
+      specifications: '影廳規格與模擬參數',
+      screenSize: '銀幕寬 × 高',
+      firstRow: '銀幕至首排的模擬距離',
+      rowPitch: '模擬排距',
+      rise: '模擬每排高度差',
+      seatSpacing: '模擬座距',
+      screenScale: '估算銀幕尺寸比例',
+      visualEstimate: '概念估算，非現場量測',
+      screenOfficial: '官方公布的銀幕尺寸；廳號依容量交叉對照',
+      screenSecondary: '第三方參考尺寸，非威秀官方量測；廳號依容量交叉對照',
+      screenEstimated: '依座位格線推算的概念尺寸，非實際規格',
+      capacityCrossReference:
+        '影廳類型與實體廳號依官方公布容量交叉比對，尚缺獨立廳號施工圖；排距、坡度仍是估算。',
+      dimensionSource: '查看銀幕尺寸來源',
+      hallSource: '查看影廳容量／類型來源',
+      parametersExplanation:
+        '可自行調整排距、座距、坡度與首排距離，觀察估算視角如何改變；這些設定只影響模擬畫面。',
+      restoreEstimates: '恢復預設估算',
+      layoutSource: '座號與格線來源：',
+      backToMap: '返回 2D 座位圖',
+      webglUnavailable: '目前裝置或遠端顯示環境無法啟用 WebGL2。座位圖仍可使用。',
+      sceneFailed: '3D 場景載入失敗；請返回座位圖。',
+      loadingScene: '3D 場景載入中…',
+      estimatedPov: '估算 3D 觀影視角',
+      immersiveCaveat:
+        '拖曳畫面環視，左右切換同排座位。此處距離、視角與銀幕高度皆為模擬值，不能視為 1:1 現場體驗。',
     },
     chainDetail: {
       back: '返回影城列表',
@@ -498,7 +538,7 @@ export const messages = {
       wheelchairMarkers: '{count} wheelchair markers',
       checkedAt: 'Observed: {date}',
       notice:
-        'The operator’s seating plan confirms rows, labels and aisle gaps, but physical screen dimensions, front-row distance, seat pitch, rake and sightline obstructions remain unmeasured. This is a 2D reference, not a calibrated 3D model.',
+        'The operator’s seating plan confirms seat labels and aisle gaps. Most screen dimensions, front-row distances, seat pitch, rake and obstructions are unmeasured. Any 3D view is an explicitly adjustable estimate, not a calibrated auditorium.',
       scrollMap: 'Horizontally scrollable Vie Show seat-layout reference',
       mapLabel: 'Vie Show {hall} seating reference with {count} numbered seats',
       screenDirection: 'Screen direction (as published)',
@@ -525,6 +565,51 @@ export const messages = {
         'Including wheelchair markers would match the published count; inclusion rules remain unverified.',
       notPublished:
         'This hall designation does not match a numbered hall in the May 2026 capacity sheet. No permanent capacity mapping is claimed.',
+    },
+    vieshow3d: {
+      loading: 'Loading the auditorium seats and preview…',
+      notFound: 'A sourced seat layout for this auditorium was not found.',
+      backToCinema: 'Back to cinema information',
+      description:
+        'Seat labels and aisle gaps come from a public Vie Show seating preview. Unmeasured spatial dimensions are adjustable visual assumptions.',
+      simulationWarning:
+        'This is an estimated simulation, not a surveyed room, measured sightline or objective best-seat recommendation.',
+      numberedSeats: '{count} numbered seats',
+      pickSeat: 'Select your seat',
+      tapSeats: 'Tap a seat on the plan, or use the seat selector below',
+      selectSeat: 'Select seat {label}, {row}',
+      selectedSeat: 'Selected seat',
+      preview3d: 'Open the estimated 3D seating view',
+      specifications: 'Screen specifications and preview assumptions',
+      screenSize: 'Screen width × height',
+      firstRow: 'Estimated screen-to-front-row distance',
+      rowPitch: 'Estimated row pitch',
+      rise: 'Estimated rise per row',
+      seatSpacing: 'Estimated seat spacing',
+      screenScale: 'Estimated screen size scale',
+      visualEstimate: 'Visual assumption, not a measurement',
+      screenOfficial:
+        'Operator-published screen size; screen number inferred from the capacity match',
+      screenSecondary:
+        'Independent third-party screen size, not operator measured; screen number inferred from the capacity match',
+      screenEstimated:
+        'Conceptual screen dimensions derived from the grid, not real specifications',
+      capacityCrossReference:
+        'The physical screen number is inferred from the operator’s seat capacity, not an independently verified floor plan. Seat pitch and rake remain estimated.',
+      dimensionSource: 'Screen dimension source',
+      hallSource: 'Auditorium format and capacity source',
+      parametersExplanation:
+        'Adjust row pitch, seat spacing, rise and screen distance to explore how these visual assumptions affect your view. They do not change the sourced seat layout.',
+      restoreEstimates: 'Restore default assumptions',
+      layoutSource: 'Seat labels and grid source:',
+      backToMap: 'Return to the 2D seating plan',
+      webglUnavailable:
+        'WebGL2 is unavailable on this device or remote display. The 2D map remains available.',
+      sceneFailed: 'Could not load the 3D scene. Please return to the seat plan.',
+      loadingScene: 'Loading the 3D auditorium…',
+      estimatedPov: 'Estimated 3D point of view',
+      immersiveCaveat:
+        'Drag to look around and use the arrows to switch seats in the same row. View angles, distances and screen height are simulated, not calibrated 1:1.',
     },
     chainDetail: {
       back: 'Back to cinema directory',

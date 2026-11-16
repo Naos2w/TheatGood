@@ -2,15 +2,17 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { TresCanvas } from '@tresjs/core'
 import { PerspectiveCamera, Vector3 } from 'three'
-import type { AuditoriumDefinition, AuditoriumSeat } from '../auditoriums/geometry'
+import type { AuditoriumSeat } from '../auditoriums/geometry'
+import type { SceneAuditoriumGeometry } from './vieshow-approximate-scene'
 import { verticalFovFromHorizontal } from './view-projection'
 
 const props = defineProps<{
-  auditorium: AuditoriumDefinition
+  auditorium: SceneAuditoriumGeometry
   seats: AuditoriumSeat[]
   selectedSeatId: string
   resetViewToken: number
   horizontalFov: number
+  wheelchairSpots?: { x: number; z: number; elevation: number }[]
 }>()
 
 const canvasBox = ref<HTMLElement | null>(null)
@@ -120,7 +122,20 @@ function resizeCamera() {
   camera.updateProjectionMatrix()
 }
 
-watch(() => [props.selectedSeatId, props.auditorium.id], moveToSelected, { immediate: true })
+watch(
+  () => [
+    props.selectedSeatId,
+    props.auditorium.id,
+    selected.value?.x,
+    selected.value?.z,
+    selected.value?.eyeY,
+    screen.value.width,
+    screen.value.height,
+    screen.value.bottomY,
+  ],
+  moveToSelected,
+  { immediate: true },
+)
 watch(() => props.resetViewToken, resetView)
 watch(() => props.horizontalFov, resizeCamera)
 
@@ -188,6 +203,16 @@ onUnmounted(() => {
         <TresBoxGeometry :args="[roomWidth - 0.7, 0.2, 1.6]" />
         <TresMeshStandardMaterial color="#273249" />
       </TresMesh>
+      <TresMesh
+        v-for="(position, index) in wheelchairSpots ?? []"
+        :key="'accessible-' + index"
+        :position="[position.x, position.elevation + 0.04, position.z]"
+        :rotation="[-Math.PI / 2, 0, 0]"
+      >
+        <TresPlaneGeometry :args="[0.78, 0.78]" />
+        <TresMeshStandardMaterial color="#6b93b2" :roughness="0.85" />
+      </TresMesh>
+
       <TresGroup v-for="seat in seats" :key="seat.id" :position="[seat.x, seat.elevation, seat.z]">
         <TresMesh :position="[0, 0.42, 0.22]">
           <TresBoxGeometry :args="[auditorium.seatWidth, 0.75, 0.16]" />
