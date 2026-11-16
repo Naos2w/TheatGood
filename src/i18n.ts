@@ -81,6 +81,32 @@ export const messages = {
       chainDisclaimer:
         '目前 {count}／{total} 間連鎖分館有來源場址座標；依場址直線距離排序，非出入口或實際交通里程，也不代表已有 3D／場次。OSM 地圖署名如下；其他資料來源請點分館位置圖示。',
     },
+    seatRefs: {
+      eyebrow: 'PUBLIC BOOKING CHART REFERENCES',
+      title: '官網選位座位圖樣本',
+      description:
+        '實際從美麗新場次的「查看座位表」讀取座號與格線，按座號／位置去重；不儲存哪個座位售出。下方是重新繪製的參考圖，不是影廳原始圖片。',
+      patternCount: '{count} 種不同排列',
+      selectPattern: '選擇座位排列樣本',
+      standard: '標準廳',
+      royal: '皇家廳',
+      labels: '{count} 個座位標籤',
+      specialLabels: '{count} 個 W 特殊標籤',
+      observed: '同排列已觀察 {count} 場',
+      unknownHall:
+        '重要：官網座位表只標示廳型，沒有永久實體廳號。不同排列不保證是不同影廳，暫時不綁定個人座位紀錄或生成虛構 3D。',
+      scrollMap: '可水平捲動的官方座位格線重繪圖',
+      mapLabel: '包含 {count} 個座位標籤的參考座位圖',
+      screenDirection: '銀幕方向（依官網座位圖）',
+      normalSeat: '一般標籤',
+      wLabel: 'W 特殊標籤（需再核對席位類型）',
+      showSeatList: '展開每列完整座位標籤',
+      gridRow: '第 {number} 橫列',
+      sourceDate: '資料抽樣查證：2026/11/16。',
+      openOfficial: '開啟原官方場次座位圖',
+      caution:
+        '場次連結日後可能失效；官方座位圖可能隨改裝改變。未取得確切廳號、實際銀幕尺寸、排距與坡度，不能把本排列樣本當成精準的 3D 視角。',
+    },
     chainDetail: {
       back: '返回影城列表',
       eyebrow: 'CHAIN CINEMA · VERIFIED COUNTS',
@@ -395,6 +421,32 @@ export const messages = {
       chainNoResults: 'No major-chain venues match the current search, area and brand.',
       chainDisclaimer:
         'All {count} of {total} chain venues have sourced location points. Distances are estimates to venue sites, not entrances or travel routes, and do not imply live screenings or 3D models. OpenStreetMap attribution follows; click a venue location icon for its specific source.',
+    },
+    seatRefs: {
+      eyebrow: 'PUBLIC BOOKING CHART REFERENCES',
+      title: 'Official booking seat-layout references',
+      description:
+        'Seat labels and grid positions were observed on Miranew’s public booking charts and deduplicated by layout. Sold/available status was not retained. This is an original redraw, not a copy of the operator’s image.',
+      patternCount: '{count} distinct layout patterns',
+      selectPattern: 'Choose a layout sample',
+      standard: 'Standard auditorium',
+      royal: 'Royal auditorium',
+      labels: '{count} seat labels',
+      specialLabels: '{count} special W labels',
+      observed: 'Observed in {count} sessions',
+      unknownHall:
+        'Important: public charts show auditorium types but not permanent hall numbers. Distinct patterns are not necessarily distinct physical screens. These references are not linked to watch-history seats or made into unverified 3D models.',
+      scrollMap: 'Horizontally scrollable redraw of official booking seat grid',
+      mapLabel: 'Reference seat map containing {count} labels',
+      screenDirection: 'Screen direction (from official chart)',
+      normalSeat: 'Standard label',
+      wLabel: 'Special W label (type requires further verification)',
+      showSeatList: 'Expand the complete seat-label list by grid row',
+      gridRow: 'Visual row {number}',
+      sourceDate: 'Snapshot observed: 16 November 2026.',
+      openOfficial: 'Open original public booking seat chart',
+      caution:
+        'Session links may expire and seating can change. Permanent hall numbers, measured screen dimensions, row spacing and slope are unknown, so these patterns are not presented as calibrated 3D sightlines.',
     },
     chainDetail: {
       back: 'Back to cinema directory',
