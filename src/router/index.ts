@@ -11,6 +11,11 @@ const router = createRouter({
       component: () => import('../features/cinemas/ChainCinemaPage.vue'),
     },
     {
+      path: '/cinemas/:slug/halls/:hallId',
+      name: 'vieshow-3d-preview',
+      component: () => import('../features/viewer/VieShowEstimated3DPage.vue'),
+    },
+    {
       path: '/screenings',
       name: 'screenings',
       component: () => import('../features/screenings/ScreeningsPage.vue'),

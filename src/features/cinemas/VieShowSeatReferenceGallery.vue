@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import {
   loadVieShowArchiveForCinema,
   vieShowCoverageForCinema,
@@ -138,6 +139,14 @@ const rows = computed(() => {
           <span>{{ t('vieshowSeatRefs.checkedAt', { date: active.observedAt }) }}</span>
         </div>
         <p class="seat-references__notice" role="note">{{ countNotice }}</p>
+        <RouterLink
+          class="vieshow-3d-launch"
+          :to="'/cinemas/' + cinemaSlug + '/halls/' + active.id"
+        >
+          <v-icon icon="mdi-cube-scan" size="20" />
+          {{ t('vieshow3d.preview3d') }}
+          <v-icon icon="mdi-chevron-right" size="17" />
+        </RouterLink>
         <p class="seat-references__caution">{{ t('vieshowSeatRefs.notice') }}</p>
 
         <div
