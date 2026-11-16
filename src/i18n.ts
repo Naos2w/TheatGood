@@ -73,13 +73,13 @@ export const messages = {
       chainPublishedHallCounts: '已收錄 {count} 間影廳的官方席數 · 座位圖待確認',
       chainVenueFactsOnly: '已收錄官方影廳概況 · 個別座號仍待查證',
       chainSourceAria: '開啟 {name} 官方影城資料',
-      chainMapAria: '開啟 {name} 的已核對地圖點位',
+      chainMapAria: '查看 {name} 的場址位置資料來源',
       chainLocationUnverified: '距離待核實，仍可依品牌與地區搜尋',
       chainMore: '查看其餘 {count} 間分館',
       chainLess: '收合分館列表',
       chainNoResults: '沒有符合目前搜尋／地區與品牌條件的連鎖影城。',
       chainDisclaimer:
-        '目前 {count}／{total} 間連鎖分館具有已核對的地圖點位；定位後依場館直線距離排序，未核實分館排最後但仍可搜尋。地點不等於出入口，非交通里程，也不代表已有 3D／場次。地圖資料：',
+        '目前 {count}／{total} 間連鎖分館有來源場址座標；依場址直線距離排序，非出入口或實際交通里程，也不代表已有 3D／場次。OSM 地圖署名如下；其他資料來源請點分館位置圖示。',
     },
     chainDetail: {
       back: '返回影城列表',
@@ -286,13 +286,13 @@ export const messages = {
         '{count} halls with official seat counts · no verified seating plan',
       chainVenueFactsOnly: 'Published auditorium overview · individual seats unverified',
       chainSourceAria: 'Open the official venue information for {name}',
-      chainMapAria: 'Open the verified map point for {name}',
+      chainMapAria: 'Open the published venue location source for {name}',
       chainLocationUnverified: 'Distance unverified; venue remains searchable',
       chainMore: 'Show {count} more venues',
       chainLess: 'Show fewer venues',
       chainNoResults: 'No major-chain venues match the current search, area and brand.',
       chainDisclaimer:
-        '{count} of {total} chain venues now have verified map points. With location permission, venues are ranked by approximate straight-line distance; unverified locations remain listed last. These are not travel distances, entrance locations, 3D seat models or live showtimes. Map data:',
+        'All {count} of {total} chain venues have sourced location points. Distances are estimates to venue sites, not entrances or travel routes, and do not imply live screenings or 3D models. OpenStreetMap attribution follows; click a venue location icon for its specific source.',
     },
     chainDetail: {
       back: 'Back to cinema directory',

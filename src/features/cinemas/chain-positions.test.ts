@@ -3,18 +3,49 @@ import { chainCinemas } from './chain-directory'
 import { chainDistanceKm, sortChainsByDistance, verifiedChainPositions } from './chain-positions'
 
 describe('sourced commercial cinema proximity', () => {
-  it('coordinates are supported OSM features for an existing venue only', () => {
+  it('coordinates have traceable per-location sources for every current venue', () => {
     const slugs = new Set(chainCinemas.map((cinema) => cinema.slug))
-    expect(Object.keys(verifiedChainPositions)).toHaveLength(36)
+    expect(Object.keys(verifiedChainPositions)).toHaveLength(40)
     for (const [slug, position] of Object.entries(verifiedChainPositions)) {
       expect(slugs.has(slug)).toBe(true)
-      expect(position.sourceUrl).toMatch(/^https:\/\/www\.openstreetmap\.org\/(?:node|way)\/\d+$/)
+      expect(position.sourceUrl).toMatch(/^https:\/\//)
+      if (slug === 'vieshow-tainan-fe21') {
+        expect(position.sourceUrl).toBe(
+          'https://www.vrwalker.net/tw/print.php?serno=222&tbname=scenerys',
+        )
+        expect(position.precision).toBe('site')
+      } else {
+        expect(position.sourceUrl).toMatch(/^https:\/\/www\.openstreetmap\.org\/(?:node|way)\/\d+$/)
+      }
       expect(['cinema', 'site']).toContain(position.precision)
       expect(position.latitude).toBeGreaterThan(21.8)
       expect(position.latitude).toBeLessThan(25.5)
       expect(position.longitude).toBeGreaterThan(119.4)
       expect(position.longitude).toBeLessThan(122.15)
     }
+  })
+
+  it('covers the four last branches with matched building or cinema points', () => {
+    expect(verifiedChainPositions['vieshow-taipei-ximen']).toMatchObject({
+      latitude: 25.04378,
+      longitude: 121.50717,
+      precision: 'site',
+    })
+    expect(verifiedChainPositions['vieshow-tainan-fe21']).toMatchObject({
+      latitude: 22.995131,
+      longitude: 120.20568,
+      precision: 'site',
+    })
+    expect(verifiedChainPositions['showtime-yunlin-beigang']).toMatchObject({
+      latitude: 23.57008,
+      longitude: 120.29928,
+      precision: 'cinema',
+    })
+    expect(verifiedChainPositions['showtime-taichung-lipao']).toMatchObject({
+      latitude: 24.32652,
+      longitude: 120.70196,
+      precision: 'site',
+    })
   })
 
   it('sorts by kilometres without dropping unlocated venues or mutating input', () => {
@@ -26,20 +57,19 @@ describe('sourced commercial cinema proximity', () => {
     expect(chainDistanceKm(sorted[0]!, origin)).toBeCloseTo(0)
     expect(new Set(sorted.map((item) => item.slug)).size).toBe(40)
     expect(original).toEqual(chainCinemas)
-    expect(sorted.slice(0, 36).every((cinema) => verifiedChainPositions[cinema.slug])).toBe(true)
-    expect(sorted.slice(36).every((cinema) => !verifiedChainPositions[cinema.slug])).toBe(true)
+    expect(sorted.every((cinema) => verifiedChainPositions[cinema.slug])).toBe(true)
   })
 
-  it('returns undefined for unsourced points and stable ties for same location', () => {
-    const unknown = chainCinemas.find((cinema) => cinema.slug === 'vieshow-taipei-ximen')!
+  it('returns undefined for new unsourced venues, preserving them at the end', () => {
+    const unknown = { ...chainCinemas[0]!, slug: 'new-unsourced-venue' }
     const known = chainCinemas.find((cinema) => cinema.slug === 'miramar-dazhi')!
     const origin = { latitude: 25.08328, longitude: 121.55746 }
     expect(chainDistanceKm(unknown, origin)).toBeUndefined()
     expect(chainDistanceKm(known, origin)).toBe(0)
     expect(sortChainsByDistance([unknown, known, unknown], origin).map((x) => x.slug)).toEqual([
       'miramar-dazhi',
-      'vieshow-taipei-ximen',
-      'vieshow-taipei-ximen',
+      'new-unsourced-venue',
+      'new-unsourced-venue',
     ])
   })
 })
