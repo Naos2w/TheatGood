@@ -151,6 +151,24 @@ const isNumericHall = (value: string): boolean => /^\d+$/.test(value)
               }}
             </strong>
             <small>{{ t('chainDetail.countOnly') }}</small>
+            <small
+              v-if="hall.screenWidthM && hall.screenHeightM"
+              class="chain-cinema-page__screen-fact"
+            >
+              {{
+                t('chainDetail.screenDimensions', {
+                  width: hall.screenWidthM,
+                  height: hall.screenHeightM,
+                })
+              }}
+              <a
+                v-if="hall.screenSourceUrl"
+                :href="hall.screenSourceUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                >{{ t('chainDetail.screenSource') }}</a
+              >
+            </small>
           </div>
           <span>{{ t('chainDetail.seats', { count: fmt(hall.publishedSeatCount) }) }}</span>
         </article>

@@ -7,6 +7,8 @@ const props = defineProps<{
   auditorium: AuditoriumDefinition
   seats: AuditoriumSeat[]
   selectedSeatId: string
+  /** Personal history only; undefined for ordinary seat selection. */
+  visitedSeatCounts?: Record<string, number>
 }>()
 const emit = defineEmits<{ 'select-seat': [seatId: string] }>()
 const { t } = useI18n()
@@ -59,6 +61,15 @@ function leftPosition(seat: AuditoriumSeat) {
 
 function selectSeat(id: string) {
   emit('select-seat', id)
+}
+
+function visitCount(id: string): number {
+  return props.visitedSeatCounts?.[id] ?? 0
+}
+function accessibleSeatLabel(seat: AuditoriumSeat): string {
+  const base = t('seats.selectAria', { row: seat.row, number: seat.number })
+  const count = visitCount(seat.id)
+  return count ? base + ' · ' + t('history.seatVisitCount', { count }) : base
 }
 
 function updateWidth() {
@@ -159,10 +170,18 @@ onUnmounted(() => resizeObserver?.disconnect())
             v-for="seat in row.seats"
             :key="seat.id"
             class="seat-map__seat"
-            :class="{ 'seat-map__seat--selected': selectedSeatId === seat.id }"
+            :class="{
+              'seat-map__seat--selected': selectedSeatId === seat.id,
+              'seat-map__seat--visited': visitCount(seat.id) > 0,
+            }"
             :style="{ left: leftPosition(seat) }"
             type="button"
-            :aria-label="t('seats.selectAria', { row: seat.row, number: seat.number })"
+            :aria-label="accessibleSeatLabel(seat)"
+            :title="
+              visitCount(seat.id)
+                ? t('history.seatVisitCount', { count: visitCount(seat.id) })
+                : undefined
+            "
             :aria-pressed="selectedSeatId === seat.id"
             @click="selectSeat(seat.id)"
           >
@@ -209,6 +228,9 @@ onUnmounted(() => resizeObserver?.disconnect())
       <div class="seat-map__legend">
         <span><i class="legend-spot legend-spot--available" />{{ t('seats.normal') }}</span>
         <span><i class="legend-spot legend-spot--selected" />{{ t('seats.selectedLegend') }}</span>
+        <span v-if="visitedSeatCounts">
+          <i class="legend-spot legend-spot--visited" />{{ t('history.visitedLegend') }}
+        </span>
       </div>
       <button type="button" class="seat-map__focus-button" @click="openSheet">
         <span class="mdi mdi-arrow-expand" aria-hidden="true" />
@@ -245,8 +267,8 @@ onUnmounted(() => resizeObserver?.disconnect())
           v-for="seat in focusedRow?.seats ?? []"
           :key="seat.id"
           type="button"
-          :class="{ active: selectedSeatId === seat.id }"
-          :aria-label="t('seats.selectAria', { row: seat.row, number: seat.number })"
+          :class="{ active: selectedSeatId === seat.id, visited: visitCount(seat.id) > 0 }"
+          :aria-label="accessibleSeatLabel(seat)"
           :aria-pressed="selectedSeatId === seat.id"
           @click="chooseSeat(seat.id)"
         >

@@ -120,7 +120,10 @@ export function watchPreviewRoute(
   const model = findAuditorium(entry.modelId)
   if (!model || model.modelVersion !== entry.modelVersion) return null
   const hall = cinemaDirectory.find(
-    (item) => item.modelId === entry.modelId && item.cinemaSlug === entry.cinemaSlug,
+    (item) =>
+      item.modelId === entry.modelId &&
+      item.cinemaSlug === entry.cinemaSlug &&
+      item.hallName === entry.hallName,
   )
   if (!hall || !createSeats(model).some((seat) => seat.id === entry.seatLabel)) return null
   return { path: '/auditoriums/' + entry.modelId, query: { seat: entry.seatLabel } }
