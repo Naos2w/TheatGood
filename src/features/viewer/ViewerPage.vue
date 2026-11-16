@@ -77,6 +77,21 @@ async function loadScene() {
   }
 }
 
+watch(
+  () => route.query.seat,
+  (seatId) => {
+    const model = auditorium.value
+    if (
+      model &&
+      typeof seatId === 'string' &&
+      createSeats(model).some((seat) => seat.id === seatId)
+    ) {
+      store.selectSeat(seatId)
+    }
+  },
+  { immediate: true },
+)
+
 watch(isImmersive, (immersive) => {
   if (immersive) void loadScene()
 })
@@ -98,6 +113,14 @@ function selectSeat(id: string) {
 function preview3d() {
   if (!selectedSeat.value) return
   void router.push({ query: { ...route.query, view: '3d' } })
+}
+
+function recordSelectedSeat() {
+  if (!sourceHall.value?.modelId || !selectedSeat.value) return
+  void router.push({
+    path: '/history',
+    query: { auditorium: sourceHall.value.modelId, seat: selectedSeat.value.id },
+  })
 }
 
 function returnToSeats() {
@@ -167,11 +190,22 @@ function navigate(direction: -1 | 1) {
           <span>{{ t('seats.selected') }}</span>
           <strong>{{ selectedSeat.id }}</strong>
         </div>
-        <button class="button-primary" type="button" @click="preview3d">
-          <v-icon icon="mdi-eye-outline" size="20" />
-          {{ t('seats.preview') }}
-          <v-icon icon="mdi-arrow-top-right" size="18" />
-        </button>
+        <div class="viewer-seat-action__buttons">
+          <button
+            v-if="sourceHall?.modelId"
+            class="viewer-record-button"
+            type="button"
+            @click="recordSelectedSeat"
+          >
+            <v-icon icon="mdi-bookmark-plus-outline" size="18" />
+            {{ t('history.recordSeat') }}
+          </button>
+          <button class="button-primary" type="button" @click="preview3d">
+            <v-icon icon="mdi-eye-outline" size="20" />
+            {{ t('seats.preview') }}
+            <v-icon icon="mdi-arrow-top-right" size="18" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -238,6 +272,15 @@ function navigate(direction: -1 | 1) {
           <button type="button" class="viewer-reset" @click="resetViewToken++">
             <v-icon icon="mdi-restore" size="19" />
             {{ t('viewer.reset') }}
+          </button>
+          <button
+            v-if="sourceHall?.modelId"
+            type="button"
+            class="viewer-reset viewer-immersive__record"
+            @click="recordSelectedSeat"
+          >
+            <v-icon icon="mdi-bookmark-plus-outline" size="18" />
+            {{ t('history.recordSeat') }}
           </button>
           <details class="viewer-details">
             <summary>
