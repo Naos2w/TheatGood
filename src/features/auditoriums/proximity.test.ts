@@ -4,7 +4,7 @@ import { cinemaLocations, distanceKm, distanceToCinemaKm, sortHallsByDistance } 
 
 describe('nearby cinema discovery', () => {
   it('has one sourced position per cinema, without mixing venues and auditoriums', () => {
-    expect(Object.keys(cinemaLocations)).toHaveLength(5)
+    expect(Object.keys(cinemaLocations)).toHaveLength(6)
     expect(new Set(cinemaDirectory.map((hall) => hall.cinemaSlug))).toEqual(
       new Set(Object.keys(cinemaLocations)),
     )
@@ -27,12 +27,12 @@ describe('nearby cinema discovery', () => {
     expect(distanceKm(a, b)).toBeLessThan(3)
   })
 
-  it('sorts all nine auditoriums across 3D-ready and directory-only entries', () => {
+  it('sorts all ten auditoriums across 3D-ready and directory-only entries', () => {
     const origin = { latitude: 22.622435, longitude: 120.28878 }
     const original = [...cinemaDirectory]
     const sorted = sortHallsByDistance(original, origin)
 
-    expect(sorted).toHaveLength(9)
+    expect(sorted).toHaveLength(10)
     expect(sorted.slice(0, 2).map((hall) => hall.slug)).toEqual(['kfa-3f', 'kfa-2f'])
     expect(sorted.slice(2, 4).map((hall) => hall.slug)).toEqual(['nwac-reel-one', 'nwac-reel-two'])
     expect(original).toEqual(cinemaDirectory)

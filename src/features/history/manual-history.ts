@@ -44,22 +44,29 @@ export interface WatchHallOption {
 }
 
 export const watchCinemaOptions: readonly WatchCinemaOption[] = [
-  ...chainCinemas.map(({ slug, name, city }) => ({ slug, name, city })),
-  ...Array.from(new Set(cinemaDirectory.map((hall) => hall.cinemaSlug))).map((slug) => {
-    const hall = cinemaDirectory.find((item) => item.cinemaSlug === slug)!
-    return { slug, name: hall.cinemaName, city: hall.city }
-  }),
+  ...new Map(
+    [
+      ...chainCinemas.map(({ slug, name, city }) => ({ slug, name, city })),
+      ...Array.from(new Set(cinemaDirectory.map((hall) => hall.cinemaSlug))).map((slug) => {
+        const hall = cinemaDirectory.find((item) => item.cinemaSlug === slug)!
+        return { slug, name: hall.cinemaName, city: hall.city }
+      }),
+    ].map((cinema) => [cinema.slug, cinema] as const),
+  ).values(),
 ]
 
 export function watchHallOptions(cinemaSlug: string): WatchHallOption[] {
-  const officialHalls = cinemaDirectory.filter((hall) => hall.cinemaSlug === cinemaSlug)
-  if (officialHalls.length) {
-    return officialHalls.map((hall) => ({ name: hall.hallName, modelId: hall.modelId ?? null }))
-  }
-  return publishedNamedHallsForCinema(cinemaSlug).map((hall) => ({
+  // Keep every published numeric auditorium, even when a single one gains a
+  // sourced seating map. Do not reduce a major cinema to only its modelled hall.
+  const published = publishedNamedHallsForCinema(cinemaSlug).map((hall) => ({
     name: /^\d+$/.test(hall.label) ? `${hall.label} 廳` : hall.label,
-    modelId: null,
+    modelId: null as string | null,
   }))
+  const merged = new Map(published.map((hall) => [hall.name, hall]))
+  for (const hall of cinemaDirectory.filter((item) => item.cinemaSlug === cinemaSlug)) {
+    merged.set(hall.hallName, { name: hall.hallName, modelId: hall.modelId ?? null })
+  }
+  return [...merged.values()]
 }
 
 export function todayInTaipei(now = new Date()): string {

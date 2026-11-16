@@ -11,10 +11,10 @@ import { loadAuditorium } from './schema'
 import spotSource from './spot-taipei.json'
 
 describe('source-verified Taiwanese cinema directory', () => {
-  it('lists nine real auditoriums across five cinemas, with unique global slugs', () => {
-    expect(cinemaDirectory).toHaveLength(9)
-    expect(new Set(cinemaDirectory.map((entry) => entry.slug)).size).toBe(9)
-    expect(new Set(cinemaDirectory.map((entry) => entry.cinemaSlug)).size).toBe(5)
+  it('lists ten source-linked real auditoriums across six cinemas, with unique global slugs', () => {
+    expect(cinemaDirectory).toHaveLength(10)
+    expect(new Set(cinemaDirectory.map((entry) => entry.slug)).size).toBe(10)
+    expect(new Set(cinemaDirectory.map((entry) => entry.cinemaSlug)).size).toBe(6)
     expect(
       cinemaDirectory.every((entry) => entry.sourceUrls.every((url) => url.startsWith('https://'))),
     ).toBe(true)
@@ -23,7 +23,7 @@ describe('source-verified Taiwanese cinema directory', () => {
 
   it('never claims an unverified auditorium has a 3D model or invented dimensions', () => {
     const modelSlugs = cinemaDirectory.flatMap((entry) => (entry.modelId ? [entry.modelId] : []))
-    expect(modelSlugs.sort()).toEqual(['spot-taipei', 'tfai-small'])
+    expect(modelSlugs.sort()).toEqual(['spot-taipei', 'tfai-small', 'vieshow-hsinyi-12'])
     for (const entry of cinemaDirectory) {
       if (entry.modelId) {
         expect(auditoriumCatalog.some((model) => model.id === entry.modelId)).toBe(true)
@@ -49,7 +49,11 @@ describe('source-verified Taiwanese cinema directory', () => {
     expect(searchCinemaDirectory('  SPOT Taipei ').map((hall) => hall.slug)).toEqual([
       'spot-taipei',
     ])
-    expect(searchCinemaDirectory('')).toHaveLength(9)
+    expect(searchCinemaDirectory('')).toHaveLength(10)
+    expect(searchCinemaDirectory('信義威秀').map((hall) => hall.slug)).toEqual([
+      'vieshow-hsinyi-12',
+    ])
+    expect(resolveHallAlias('vieshow-taipei-hsinyi', '12廳')?.slug).toBe('vieshow-hsinyi-12')
     expect(normaliseDirectoryName('Ｒｅｅｌ ＯＮＥ')).toBe(normaliseDirectoryName('reel one'))
     expect(resolveHallAlias('spot-huashan', '1廳')?.slug).toBe('spot-huashan-a-one')
     expect(resolveHallAlias('neiwei-art-center', '1廳')?.slug).toBe('nwac-reel-one')

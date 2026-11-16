@@ -53,6 +53,12 @@ describe('free-text manual viewing footprint', () => {
   it('offers operator or verified directory halls without inventing seat maps', () => {
     expect(watchCinemaOptions).toHaveLength(45)
     expect(watchHallOptions('vieshow-taipei-hsinyi')).toHaveLength(15)
+    expect(watchHallOptions('vieshow-taipei-hsinyi').find((hall) => hall.name === '12 廳')).toEqual(
+      {
+        name: '12 廳',
+        modelId: 'vieshow-hsinyi-12',
+      },
+    )
     expect(watchHallOptions('miramar-dazhi')).toHaveLength(10)
     expect(watchHallOptions('showtime-taipei-dome')).toEqual([])
     const cinema = watchHallOptions('spot-taipei')

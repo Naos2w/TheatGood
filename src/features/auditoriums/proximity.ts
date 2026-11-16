@@ -13,6 +13,12 @@ interface CinemaLocation extends GeoPoint {
 
 /** One position per real cinema; auditoriums in the same venue share its distance. */
 export const cinemaLocations: Record<string, CinemaLocation> = {
+  'vieshow-taipei-hsinyi': {
+    latitude: 25.03533,
+    longitude: 121.56725,
+    address: '臺北市信義區松壽路20號（影城場址，非第 12 廳入口）',
+    sourceUrl: 'https://www.openstreetmap.org/way/1339824907',
+  },
   tfai: {
     latitude: 25.05625,
     longitude: 121.44715,

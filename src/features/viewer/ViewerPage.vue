@@ -22,6 +22,7 @@ const selectedSeat = computed(
   () => seats.value.find((seat) => seat.id === store.selectedSeatId) ?? seats.value[0],
 )
 const isOfficial = computed(() => auditorium.value?.provenance.seatLabels === 'official')
+const isFestivalReference = computed(() => auditorium.value?.id === 'vieshow-hsinyi-12')
 const sourceHall = computed(() =>
   cinemaDirectory.find((item) => item.modelId === auditorium.value?.id),
 )
@@ -159,7 +160,11 @@ function navigate(direction: -1 | 1) {
           <h1>{{ seatName() }}</h1>
           <p>{{ venueName() }}</p>
           <span class="data-caption">{{
-            isOfficial ? t('app.officialNote') : t('seats.demoNote')
+            isFestivalReference
+              ? t('viewer.festivalReference')
+              : isOfficial
+                ? t('app.officialNote')
+                : t('seats.demoNote')
           }}</span>
         </div>
 
@@ -175,7 +180,15 @@ function navigate(direction: -1 | 1) {
 
         <div class="map-provenance">
           <v-icon icon="mdi-information-outline" size="18" />
-          <p>{{ isOfficial ? t('seats.layoutNote') : t('viewer.demoProvenance') }}</p>
+          <p>
+            {{
+              isFestivalReference
+                ? t('viewer.festivalCountWarning')
+                : isOfficial
+                  ? t('seats.layoutNote')
+                  : t('viewer.demoProvenance')
+            }}
+          </p>
           <a
             v-if="auditorium.sources.length"
             :href="auditorium.sources[0]"
@@ -317,7 +330,16 @@ function navigate(direction: -1 | 1) {
                 <dd>{{ Math.abs(sightline.horizontalOffset).toFixed(1) }}°</dd>
               </div>
             </dl>
-            <p>{{ isOfficial ? t('viewer.provenance') : t('viewer.demoProvenance') }}</p>
+            <p>
+              {{
+                isFestivalReference
+                  ? t('viewer.festivalCountWarning')
+                  : isOfficial
+                    ? t('viewer.provenance')
+                    : t('viewer.demoProvenance')
+              }}
+            </p>
+            <p v-if="isFestivalReference">{{ t('viewer.festivalWheelchair') }}</p>
             <p v-if="auditorium.id === 'tfai-small'">{{ t('viewer.wheelchair') }}</p>
             <p v-if="auditorium.id === 'spot-taipei'">{{ t('viewer.wheelchairSpot') }}</p>
           </details>
