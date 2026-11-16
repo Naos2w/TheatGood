@@ -12,6 +12,7 @@ import {
 } from './other-chain-facts'
 import { VIESHOW_HALL_SOURCE, VIESHOW_HALL_SOURCE_DATE } from './vieshow-halls'
 import { officialShowtimeLink } from './official-showtimes'
+import MiranewSeatReferenceGallery from './MiranewSeatReferenceGallery.vue'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -132,6 +133,8 @@ function sourcedSeatModel(hallLabel: string): string | undefined {
         </div>
         <small>{{ t('chainDetail.formatWarning') }}</small>
       </div>
+
+      <MiranewSeatReferenceGallery :cinema-slug="slug" />
 
       <div class="chain-cinema-page__subheading">
         <h2>{{ t('chainDetail.hallList') }}</h2>
