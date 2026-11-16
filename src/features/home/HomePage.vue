@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { appLocale } from '../../composables/usePreferences'
+import ChainDirectorySection from '../cinemas/ChainDirectorySection.vue'
+import { chainCinemas } from '../cinemas/chain-directory'
 import {
   cinemaDirectory,
   directoryCinemaName,
@@ -25,7 +27,12 @@ const modelFilter = ref<'all' | '3d' | 'information'>('all')
 const sortMode = ref<'models' | 'distance'>('models')
 const currentPosition = ref<GeoPoint | null>(null)
 const locationStatus = ref<LocationStatus>('idle')
-const cities = [...new Set(cinemaDirectory.map((hall) => hall.city))]
+const cities = [
+  ...new Set([
+    ...cinemaDirectory.map((hall) => hall.city),
+    ...chainCinemas.map((cinema) => cinema.city),
+  ]),
+].sort()
 
 const results = computed(() => {
   const matches = searchCinemaDirectory(search.value).filter(
@@ -166,6 +173,8 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
         >
           {{ locationMessage }}
         </p>
+        <ChainDirectorySection :query="search" :city="cityFilter" />
+
         <p class="discovery-note discovery-note--summary">
           {{ t('home.resultCount', { count: results.length, total: cinemaDirectory.length }) }}
         </p>

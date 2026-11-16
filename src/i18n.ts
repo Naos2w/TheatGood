@@ -60,6 +60,22 @@ export const messages = {
       distanceKm: '直線距離約 {distance} 公里',
       distanceDisclaimer:
         '場館距離為直線估算，非實際行車／步行里程；定位只在本頁計算。部分地圖點位：',
+      chainsTitle: '優先收錄連鎖影城',
+      chainsLead: '威秀、秀泰、美麗華、美麗新：先建立可靠分館目錄，再逐步確認真實影廳與座位視角。',
+      chainsCount: '{count} / {total} 間分館',
+      chainBrand: '影城品牌',
+      chainAll: '全部連鎖品牌',
+      chainVieshow: '威秀／MUVIE',
+      chainShowtime: '秀泰',
+      chainMiramar: '美麗華',
+      chainMiranew: '美麗新',
+      chainNoModel: '已核對分館 · 影廳座位模型待查證',
+      chainSourceAria: '開啟 {name} 官方影城資料',
+      chainMore: '查看其餘 {count} 間分館',
+      chainLess: '收合分館列表',
+      chainNoResults: '沒有符合目前搜尋／地區與品牌條件的連鎖影城。',
+      chainDisclaimer:
+        '此處為官方分館目錄，並非 3D 座位圖或即時放映場次。缺少可靠的完整座位配置時不會顯示虛構座位；定位距離排序目前僅適用於下方已核對座標的影廳。',
     },
     directory: {
       sourceOnly: '僅收錄官方資訊',
@@ -221,6 +237,23 @@ export const messages = {
       distanceKm: 'About {distance} km away (straight line)',
       distanceDisclaimer:
         'Distances are straight-line estimates, not travel distances. Your location stays in your browser. Map data:',
+      chainsTitle: 'Major cinema chains first',
+      chainsLead:
+        'Vie Show, Showtime, Miramar and Miranew: verified venue locations first, followed by independently checked auditorium layouts.',
+      chainsCount: '{count} of {total} venues',
+      chainBrand: 'Cinema brand',
+      chainAll: 'All major chains',
+      chainVieshow: 'Vie Show / MUVIE',
+      chainShowtime: 'Showtime',
+      chainMiramar: 'Miramar',
+      chainMiranew: 'Miranew',
+      chainNoModel: 'Verified venue · seating model not yet verified',
+      chainSourceAria: 'Open the official venue information for {name}',
+      chainMore: 'Show {count} more venues',
+      chainLess: 'Show fewer venues',
+      chainNoResults: 'No major-chain venues match the current search, area and brand.',
+      chainDisclaimer:
+        'These are sourced venue listings, not confirmed 3D seating plans or live showtimes. Exact seat layouts are not invented; distance sorting currently applies only to the verified auditoriums listed below.',
     },
     directory: {
       sourceOnly: 'Official information only',
