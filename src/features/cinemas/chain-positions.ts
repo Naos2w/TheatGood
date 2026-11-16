@@ -3,25 +3,32 @@ import { distanceKm } from '../auditoriums/proximity'
 import type { ChainCinema } from './chain-directory'
 
 export interface VerifiedChainPosition extends GeoPoint {
-  /** OpenStreetMap point or mapped site centroid; not necessarily a cinema entrance. */
+  /** Source of a mapped cinema, building or mall position; not an auditorium entrance. */
   sourceUrl: string
   /** Whether the mapped object is the cinema itself or its containing shopping centre. */
   precision: 'cinema' | 'site'
 }
 
 /**
- * Manually reconciled OSM locations for currently listed cinema venues.
- * Each sourceUrl identifies a specific OSM object. Small, cached ODbL extract;
- * no geocoding API is invoked by the application.
- * © OpenStreetMap contributors: https://www.openstreetmap.org/copyright
- *
- * No coordinate is assigned where location matching remains ambiguous.
+ * Manually reconciled cinema and containing-building locations: most are OSM
+ * nodes/ways (© OpenStreetMap contributors, ODbL), with one independently
+ * published Tainan Park Store site coordinate from a venue guide. Every point
+ * is linked to its exact source rather than derived from a generic city centre.
+ * Sources: https://www.openstreetmap.org/copyright
+ * No geocoding API is invoked by the application.
  */
 export const verifiedChainPositions: Record<string, VerifiedChainPosition> = {
   'vieshow-taipei-hsinyi': {
     latitude: 25.03533,
     longitude: 121.56725,
     sourceUrl: 'https://www.openstreetmap.org/way/1339824907',
+    precision: 'site',
+  },
+  // The operator replaced the former CMK/JueSe cinema at the same Hanzhong St 52 building.
+  'vieshow-taipei-ximen': {
+    latitude: 25.04378,
+    longitude: 121.50717,
+    sourceUrl: 'https://www.openstreetmap.org/node/2406854920',
     precision: 'site',
   },
   'vieshow-xindian-yulon': {
@@ -46,6 +53,14 @@ export const verifiedChainPositions: Record<string, VerifiedChainPosition> = {
     latitude: 24.16417,
     longitude: 120.64448,
     sourceUrl: 'https://www.openstreetmap.org/way/224955652',
+    precision: 'site',
+  },
+  // Far Eastern Park Store site coordinates (5F cinema); approximate site centre.
+  // The guide gives the coordinate pair as (22.995131, 120.205680).
+  'vieshow-tainan-fe21': {
+    latitude: 22.995131,
+    longitude: 120.20568,
+    sourceUrl: 'https://www.vrwalker.net/tw/print.php?serno=222&tbname=scenerys',
     precision: 'site',
   },
   'vieshow-tainan-focus': {
@@ -150,10 +165,23 @@ export const verifiedChainPositions: Record<string, VerifiedChainPosition> = {
     sourceUrl: 'https://www.openstreetmap.org/way/229060949',
     precision: 'site',
   },
+  // This is the D-wing shopping centre housing the cinema on floor 3, not its entrance.
+  'showtime-taichung-lipao': {
+    latitude: 24.32652,
+    longitude: 120.70196,
+    sourceUrl: 'https://www.openstreetmap.org/way/795510490',
+    precision: 'site',
+  },
   'showtime-tainan-rende': {
     latitude: 22.94676,
     longitude: 120.22026,
     sourceUrl: 'https://www.openstreetmap.org/node/7259879557',
+    precision: 'cinema',
+  },
+  'showtime-yunlin-beigang': {
+    latitude: 23.57008,
+    longitude: 120.29928,
+    sourceUrl: 'https://www.openstreetmap.org/node/7197210913',
     precision: 'cinema',
   },
   'showtime-keelung': {

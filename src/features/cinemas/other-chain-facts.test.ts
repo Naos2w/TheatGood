@@ -16,6 +16,9 @@ describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
     expect(values).toHaveLength(18)
     expect(values.filter((item) => item.cinemaSlug.startsWith('showtime-'))).toHaveLength(15)
     expect(values.filter((item) => item.cinemaSlug.startsWith('miranew-'))).toHaveLength(2)
+    const showtime = values.filter((item) => item.cinemaSlug.startsWith('showtime-'))
+    expect(showtime.filter((item) => item.hallCount !== undefined)).toHaveLength(12)
+    expect(showtime.filter((item) => item.publishedSeatCount !== undefined)).toHaveLength(8)
     expect(values.filter((item) => item.cinemaSlug.startsWith('miramar-'))).toHaveLength(1)
     for (const item of values) {
       expect(known.has(item.cinemaSlug)).toBe(true)
@@ -84,6 +87,12 @@ describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
       hallCount: 16,
       hallCountScope: 'digital-halls',
       publishedSeatCount: 2669,
+    })
+    expect(cinemaPublishedFacts['showtime-taichung-lipao']).toMatchObject({
+      hallCount: 10,
+      hallCountScope: 'entire-cinema',
+      publishedSeatCount: 811,
+      sourceUrl: 'https://www.lihpaooutlet.com.tw/Brand/Details/268',
     })
     expect(cinemaPublishedFacts['showtime-taichung-wenxin']?.publishedSeatCount).toBeUndefined()
     expect(cinemaPublishedFacts['showtime-yunlin-beigang']?.hallCount).toBeUndefined()

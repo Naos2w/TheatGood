@@ -110,7 +110,16 @@ const observations: readonly CinemaPublishedFacts[] = [
     publishedSeatCount: 1387,
     namedFormats: ['SCREENX'],
   },
-  { cinemaSlug: 'showtime-taichung-lipao', sourceUrl: showtime(59), checkedAt },
+  // The official LiHPAO Outlet Mall tenant listing publishes 10 halls / 811 seats,
+  // explicitly scoped to its Showtime Cinema at 3F D-wing.
+  {
+    cinemaSlug: 'showtime-taichung-lipao',
+    sourceUrl: 'https://www.lihpaooutlet.com.tw/Brand/Details/268',
+    checkedAt,
+    hallCount: 10,
+    hallCountScope: 'entire-cinema',
+    publishedSeatCount: 811,
+  },
   {
     cinemaSlug: 'showtime-taichung-wenxin',
     sourceUrl: showtime(56),
