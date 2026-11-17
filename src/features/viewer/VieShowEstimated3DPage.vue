@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { chainCinemas } from '../cinemas/chain-directory'
 import { centreSeatGrid } from '../cinemas/centred-seat-grid'
+import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
 import {
   loadVieShowArchiveForCinema,
   type VieShowArchivedLayout,
@@ -57,9 +58,20 @@ const next = computed(() =>
 )
 const cellWidth = 31
 const cellHeight = 31
-const map = computed(() =>
-  layout.value ? centreSeatGrid(layout.value, cellWidth, cellHeight, 540) : null,
-)
+const map = computed(() => {
+  if (!layout.value || !geometry.value) return null
+  const seatingBlockWidth = geometry.value.calibration.estimatedSeatBlockWidthM
+  const proportionalScreenWidth = geometry.value.auditorium.screen.width
+  // The 2D silver-screen line uses the SAME effective estimate as the 3D model,
+  // including intentionally bounded screens in very small/large unsurveyed halls.
+  return centreSeatGrid(
+    layout.value,
+    cellWidth,
+    cellHeight,
+    540,
+    proportionalScreenWidth / seatingBlockWidth,
+  )
+})
 const mapWidth = computed(() => map.value?.width ?? 540)
 const mapHeight = computed(() => map.value?.height ?? 210)
 watch(
@@ -344,7 +356,7 @@ function toggleImmersiveViewMode() {
           :wheelchair-spots="geometry.wheelchairSpots"
           :selected-seat-id="seatId"
           :reset-view-token="resetViewToken"
-          :horizontal-fov="80"
+          :horizontal-fov="DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV"
           :view-mode="immersiveViewMode"
         />
         <div class="viewer-immersive__top">

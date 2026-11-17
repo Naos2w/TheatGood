@@ -54,6 +54,23 @@ describe('centred source-attributed 2D seating grids', () => {
     expect(count).toBe(222)
   })
 
+  it('draws a proportionally wider illustrative screen without clipping small seating banks', () => {
+    const small = {
+      seatPositions: [
+        ['A01', 1, 3],
+        ['A02', 1, 4],
+      ] as [string, number, number][],
+      wheelchairPositions: [] as [number, number][],
+      gridRows: 3,
+    }
+    const map = centreSeatGrid(small, 30, 31, 540, 2.5)
+    const screenWidth = map.screenEndX - map.screenStartX
+    expect(screenWidth).toBeCloseTo(map.occupiedWidth * 2.5, 6)
+    expect(map.screenStartX).toBeGreaterThanOrEqual(0)
+    expect(map.screenEndX).toBeLessThanOrEqual(map.width)
+    expect((map.screenStartX + map.screenEndX) / 2).toBeCloseTo(map.width / 2, 6)
+  })
+
   it('rejects a chart with no actual locations or impossible dimensions', () => {
     expect(() =>
       centreSeatGrid({ seatPositions: [], wheelchairPositions: [], gridRows: 1 }),
