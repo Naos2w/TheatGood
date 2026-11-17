@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import { appLocale } from '../../composables/usePreferences'
 import { chainCinemas } from './chain-directory'
+import { cinemaMapUrl, currentMapPlatform, googleMapsUrl, type MapPlatform } from './map-links'
 import { cinemaDirectory } from '../auditoriums/directory'
 import {
   cinemaPublishedFacts,
@@ -18,6 +19,10 @@ import { vieShowArchivedHallFact } from './vieshow-seat-archive'
 
 const route = useRoute()
 const { t } = useI18n()
+const mapPlatform = ref<MapPlatform>('desktop')
+onMounted(() => {
+  mapPlatform.value = currentMapPlatform()
+})
 const cinema = computed(() => chainCinemas.find((venue) => venue.slug === route.params.slug))
 const slug = computed(() => cinema.value?.slug ?? '')
 const showtime = computed(() => officialShowtimeLink(slug.value))
@@ -93,6 +98,25 @@ function sourcedSeatModel(hallLabel: string): string | undefined {
           <p><v-icon icon="mdi-map-marker-outline" size="16" /> {{ cinema.address }}</p>
         </div>
         <div class="chain-cinema-page__header-actions">
+          <a
+            class="chain-cinema-page__map-link"
+            :href="cinemaMapUrl(cinema, mapPlatform)"
+            :target="mapPlatform === 'desktop' ? '_blank' : undefined"
+            rel="noopener noreferrer"
+          >
+            <v-icon icon="mdi-map-marker-outline" size="18" />
+            {{ t(mapPlatform === 'desktop' ? 'chainDetail.googleMaps' : 'chainDetail.openMap') }}
+            <v-icon icon="mdi-open-in-new" size="15" />
+          </a>
+          <a
+            v-if="mapPlatform !== 'desktop'"
+            class="chain-cinema-page__map-fallback"
+            :href="googleMapsUrl(cinema)"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Google Maps
+          </a>
           <a
             v-if="cinema.brand === 'vieshow'"
             class="chain-cinema-page__choose-hall-link"

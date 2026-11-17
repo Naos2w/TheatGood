@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
@@ -7,6 +7,7 @@ import {
   vieShowCoverageForCinema,
   type VieShowArchivedLayout,
 } from './vieshow-seat-archive'
+import { centreSeatGrid } from './centred-seat-grid'
 
 const props = defineProps<{ cinemaSlug: string }>()
 const { t } = useI18n()
@@ -17,6 +18,7 @@ const candidates = ref<readonly VieShowArchivedLayout[]>([])
 const loading = ref(false)
 const failed = ref(false)
 const activeId = ref('')
+const mapScroll = ref<HTMLElement | null>(null)
 
 watch(
   () => props.cinemaSlug,
@@ -80,9 +82,22 @@ function changeHall(id: string) {
 const active = computed(() => candidates.value.find((item) => item.id === activeId.value))
 const cellWidth = 30
 const cellHeight = 31
-const mapWidth = computed(() => Math.max(560, (active.value?.gridColumns ?? 0) * cellWidth + 45))
-const mapHeight = computed(() => Math.max(210, (active.value?.gridRows ?? 0) * cellHeight + 77))
+const map = computed(() =>
+  active.value ? centreSeatGrid(active.value, cellWidth, cellHeight) : null,
+)
+const mapWidth = computed(() => map.value?.width ?? 560)
+const mapHeight = computed(() => map.value?.height ?? 210)
 const viewBox = computed(() => '0 0 ' + mapWidth.value + ' ' + mapHeight.value)
+
+watch(
+  [activeId, mapWidth],
+  async () => {
+    await nextTick()
+    const scroll = mapScroll.value
+    if (scroll) scroll.scrollLeft = Math.max(0, (scroll.scrollWidth - scroll.clientWidth) / 2)
+  },
+  { flush: 'post' },
+)
 const hallOption = (item: VieShowArchivedLayout): string =>
   t('vieshowSeatRefs.hallOption', { hall: item.hallLabel, count: item.ordinarySeatCount })
 
@@ -241,6 +256,7 @@ const rows = computed(() => {
         <p class="seat-references__caution">{{ t('vieshowSeatRefs.notice') }}</p>
 
         <div
+          ref="mapScroll"
           class="seat-references__scroll"
           tabindex="0"
           :aria-label="t('vieshowSeatRefs.scrollMap')"
@@ -266,11 +282,20 @@ const rows = computed(() => {
             >
               {{ t('vieshowSeatRefs.screenDirection') }}
             </text>
-            <path :d="'M 55 38 L ' + (mapWidth - 55) + ' 38'" class="seat-references__screen" />
+            <path
+              :d="
+                'M ' +
+                (map?.screenStartX ?? 48) +
+                ' 38 L ' +
+                (map?.screenEndX ?? mapWidth - 48) +
+                ' 38'
+              "
+              class="seat-references__screen"
+            />
             <g v-for="seat in active.seatPositions" :key="seat[0]">
               <title>{{ seat[0] }}</title>
               <rect
-                :x="14 + (seat[2] - 1) * cellWidth"
+                :x="map?.seatX(seat[2])"
                 :y="65 + (seat[1] - 1) * cellHeight"
                 width="26"
                 height="25"
@@ -278,7 +303,7 @@ const rows = computed(() => {
                 class="seat-references__seat"
               />
               <text
-                :x="27 + (seat[2] - 1) * cellWidth"
+                :x="map?.labelX(seat[2])"
                 :y="81 + (seat[1] - 1) * cellHeight"
                 text-anchor="middle"
                 class="seat-references__seat-label"
@@ -289,7 +314,7 @@ const rows = computed(() => {
             <g v-for="(position, index) in active.wheelchairPositions" :key="'w-' + index">
               <title>{{ t('vieshowSeatRefs.wheelchairMarker') }}</title>
               <rect
-                :x="14 + (position[1] - 1) * cellWidth"
+                :x="map?.seatX(position[1])"
                 :y="65 + (position[0] - 1) * cellHeight"
                 width="26"
                 height="25"
@@ -297,7 +322,7 @@ const rows = computed(() => {
                 class="seat-references__seat--special"
               />
               <text
-                :x="27 + (position[1] - 1) * cellWidth"
+                :x="map?.labelX(position[1])"
                 :y="81 + (position[0] - 1) * cellHeight"
                 text-anchor="middle"
                 class="seat-references__seat-label"
