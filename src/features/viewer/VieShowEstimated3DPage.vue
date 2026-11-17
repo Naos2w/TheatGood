@@ -9,8 +9,6 @@ import {
   type VieShowArchivedLayout,
 } from '../cinemas/vieshow-seat-archive'
 import { neighbouringSeat } from '../auditoriums/seat-navigation'
-import { calculateSightline } from '../auditoriums/geometry'
-import { horizontalFovPresets, type HorizontalFovPreset } from './view-projection'
 import {
   defaultVieShowPreviewParameters,
   deriveVieShowPreviewGeometry,
@@ -26,8 +24,6 @@ const venueLayouts = shallowRef<readonly VieShowArchivedLayout[]>([])
 const loading = ref(false)
 const failed = ref(false)
 const seatId = ref('')
-const parameters = ref({ ...defaultVieShowPreviewParameters })
-const horizontalFov = ref<HorizontalFovPreset>(80)
 const resetViewToken = ref(0)
 const immersiveViewMode = ref<'seat' | 'overview'>('seat')
 const webglAvailable = ref(true)
@@ -44,7 +40,9 @@ const cinemaHallListRoute = computed(() => ({
   hash: '#vieshow-seat-references',
 }))
 const geometry = computed(() =>
-  layout.value ? deriveVieShowPreviewGeometry(slug.value, layout.value, parameters.value) : null,
+  layout.value
+    ? deriveVieShowPreviewGeometry(slug.value, layout.value, defaultVieShowPreviewParameters)
+    : null,
 )
 const selected = computed(
   () => geometry.value?.seats.find((seat) => seat.id === seatId.value) ?? null,
@@ -56,11 +54,6 @@ const previous = computed(() =>
 )
 const next = computed(() =>
   geometry.value && selected.value ? neighbouringSeat(geometry.value.seats, seatId.value, 1) : null,
-)
-const sightline = computed(() =>
-  selected.value && geometry.value
-    ? calculateSightline(selected.value, geometry.value.auditorium.screen)
-    : null,
 )
 const cellWidth = 31
 const cellHeight = 31
@@ -78,25 +71,6 @@ watch(
   },
   { flush: 'post' },
 )
-const countWarning = computed(() => {
-  const item = layout.value
-  if (!item) return ''
-  if (item.countComparison === 'different')
-    return t('vieshowSeatRefs.countDifference', {
-      observed: item.ordinarySeatCount,
-      published: item.publishedSeatCount,
-    })
-  if (item.countComparison === 'not-published') return t('vieshowSeatRefs.notPublished')
-  return t('vieshowSeatRefs.exactCount')
-})
-const screenSource = computed(() => geometry.value?.screenSpecification)
-const dataDescription = computed(() => {
-  const value = screenSource.value
-  if (!value) return t('vieshow3d.screenEstimated')
-  return value.dimensionSource === 'operator-published'
-    ? t('vieshow3d.screenOfficial')
-    : t('vieshow3d.screenSecondary')
-})
 const visualRowLabel = (seat: readonly [string, number, number]) => {
   const letter = /^([A-Z]{1,2})\d+$/i.exec(seat[0])?.[1]
   return letter
@@ -116,7 +90,6 @@ watch(
     layout.value = null
     venueLayouts.value = []
     seatId.value = ''
-    parameters.value = { ...defaultVieShowPreviewParameters }
     try {
       const data = await loadVieShowArchiveForCinema(nextSlug)
       if (cancelled) return
@@ -196,10 +169,6 @@ function setImmersive(value: boolean) {
     query: { ...route.query, view: value ? '3d' : undefined, seat: seatId.value },
   })
 }
-function resetParameters() {
-  parameters.value = { ...defaultVieShowPreviewParameters }
-  resetViewToken.value++
-}
 function toggleImmersiveViewMode() {
   immersiveViewMode.value = immersiveViewMode.value === 'seat' ? 'overview' : 'seat'
 }
@@ -233,32 +202,16 @@ function toggleImmersiveViewMode() {
             @change="switchHall(($event.target as HTMLSelectElement).value)"
           >
             <option v-for="item in venueLayouts" :key="item.id" :value="item.id">
-              {{
-                t('vieshowSeatRefs.hallOption', {
-                  hall: item.hallLabel,
-                  count: item.ordinarySeatCount,
-                })
-              }}
+              {{ item.hallLabel }}
             </option>
           </select>
-          <RouterLink :to="cinemaHallListRoute">{{ t('vieshow3d.allHallsLink') }}</RouterLink>
         </div>
         <header class="vieshow-3d-page__header">
-          <span class="eyebrow">THEATGOOD / 3D SEATING REFERENCE</span>
-          <h1>{{ venue.name }} · {{ layout.hallLabel }}</h1>
-          <p>{{ t('vieshow3d.description') }}</p>
-          <p class="vieshow-3d-page__notice" role="note">
-            {{ countWarning }} {{ t('vieshow3d.simulationWarning') }}
-          </p>
+          <h1>
+            {{ venue.name }} <span>· {{ layout.hallLabel }}</span>
+          </h1>
+          <p>{{ t('ux.chooseSeatHint') }}</p>
         </header>
-
-        <div class="vieshow-3d-page__facts">
-          <span>{{ t('vieshow3d.numberedSeats', { count: layout.ordinarySeatCount }) }}</span>
-          <span>{{
-            t('vieshowSeatRefs.wheelchairMarkers', { count: layout.wheelchairMarkers })
-          }}</span>
-          <span>{{ t('vieshowSeatRefs.checkedAt', { date: layout.observedAt }) }}</span>
-        </div>
 
         <section class="vieshow-3d-page__map-section">
           <div class="vieshow-3d-page__section-heading">
@@ -369,158 +322,7 @@ function toggleImmersiveViewMode() {
           </div>
         </section>
 
-        <section class="vieshow-3d-page__parameters">
-          <div class="vieshow-3d-page__section-heading">
-            <h2>{{ t('vieshow3d.specifications') }}</h2>
-            <span>{{ dataDescription }}</span>
-          </div>
-          <div class="vieshow-3d-page__screen-stats">
-            <div>
-              <span>{{ t('vieshow3d.screenSize') }}</span>
-              <strong
-                >{{ geometry.auditorium.screen.width.toFixed(2) }} ×
-                {{ geometry.auditorium.screen.height.toFixed(2) }} m</strong
-              >
-              <small>{{ dataDescription }}</small>
-            </div>
-            <div>
-              <span>{{ t('vieshow3d.firstRow') }}</span>
-              <strong>{{ parameters.frontDistanceM.toFixed(1) }} m</strong>
-              <small>{{ t('vieshow3d.visualEstimate') }}</small>
-            </div>
-            <div>
-              <span>{{ t('vieshow3d.rowPitch') }}</span>
-              <strong>{{ parameters.rowSpacingM.toFixed(2) }} m</strong>
-              <small>{{ t('vieshow3d.visualEstimate') }}</small>
-            </div>
-            <div>
-              <span>{{ t('vieshow3d.rise') }}</span>
-              <strong>{{ parameters.rowRiseM.toFixed(2) }} m</strong>
-              <small>{{ t('vieshow3d.visualEstimate') }}</small>
-            </div>
-          </div>
-          <div class="vieshow-3d-page__calibration" role="note">
-            <strong>{{ t('vieshow3d.proportionTitle') }}</strong>
-            <p v-if="screenSource">
-              {{
-                t('vieshow3d.knownScreenProportion', {
-                  width: screenSource.screenWidthM.toFixed(2),
-                  cells: geometry.calibration.occupiedColumns,
-                  ratio: Math.round(parameters.screenToSeatBlockWidthRatio * 100),
-                })
-              }}
-            </p>
-            <p v-else>{{ t('vieshow3d.unknownScreenProportion') }}</p>
-            <p>
-              {{
-                t('vieshow3d.derivedGridDimensions', {
-                  pitch: geometry.calibration.calculatedGridPitchM.toFixed(2),
-                  blockWidth: geometry.calibration.estimatedSeatBlockWidthM.toFixed(2),
-                })
-              }}
-            </p>
-            <small>{{ t('vieshow3d.ratioScaleWarning') }}</small>
-          </div>
-          <div v-if="screenSource" class="vieshow-3d-page__source">
-            <strong>{{ screenSource.format }} · {{ screenSource.projection }}</strong>
-            <p>{{ t('vieshow3d.capacityCrossReference') }}</p>
-            <a :href="screenSource.dimensionSourceUrl" target="_blank" rel="noopener noreferrer">
-              {{ t('vieshow3d.dimensionSource') }}
-              <v-icon icon="mdi-open-in-new" size="14" />
-            </a>
-            <a
-              :href="screenSource.hallIdentificationSourceUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {{ t('vieshow3d.hallSource') }}
-              <v-icon icon="mdi-open-in-new" size="14" />
-            </a>
-          </div>
-          <p class="vieshow-3d-page__subtle">{{ t('vieshow3d.parametersExplanation') }}</p>
-          <div class="vieshow-3d-page__sliders">
-            <label v-if="screenSource">
-              <span>
-                {{ t('vieshow3d.screenSeatBlockRatio') }} ·
-                {{ Math.round(parameters.screenToSeatBlockWidthRatio * 100) }}%
-              </span>
-              <input
-                v-model.number="parameters.screenToSeatBlockWidthRatio"
-                type="range"
-                min="0.55"
-                max="1.35"
-                step="0.01"
-              />
-            </label>
-            <label v-else>
-              <span
-                >{{ t('vieshow3d.seatSpacing') }} · {{ parameters.seatSpacingM.toFixed(2) }} m</span
-              >
-              <input
-                v-model.number="parameters.seatSpacingM"
-                type="range"
-                min="0.48"
-                max="0.95"
-                step="0.01"
-              />
-            </label>
-            <label>
-              <span>{{ t('vieshow3d.rowPitch') }} · {{ parameters.rowSpacingM.toFixed(2) }} m</span>
-              <input
-                v-model.number="parameters.rowSpacingM"
-                type="range"
-                min="0.75"
-                max="1.8"
-                step="0.01"
-              />
-            </label>
-            <label>
-              <span>{{ t('vieshow3d.rise') }} · {{ parameters.rowRiseM.toFixed(2) }} m</span>
-              <input
-                v-model.number="parameters.rowRiseM"
-                type="range"
-                min="0.05"
-                max="0.4"
-                step="0.01"
-              />
-            </label>
-            <label>
-              <span
-                >{{ t('vieshow3d.firstRow') }} · {{ parameters.frontDistanceM.toFixed(1) }} m</span
-              >
-              <input
-                v-model.number="parameters.frontDistanceM"
-                type="range"
-                min="2.5"
-                max="12"
-                step="0.5"
-              />
-            </label>
-            <label v-if="!screenSource">
-              <span
-                >{{ t('vieshow3d.screenScale') }} ·
-                {{ Math.round(parameters.estimatedScreenScale * 100) }}%</span
-              >
-              <input
-                v-model.number="parameters.estimatedScreenScale"
-                type="range"
-                min="0.65"
-                max="1.5"
-                step="0.05"
-              />
-            </label>
-          </div>
-          <button class="vieshow-3d-page__reset" type="button" @click="resetParameters">
-            {{ t('vieshow3d.restoreEstimates') }}
-          </button>
-          <p class="vieshow-3d-page__source">
-            {{ t('vieshow3d.layoutSource') }}
-            <a :href="layout.snapshotSource" target="_blank" rel="noopener noreferrer">{{
-              t('vieshowSeatRefs.openOfficial')
-            }}</a>
-          </p>
-          <p class="vieshow-3d-page__subtle">{{ t('vieshow3d.simulationWarning') }}</p>
-        </section>
+        <p class="vieshow-3d-page__assumption" role="note">{{ t('ux.simulationNotice') }}</p>
       </div>
 
       <div v-if="immersive" class="viewer-immersive">
@@ -542,7 +344,7 @@ function toggleImmersiveViewMode() {
           :wheelchair-spots="geometry.wheelchairSpots"
           :selected-seat-id="seatId"
           :reset-view-token="resetViewToken"
-          :horizontal-fov="horizontalFov"
+          :horizontal-fov="80"
           :view-mode="immersiveViewMode"
         />
         <div class="viewer-immersive__top">
@@ -555,11 +357,7 @@ function toggleImmersiveViewMode() {
         </div>
         <div class="viewer-immersive__bottom">
           <p class="viewer-immersive__hint">
-            {{
-              immersiveViewMode === 'overview'
-                ? t('vieshow3d.overviewHint')
-                : t('vieshow3d.immersiveCaveat')
-            }}
+            {{ immersiveViewMode === 'overview' ? t('ux.overviewHint') : t('ux.dragHint') }}
           </p>
           <div class="viewer-switcher glass-panel">
             <button
@@ -600,34 +398,6 @@ function toggleImmersiveViewMode() {
                   : t('vieshow3d.seatViewButton')
               }}
             </button>
-            <details class="viewer-details">
-              <summary>
-                {{ t('viewer.details') }} <v-icon icon="mdi-chevron-down" size="16" />
-              </summary>
-              <label class="viewer-fov-control">
-                {{ t('viewer.projectionFov') }}
-                <select v-model.number="horizontalFov">
-                  <option v-for="angle in horizontalFovPresets" :key="angle" :value="angle">
-                    {{ angle }}°
-                  </option>
-                </select>
-              </label>
-              <dl v-if="sightline">
-                <div>
-                  <dt>{{ t('viewer.distance') }}</dt>
-                  <dd>{{ sightline.distance.toFixed(1) }} m</dd>
-                </div>
-                <div>
-                  <dt>{{ t('viewer.horizontal') }}</dt>
-                  <dd>{{ sightline.horizontalAngle.toFixed(1) }}°</dd>
-                </div>
-                <div>
-                  <dt>{{ t('viewer.vertical') }}</dt>
-                  <dd>{{ sightline.verticalAngle.toFixed(1) }}°</dd>
-                </div>
-              </dl>
-              <p>{{ t('vieshow3d.immersiveCaveat') }}</p>
-            </details>
           </div>
         </div>
       </div>
