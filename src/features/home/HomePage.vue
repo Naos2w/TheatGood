@@ -5,12 +5,16 @@ import { RouterLink } from 'vue-router'
 import { appLocale } from '../../composables/usePreferences'
 import ChainDirectorySection from '../cinemas/ChainDirectorySection.vue'
 import { chainCinemas } from '../cinemas/chain-directory'
+import { cinemaDirectory, directoryCinemaName, directoryHallName } from '../auditoriums/directory'
 import {
-  cinemaDirectory,
-  directoryCinemaName,
-  directoryHallName,
-  searchCinemaDirectory,
-} from '../auditoriums/directory'
+  culturalCinemaHalls,
+  culturalCinemaVenueCount,
+  includesCinemaCategory,
+  searchCulturalCinemaHalls,
+  searchChainCinemaVenues,
+  type CinemaDiscoveryCategory,
+  type CinemaDiscoveryModelFilter,
+} from './discovery-categories'
 import { vieShowArchiveSummary } from '../cinemas/vieshow-seat-archive'
 import { directoryHallRoute } from '../cinemas/hall-navigation'
 import {
@@ -25,24 +29,31 @@ type LocationStatus = 'idle' | 'loading' | 'ready' | 'denied' | 'unavailable' | 
 const { t } = useI18n()
 const search = ref('')
 const cityFilter = ref('all')
-const modelFilter = ref<'all' | '3d' | 'information'>('all')
+const categoryFilter = ref<CinemaDiscoveryCategory>('all')
+const modelFilter = ref<CinemaDiscoveryModelFilter>('all')
+const showChains = computed(() => includesCinemaCategory(categoryFilter.value, 'chain'))
+const showCultural = computed(() => includesCinemaCategory(categoryFilter.value, 'cultural'))
+const categoryOptions: { value: CinemaDiscoveryCategory; label: string; icon: string }[] = [
+  { value: 'all', label: 'home.categoryAll', icon: 'mdi-view-grid-outline' },
+  { value: 'chain', label: 'home.categoryChain', icon: 'mdi-movie-open-outline' },
+  { value: 'cultural', label: 'home.categoryCultural', icon: 'mdi-theater' },
+]
 const sortMode = ref<'models' | 'distance'>('models')
 const currentPosition = ref<GeoPoint | null>(null)
 const locationStatus = ref<LocationStatus>('idle')
 const cities = [
   ...new Set([
-    ...cinemaDirectory.map((hall) => hall.city),
+    ...culturalCinemaHalls.map((hall) => hall.city),
     ...chainCinemas.map((cinema) => cinema.city),
   ]),
 ].sort()
 
+const matchingChains = computed(() =>
+  searchChainCinemaVenues(search.value, cityFilter.value, modelFilter.value),
+)
+
 const results = computed(() => {
-  const matches = searchCinemaDirectory(search.value).filter(
-    (hall) =>
-      (cityFilter.value === 'all' || hall.city === cityFilter.value) &&
-      (modelFilter.value === 'all' ||
-        (modelFilter.value === '3d' ? Boolean(hall.modelId) : !hall.modelId)),
-  )
+  const matches = searchCulturalCinemaHalls(search.value, cityFilter.value, modelFilter.value)
   if (sortMode.value === 'distance' && currentPosition.value) {
     return sortHallsByDistance(matches, currentPosition.value)
   }
@@ -108,7 +119,7 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
         <span class="eyebrow">{{ t('home.eyebrow') }}</span>
         <h1>{{ t('home.headline') }}</h1>
         <p>{{ t('home.subhead') }}</p>
-        <a class="home-model-entry" href="#chain-directory-heading">
+        <a class="home-model-entry" href="#cinema-discovery">
           <span class="home-model-entry__summary">
             <v-icon icon="mdi-cube-scan" size="23" />
             <strong>{{
@@ -122,7 +133,7 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
         </a>
       </div>
 
-      <div class="home-discovery">
+      <div id="cinema-discovery" class="home-discovery">
         <label class="search-field">
           <v-icon icon="mdi-magnify" size="24" />
           <input
@@ -142,6 +153,29 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
             <v-icon icon="mdi-close-circle" size="20" />
           </button>
         </label>
+
+        <div class="discovery-categories" role="group" :aria-label="t('home.categoryLabel')">
+          <button
+            v-for="category in categoryOptions"
+            :key="category.value"
+            type="button"
+            :class="{ 'discovery-categories__active': categoryFilter === category.value }"
+            :aria-pressed="categoryFilter === category.value"
+            @click="categoryFilter = category.value"
+          >
+            <v-icon :icon="category.icon" size="18" />
+            {{ t(category.label) }}
+          </button>
+        </div>
+        <p class="discovery-categories__inventory">
+          {{
+            t('home.categoryInventory', {
+              chains: chainCinemas.length,
+              culturalCinemas: culturalCinemaVenueCount,
+              culturalHalls: culturalCinemaHalls.length,
+            })
+          }}
+        </p>
 
         <div class="discovery-filters">
           <label class="discovery-filter">
@@ -188,6 +222,8 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
           {{ locationMessage }}
         </p>
         <ChainDirectorySection
+          v-if="showChains"
+          :hide-when-empty="categoryFilter === 'all'"
           :query="search"
           :city="cityFilter"
           :origin="currentPosition"
@@ -195,65 +231,77 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
           :model-filter="modelFilter"
         />
 
-        <p class="discovery-note discovery-note--summary">
-          {{ t('home.resultCount', { count: results.length, total: cinemaDirectory.length }) }}
-        </p>
+        <template v-if="showCultural && (categoryFilter === 'cultural' || results.length)">
+          <p class="discovery-note discovery-note--summary">
+            {{
+              t('home.resultCount', { count: results.length, total: culturalCinemaHalls.length })
+            }}
+          </p>
 
-        <div v-if="results.length">
-          <div class="list-heading">
-            <h2>{{ t('home.discoveryTitle') }}</h2>
-            <span>{{ t('home.resultCountShort', { count: results.length }) }}</span>
-          </div>
-          <div class="auditorium-list">
-            <RouterLink
-              v-for="hall in results"
-              :key="hall.slug"
-              class="auditorium-item"
-              :class="{ 'auditorium-item--catalogue': !hall.modelId }"
-              :to="directoryHallRoute(hall)"
-              :aria-label="
-                hall.modelId
-                  ? t('home.openHall', { name: directoryHallName(hall, appLocale) })
-                  : t('home.viewDetails', { name: directoryHallName(hall, appLocale) })
-              "
-            >
-              <span
-                class="auditorium-item__visual"
-                :class="{ 'auditorium-item__visual--catalogue': !hall.modelId }"
-                aria-hidden="true"
+          <div v-if="results.length">
+            <div class="list-heading">
+              <h2>{{ t('home.discoveryTitle') }}</h2>
+              <span>{{ t('home.resultCountShort', { count: results.length }) }}</span>
+            </div>
+            <p class="cultural-directory__lead">{{ t('home.culturalLead') }}</p>
+            <div class="auditorium-list">
+              <RouterLink
+                v-for="hall in results"
+                :key="hall.slug"
+                class="auditorium-item"
+                :class="{ 'auditorium-item--catalogue': !hall.modelId }"
+                :to="directoryHallRoute(hall)"
+                :aria-label="
+                  hall.modelId
+                    ? t('home.openHall', { name: directoryHallName(hall, appLocale) })
+                    : t('home.viewDetails', { name: directoryHallName(hall, appLocale) })
+                "
               >
-                <template v-if="hall.modelId">
-                  <span class="auditorium-item__screen" />
-                  <span class="auditorium-item__floor" />
-                </template>
-                <v-icon v-else icon="mdi-theater" size="31" />
-              </span>
-              <span class="auditorium-item__content">
-                <strong>{{ directoryHallName(hall, appLocale) }}</strong>
-                <span>
-                  {{ directoryCinemaName(hall, appLocale) }} · {{ hall.city }} ·
-                  {{ t('home.hallCount', { count: hall.seatCount }) }}
+                <span
+                  class="auditorium-item__visual"
+                  :class="{ 'auditorium-item__visual--catalogue': !hall.modelId }"
+                  aria-hidden="true"
+                >
+                  <template v-if="hall.modelId">
+                    <span class="auditorium-item__screen" />
+                    <span class="auditorium-item__floor" />
+                  </template>
+                  <v-icon v-else icon="mdi-theater" size="31" />
                 </span>
-                <span v-if="cinemaLocations[hall.cinemaSlug]" class="auditorium-item__address">
-                  {{ cinemaLocations[hall.cinemaSlug]?.address }}
+                <span class="auditorium-item__content">
+                  <strong>{{ directoryHallName(hall, appLocale) }}</strong>
+                  <span>
+                    {{ directoryCinemaName(hall, appLocale) }} · {{ hall.city }} ·
+                    {{ t('home.hallCount', { count: hall.seatCount }) }}
+                  </span>
+                  <span v-if="cinemaLocations[hall.cinemaSlug]" class="auditorium-item__address">
+                    {{ cinemaLocations[hall.cinemaSlug]?.address }}
+                  </span>
+                  <span v-if="formattedDistance(hall)" class="auditorium-item__distance">
+                    {{ t('home.distanceKm', { distance: formattedDistance(hall) }) }}
+                  </span>
+                  <small>{{
+                    hall.modelId === 'vieshow-hsinyi-12'
+                      ? t('home.currentHallInsteadOfFestival')
+                      : hall.modelId
+                        ? t('app.estimated')
+                        : t('home.no3dYet')
+                  }}</small>
                 </span>
-                <span v-if="formattedDistance(hall)" class="auditorium-item__distance">
-                  {{ t('home.distanceKm', { distance: formattedDistance(hall) }) }}
-                </span>
-                <small>{{
-                  hall.modelId === 'vieshow-hsinyi-12'
-                    ? t('home.currentHallInsteadOfFestival')
-                    : hall.modelId
-                      ? t('app.estimated')
-                      : t('home.no3dYet')
-                }}</small>
-              </span>
-              <v-icon icon="mdi-chevron-right" size="23" class="auditorium-item__chevron" />
-            </RouterLink>
+                <v-icon icon="mdi-chevron-right" size="23" class="auditorium-item__chevron" />
+              </RouterLink>
+            </div>
           </div>
-        </div>
 
-        <p v-else class="search-empty" role="status">
+          <p v-else class="search-empty" role="status">
+            {{ t('home.noResults') }}
+          </p>
+        </template>
+        <p
+          v-if="categoryFilter === 'all' && !matchingChains.length && !results.length"
+          class="search-empty"
+          role="status"
+        >
           {{ t('home.noResults') }}
         </p>
         <p class="discovery-note">

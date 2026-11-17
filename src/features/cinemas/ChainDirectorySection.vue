@@ -5,14 +5,10 @@ import { RouterLink } from 'vue-router'
 import { cinemaPublishedFacts, publishedNamedHallsForCinema } from './other-chain-facts'
 import type { GeoPoint } from '../auditoriums/proximity'
 import { appLocale } from '../../composables/usePreferences'
-import {
-  chainCinemas,
-  searchChainCinemas,
-  type ChainBrand,
-  type ChainCinema,
-} from './chain-directory'
+import { chainCinemas, type ChainBrand, type ChainCinema } from './chain-directory'
 import { chainDistanceKm, sortChainsByDistance, verifiedChainPositions } from './chain-positions'
 import { vieShowCoverageForCinema } from './vieshow-seat-archive'
+import { searchChainCinemaVenues } from '../home/discovery-categories'
 import { cinemaMapUrl, currentMapPlatform, type MapPlatform } from './map-links'
 
 const props = defineProps<{
@@ -21,6 +17,7 @@ const props = defineProps<{
   origin: GeoPoint | null
   sortByDistance: boolean
   modelFilter: 'all' | '3d' | 'information'
+  hideWhenEmpty?: boolean
 }>()
 const { t } = useI18n()
 const mapPlatform = ref<MapPlatform>('desktop')
@@ -40,11 +37,7 @@ const brandNames = [
 const sourceLayoutCount = (cinema: ChainCinema): number =>
   vieShowCoverageForCinema(cinema.slug)?.observedLabels ?? 0
 const filtered = computed(() =>
-  searchChainCinemas(props.query, selectedBrand.value, props.city).filter((cinema) => {
-    if (props.modelFilter === '3d') return sourceLayoutCount(cinema) > 0
-    if (props.modelFilter === 'information') return sourceLayoutCount(cinema) === 0
-    return true
-  }),
+  searchChainCinemaVenues(props.query, props.city, props.modelFilter, selectedBrand.value),
 )
 const ordered = computed(() =>
   props.sortByDistance && props.origin
@@ -69,7 +62,11 @@ function formattedDistance(cinema: ChainCinema): string | undefined {
 </script>
 
 <template>
-  <section class="chain-directory" aria-labelledby="chain-directory-heading">
+  <section
+    v-if="!hideWhenEmpty || filtered.length || selectedBrand !== 'all'"
+    class="chain-directory"
+    aria-labelledby="chain-directory-heading"
+  >
     <div class="chain-directory__heading">
       <div>
         <h2 id="chain-directory-heading">{{ t('home.chainsTitle') }}</h2>

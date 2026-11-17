@@ -44,7 +44,15 @@ export const messages = {
       viewDetails: '查看 {name} 的資料來源',
       no3dYet: '尚未有可靠座位配置・暫無 3D',
       provenanceHint: '影廳規格皆註明來源；沒有精確座號時不提供虛構 3D。',
-      discoveryTitle: '其他文化與獨立影廳',
+      discoveryTitle: '文化／獨立影廳',
+      culturalLead:
+        '依影廳展示已核實的場館與規格；有可靠座位圖才提供 2D／估算 3D，未建模影廳仍可查看官方資料。',
+      categoryLabel: '影城類別',
+      categoryAll: '全部',
+      categoryChain: '連鎖影城',
+      categoryCultural: '文化／獨立',
+      categoryInventory:
+        '連鎖影城 {chains} 間分館優先 · 文化／獨立場館 {culturalCinemas} 個、{culturalHalls} 間影廳',
       cityFilter: '地區',
       allCities: '全部地區',
       modelFilter: '類型',
@@ -61,12 +69,12 @@ export const messages = {
       locationDenied: '定位權限遭拒；可在瀏覽器網站設定允許定位，或繼續搜尋。',
       locationTimeout: '定位逾時，請重新嘗試；仍可使用搜尋與篩選。',
       locationUnavailable: '無法取得位置，請檢查 HTTPS／localhost 和裝置定位服務。',
-      resultCount: '其他文化與獨立影廳：{count} / {total} 間符合條件（不含上方連鎖分館）',
+      resultCount: '文化／獨立影廳：符合條件 {count}／{total} 間',
       resultCountShort: '{count} 間結果',
       distanceKm: '直線距離約 {distance} 公里',
       distanceDisclaimer:
         '場館距離為直線估算，非實際行車／步行里程；定位只在本頁計算。部分地圖點位：',
-      chainsTitle: '優先收錄連鎖影城',
+      chainsTitle: '連鎖影城（優先）',
       chainsLead:
         '先選影城分館，再選擇有來源的座位配置。威秀／MUVIE 已有 222 種可操作 2D／估算 3D 模型；其他院線按已確認資料顯示。',
       chainsCount: '{count} / {total} 間分館',
@@ -500,7 +508,15 @@ export const messages = {
       viewDetails: 'View source details for {name}',
       no3dYet: 'Verified venue · 3D not yet available',
       provenanceHint: 'All venue data is source-attributed. Unverified seating is never invented.',
-      discoveryTitle: 'Other cultural and independent cinemas',
+      discoveryTitle: 'Cultural and independent auditoriums',
+      culturalLead:
+        'Browse source-verified independent venues and auditorium specifications. 2D / estimated 3D previews appear only when a reliable seat map exists.',
+      categoryLabel: 'Cinema category',
+      categoryAll: 'All',
+      categoryChain: 'Cinema chains',
+      categoryCultural: 'Cultural / indie',
+      categoryInventory:
+        '{chains} chain branches shown first · {culturalCinemas} cultural venues, {culturalHalls} auditoriums',
       cityFilter: 'Area',
       allCities: 'All areas',
       modelFilter: 'Type',
@@ -519,8 +535,7 @@ export const messages = {
         'Location access denied. Allow it in your browser settings or continue searching.',
       locationTimeout: 'Location request timed out. Try again, or use the search and filters.',
       locationUnavailable: 'Location unavailable. Check HTTPS/localhost and your device settings.',
-      resultCount:
-        'Other independent/cultural auditoriums: {count} of {total} (chain venues shown above)',
+      resultCount: 'Cultural / independent auditoriums: {count} of {total} match',
       resultCountShort: '{count} results',
       distanceKm: 'About {distance} km away (straight line)',
       distanceDisclaimer:
