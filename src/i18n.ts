@@ -23,7 +23,13 @@ export const messages = {
     home: {
       eyebrow: 'YOUR VIEW STARTS HERE',
       headline: '好位置，\n先看再選。',
-      subhead: '先看看銀幕視角，再決定坐哪裡。',
+      subhead: '先選影城、再選影廳和座位，最後從 3D 畫面看看銀幕視角。',
+      availableVieShow3d: '已收錄 {count} 個威秀／MUVIE 分館、{layouts} 種影廳座位配置',
+      chooseCinemaFirst: '先選擇影城與影廳',
+      currentHallInsteadOfFestival: '優先開啟現售座位資料；影展舊版仍保留查閱',
+      chain3dAvailable: '已可查看 {count} 種逐廳 2D／估算 3D 座位配置',
+      chooseHall: '選擇影廳',
+      viewCinema: '查看影城資料',
       search: '搜尋影城、影廳或地區',
       searchAria: '搜尋影廳',
       available: '可預覽影廳',
@@ -38,7 +44,7 @@ export const messages = {
       viewDetails: '查看 {name} 的資料來源',
       no3dYet: '尚未有可靠座位配置・暫無 3D',
       provenanceHint: '影廳規格皆註明來源；沒有精確座號時不提供虛構 3D。',
-      discoveryTitle: '影廳列表',
+      discoveryTitle: '其他文化與獨立影廳',
       cityFilter: '地區',
       allCities: '全部地區',
       modelFilter: '類型',
@@ -55,13 +61,14 @@ export const messages = {
       locationDenied: '定位權限遭拒；可在瀏覽器網站設定允許定位，或繼續搜尋。',
       locationTimeout: '定位逾時，請重新嘗試；仍可使用搜尋與篩選。',
       locationUnavailable: '無法取得位置，請檢查 HTTPS／localhost 和裝置定位服務。',
-      resultCount: '找到 {count} / {total} 間影廳',
+      resultCount: '其他文化與獨立影廳：{count} / {total} 間符合條件（不含上方連鎖分館）',
       resultCountShort: '{count} 間結果',
       distanceKm: '直線距離約 {distance} 公里',
       distanceDisclaimer:
         '場館距離為直線估算，非實際行車／步行里程；定位只在本頁計算。部分地圖點位：',
       chainsTitle: '優先收錄連鎖影城',
-      chainsLead: '威秀、秀泰、美麗華、美麗新：先建立可靠分館目錄，再逐步確認真實影廳與座位視角。',
+      chainsLead:
+        '先選影城分館，再選擇有來源的座位配置。威秀／MUVIE 已有 222 種可操作 2D／估算 3D 模型；其他院線按已確認資料顯示。',
       chainsCount: '{count} / {total} 間分館',
       chainBrand: '影城品牌',
       chainAll: '全部連鎖品牌',
@@ -114,6 +121,13 @@ export const messages = {
         '從威秀公開場次的座位預覽取得每個座號、走道缺口與相對格線；逐廳比對 2026 年 5 月官方席數，保留不一致之處。以下是重新繪製的 2D 資料參考圖，不包含即時票況。',
       hallCount: '已採樣 {count} 種影廳配置',
       selectHall: '選擇要查看的影廳',
+      hallPickerHint: '已收錄的影廳可切換 2D 座位圖與估算 3D；尚缺座位圖的影廳明確標示。',
+      hallPreviewReady: '可預覽 2D／3D',
+      countNeedsReview: '席數差異待核對',
+      hallStillMissing: '座位圖待補',
+      missingHallAria: '第 {number} 廳，目前尚無可核實的座位圖',
+      quickSelect: '快速切換影廳',
+      olderFestivalReference: '另看第 12 廳 2026 影展舊版座位圖（234 個座號）',
       hallOption: '{hall} · {count} 個座號',
       regularSeats: '{count} 個一般座號',
       wheelchairMarkers: '{count} 個輪椅位置標示',
@@ -148,7 +162,9 @@ export const messages = {
     vieshow3d: {
       loading: '正在載入影廳座位與模擬場景…',
       notFound: '找不到這間影廳的已確認座位配置。',
-      backToCinema: '返回影城資料',
+      backToCinema: '返回影城與選廳',
+      chooseDifferentHall: '切換同一分館的影廳',
+      allHallsLink: '查看所有已收錄影廳',
       description:
         '座號與走道沿用威秀公開座位圖；3D 空間參數尚未完成現場量測，提供可調整的概念視角。',
       simulationWarning: '本視角為估算模擬，不代表真實銀幕與座位間的實測距離或最佳座位。',
@@ -204,6 +220,7 @@ export const messages = {
       eyebrow: 'CHAIN CINEMA · VERIFIED COUNTS',
       officialSite: '查看影城官方資訊',
       officialShowtimes: '查看官方場次',
+      browseModelledHalls: '選擇影廳／座位 3D',
       showtimesExternalNote:
         '場次將於影城官方網站開啟；TheatGood 尚未同步該影城的即時場次或可售座位。',
       chooseOfficialVenue:
@@ -305,6 +322,12 @@ export const messages = {
       provenance: '銀幕尺寸與座號為官方資料；3D 距離、坡度與角度均為估算。',
       festivalReference:
         '2026 年金馬經典影展座位圖參考版；座號取自影展售票資訊，銀幕大小與 3D 距離均為估算，非 2026 年完整現售配置。',
+      festivalArchiveTitle: '這是舊影展版，不是唯一完成的威秀影廳',
+      festivalArchiveDescription:
+        '此圖只有 234 個影展座號。TheatGood 另外已收錄這間影城第 12 廳較新的官方公開場次座位圖（244 個座號），也可從影城頁選擇其他影廳。',
+      festivalOpenCurrent: '開啟第 12 廳較新的 2D／3D 座位模型',
+      festivalBrowseHalls: '選擇信義威秀其他影廳',
+      festivalHistoricalTitle: '12 廳 · 舊影展參考圖',
       festivalCountWarning:
         '2026 影展圖共有 234 個一般座號及 W14／W15 兩個輪椅位置；威秀公布此廳容量為 244 席，差 8 席原因未明。請勿以此座位圖取代當次訂票畫面；3D 銀幕大小、排距和坡度均未量測。',
       festivalWheelchair:
@@ -452,7 +475,15 @@ export const messages = {
     home: {
       eyebrow: 'YOUR VIEW STARTS HERE',
       headline: 'A better view.\nBefore you book.',
-      subhead: 'See the screen from your seat before choosing where to sit.',
+      subhead: 'Choose a cinema, then a screen and seat, before exploring the estimated 3D view.',
+      availableVieShow3d:
+        '{count} Vie Show / MUVIE locations and {layouts} sourced seating layouts',
+      chooseCinemaFirst: 'Browse cinemas and screens',
+      currentHallInsteadOfFestival:
+        'Opens the newer public seating chart; the older festival reference is still available',
+      chain3dAvailable: '{count} source-linked 2D / estimated 3D auditorium layouts',
+      chooseHall: 'Choose a screen',
+      viewCinema: 'Cinema details',
       search: 'Search cinemas, auditoriums or areas',
       searchAria: 'Search auditoriums',
       available: 'Available auditoriums',
@@ -467,7 +498,7 @@ export const messages = {
       viewDetails: 'View source details for {name}',
       no3dYet: 'Verified venue · 3D not yet available',
       provenanceHint: 'All venue data is source-attributed. Unverified seating is never invented.',
-      discoveryTitle: 'Cinema directory',
+      discoveryTitle: 'Other cultural and independent cinemas',
       cityFilter: 'Area',
       allCities: 'All areas',
       modelFilter: 'Type',
@@ -486,14 +517,15 @@ export const messages = {
         'Location access denied. Allow it in your browser settings or continue searching.',
       locationTimeout: 'Location request timed out. Try again, or use the search and filters.',
       locationUnavailable: 'Location unavailable. Check HTTPS/localhost and your device settings.',
-      resultCount: '{count} of {total} auditoriums found',
+      resultCount:
+        'Other independent/cultural auditoriums: {count} of {total} (chain venues shown above)',
       resultCountShort: '{count} results',
       distanceKm: 'About {distance} km away (straight line)',
       distanceDisclaimer:
         'Distances are straight-line estimates, not travel distances. Your location stays in your browser. Map data:',
       chainsTitle: 'Major cinema chains first',
       chainsLead:
-        'Vie Show, Showtime, Miramar and Miranew: verified venue locations first, followed by independently checked auditorium layouts.',
+        'Start by choosing a cinema branch, then an auditorium. Vie Show / MUVIE has 222 sourced 2D and estimated 3D seat layouts; other chains show only the references verified so far.',
       chainsCount: '{count} of {total} venues',
       chainBrand: 'Cinema brand',
       chainAll: 'All major chains',
@@ -546,7 +578,15 @@ export const messages = {
       description:
         'These original 2D redraws preserve numbered seats, aisle gaps and relative grid positions from public Vie Show previews. Capacity differences against the operator’s May 2026 records are shown rather than guessed away. No live ticket inventory is stored.',
       hallCount: '{count} observed auditorium layouts',
-      selectHall: 'Choose a screen to inspect',
+      selectHall: 'Choose an auditorium',
+      hallPickerHint:
+        'Sourced halls have 2D and estimated 3D previews. Unmatched hall numbers are explicitly marked.',
+      hallPreviewReady: '2D / 3D preview',
+      countNeedsReview: 'Capacity discrepancy',
+      hallStillMissing: 'Seat map not yet verified',
+      missingHallAria: 'Screen {number}: no verified seating chart yet',
+      quickSelect: 'Quick-select an auditorium',
+      olderFestivalReference: 'Optional 2026 festival-era Screen 12 plan (234 seat labels)',
       hallOption: '{hall} · {count} numbered seats',
       regularSeats: '{count} numbered seats',
       wheelchairMarkers: '{count} wheelchair markers',
@@ -583,7 +623,9 @@ export const messages = {
     vieshow3d: {
       loading: 'Loading the auditorium seats and preview…',
       notFound: 'A sourced seat layout for this auditorium was not found.',
-      backToCinema: 'Back to cinema information',
+      backToCinema: 'Back to cinema and auditorium list',
+      chooseDifferentHall: 'Switch auditoriums at this cinema',
+      allHallsLink: 'See all sourced auditoriums',
       description:
         'Seat labels and aisle gaps come from a public Vie Show seating preview. Unmeasured spatial dimensions are adjustable visual assumptions.',
       simulationWarning:
@@ -645,6 +687,7 @@ export const messages = {
       eyebrow: 'CHAIN CINEMA · VERIFIED COUNTS',
       officialSite: 'Official cinema information',
       officialShowtimes: 'Official showtimes',
+      browseModelledHalls: 'Choose a screen / 3D seat view',
       showtimesExternalNote:
         'The official cinema website opens in a new tab. TheatGood does not synchronise this cinema’s live sessions or ticket inventory.',
       chooseOfficialVenue:
@@ -751,6 +794,12 @@ export const messages = {
         'Screen size and seat labels are official; 3D distance, slope and viewing angles are estimated.',
       festivalReference:
         'Reference seating layout from the 2026 Golden Horse Classic Film Festival. Seat labels come from festival ticketing; screen dimensions and 3D distances are estimated and do not establish every currently bookable seat.',
+      festivalArchiveTitle: 'This is an older festival reference, not the only Vie Show auditorium',
+      festivalArchiveDescription:
+        'This historical chart contains 234 seat labels. TheatGood has a newer 244-seat public session chart for this screen, plus more auditoriums at Hsin Yi.',
+      festivalOpenCurrent: 'Open the newer Screen 12 2D / 3D model',
+      festivalBrowseHalls: 'Choose another Hsin Yi screen',
+      festivalHistoricalTitle: 'Screen 12 · historical festival reference',
       festivalCountWarning:
         'The 2026 festival chart shows 234 numbered seats plus wheelchair positions W14 and W15, while Vie Show lists 244 seats. Eight positions are unresolved. Check the live booking chart; screen dimensions, spacing and slope are estimates.',
       festivalWheelchair:

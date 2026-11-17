@@ -37,7 +37,13 @@ const router = createRouter({
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
-  scrollBehavior: () => ({ top: 0 }),
+  scrollBehavior(to, from) {
+    if (to.hash) return { el: to.hash, top: 16 }
+    // Seat and auditorium selectors store the current choice in the URL.
+    // Do not bounce back to the top when only those query parameters change.
+    if (to.path === from.path) return false
+    return { top: 0 }
+  },
 })
 
 export default router

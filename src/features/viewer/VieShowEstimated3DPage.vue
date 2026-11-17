@@ -20,6 +20,7 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const layout = shallowRef<VieShowArchivedLayout | null>(null)
+const venueLayouts = shallowRef<readonly VieShowArchivedLayout[]>([])
 const loading = ref(false)
 const failed = ref(false)
 const seatId = ref('')
@@ -35,6 +36,11 @@ const slug = computed(() => String(route.params.slug))
 const hallId = computed(() => String(route.params.hallId))
 const venue = computed(() => chainCinemas.find((item) => item.slug === slug.value))
 const immersive = computed(() => route.query.view === '3d')
+const cinemaHallListRoute = computed(() => ({
+  path: '/cinemas/' + slug.value,
+  query: layout.value ? { hall: String(layout.value.hallNumber ?? layout.value.hallLabel) } : {},
+  hash: '#vieshow-seat-references',
+}))
 const geometry = computed(() =>
   layout.value ? deriveVieShowPreviewGeometry(slug.value, layout.value, parameters.value) : null,
 )
@@ -94,11 +100,13 @@ watch(
     loading.value = true
     failed.value = false
     layout.value = null
+    venueLayouts.value = []
     seatId.value = ''
     parameters.value = { ...defaultVieShowPreviewParameters }
     try {
       const data = await loadVieShowArchiveForCinema(nextSlug)
       if (cancelled) return
+      venueLayouts.value = data
       layout.value = data.find((item) => item.id === nextHall) ?? null
       if (layout.value) {
         const candidate = route.query.seat
@@ -155,6 +163,11 @@ onMounted(() => {
   if (immersive.value && webglAvailable.value) void loadScene()
 })
 
+function switchHall(id: string) {
+  if (!venueLayouts.value.some((item) => item.id === id)) return
+  void router.push({ path: '/cinemas/' + slug.value + '/halls/' + id })
+}
+
 function selectSeat(id: string) {
   if (!geometry.value?.seats.some((seat) => seat.id === id)) return
   seatId.value = id
@@ -195,9 +208,27 @@ function toggleImmersiveViewMode() {
 
     <template v-else>
       <div v-show="!immersive">
-        <RouterLink :to="'/cinemas/' + slug" class="back-link">
+        <RouterLink :to="cinemaHallListRoute" class="back-link">
           <v-icon icon="mdi-chevron-left" size="19" /> {{ t('vieshow3d.backToCinema') }}
         </RouterLink>
+        <div class="vieshow-3d-page__hall-switch">
+          <label for="vieshow-hall-switch">{{ t('vieshow3d.chooseDifferentHall') }}</label>
+          <select
+            id="vieshow-hall-switch"
+            :value="layout.id"
+            @change="switchHall(($event.target as HTMLSelectElement).value)"
+          >
+            <option v-for="item in venueLayouts" :key="item.id" :value="item.id">
+              {{
+                t('vieshowSeatRefs.hallOption', {
+                  hall: item.hallLabel,
+                  count: item.ordinarySeatCount,
+                })
+              }}
+            </option>
+          </select>
+          <RouterLink :to="cinemaHallListRoute">{{ t('vieshow3d.allHallsLink') }}</RouterLink>
+        </div>
         <header class="vieshow-3d-page__header">
           <span class="eyebrow">THEATGOOD / 3D SEATING REFERENCE</span>
           <h1>{{ venue.name }} · {{ layout.hallLabel }}</h1>

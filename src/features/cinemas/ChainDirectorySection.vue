@@ -12,12 +12,14 @@ import {
   type ChainCinema,
 } from './chain-directory'
 import { chainDistanceKm, sortChainsByDistance, verifiedChainPositions } from './chain-positions'
+import { vieShowCoverageForCinema } from './vieshow-seat-archive'
 
 const props = defineProps<{
   query: string
   city: string
   origin: GeoPoint | null
   sortByDistance: boolean
+  modelFilter: 'all' | '3d' | 'information'
 }>()
 const { t } = useI18n()
 const selectedBrand = ref<ChainBrand | 'all'>('all')
@@ -30,7 +32,15 @@ const brandNames = [
   { value: 'miranew', label: 'home.chainMiranew' },
 ] as const
 
-const filtered = computed(() => searchChainCinemas(props.query, selectedBrand.value, props.city))
+const sourceLayoutCount = (cinema: ChainCinema): number =>
+  vieShowCoverageForCinema(cinema.slug)?.observedLabels ?? 0
+const filtered = computed(() =>
+  searchChainCinemas(props.query, selectedBrand.value, props.city).filter((cinema) => {
+    if (props.modelFilter === '3d') return sourceLayoutCount(cinema) > 0
+    if (props.modelFilter === 'information') return sourceLayoutCount(cinema) === 0
+    return true
+  }),
+)
 const ordered = computed(() =>
   props.sortByDistance && props.origin
     ? sortChainsByDistance(filtered.value, props.origin)
@@ -91,7 +101,11 @@ function formattedDistance(cinema: ChainCinema): string | undefined {
           <small v-else-if="origin && sortByDistance">{{
             t('home.chainLocationUnverified')
           }}</small>
-          <small v-if="publishedNamedHallsForCinema(cinema.slug).length">
+          <small v-if="sourceLayoutCount(cinema)" class="chain-cinema__preview-count">
+            <v-icon icon="mdi-cube-outline" size="15" />
+            {{ t('home.chain3dAvailable', { count: sourceLayoutCount(cinema) }) }}
+          </small>
+          <small v-else-if="publishedNamedHallsForCinema(cinema.slug).length">
             {{
               t('home.chainPublishedHallCounts', {
                 count: publishedNamedHallsForCinema(cinema.slug).length,
@@ -104,6 +118,10 @@ function formattedDistance(cinema: ChainCinema): string | undefined {
           <small v-else>{{ t('home.chainNoModel') }}</small>
         </div>
         <div class="chain-cinema__actions">
+          <RouterLink class="chain-cinema__choose" :to="'/cinemas/' + cinema.slug">
+            {{ sourceLayoutCount(cinema) ? t('home.chooseHall') : t('home.viewCinema') }}
+            <v-icon icon="mdi-chevron-right" size="17" />
+          </RouterLink>
           <a
             v-if="verifiedChainPositions[cinema.slug]"
             :href="verifiedChainPositions[cinema.slug]?.sourceUrl"
