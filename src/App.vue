@@ -8,7 +8,8 @@ const route = useRoute()
 const { t } = useI18n()
 const { themePreference, appLocale } = usePreferences()
 const settingsOpen = ref(false)
-const isViewer = computed(() => route.name === 'viewer')
+const isViewer = computed(() => route.name === 'viewer' || route.name === 'vieshow-3d-preview')
+const isCinemaRoute = computed(() => !['history', 'screenings'].includes(String(route.name)))
 
 watch(
   () => route.fullPath,
@@ -50,11 +51,8 @@ onUnmounted(() => document.removeEventListener('pointerdown', handleOutsidePoint
           </RouterLink>
 
           <nav class="site-nav" :aria-label="t('app.mainNav')">
-            <RouterLink to="/" class="site-nav__link">
+            <RouterLink to="/" class="site-nav__link" :class="{ 'is-active': isCinemaRoute }">
               {{ t('app.home') }}
-            </RouterLink>
-            <RouterLink to="/screenings" class="site-nav__link">
-              {{ t('app.screenings') }}
             </RouterLink>
             <RouterLink to="/history" class="site-nav__link">
               {{ t('app.history') }}
@@ -157,21 +155,9 @@ onUnmounted(() => document.removeEventListener('pointerdown', handleOutsidePoint
       </main>
 
       <nav v-if="!isViewer" class="glass-tabbar glass-panel" :aria-label="t('app.mainNav')">
-        <RouterLink
-          to="/"
-          class="glass-tabbar__link"
-          :class="{ 'is-active': route.name === 'home' }"
-        >
+        <RouterLink to="/" class="glass-tabbar__link" :class="{ 'is-active': isCinemaRoute }">
           <v-icon icon="mdi-magnify" size="23" />
           <span>{{ t('app.home') }}</span>
-        </RouterLink>
-        <RouterLink
-          to="/screenings"
-          class="glass-tabbar__link"
-          :class="{ 'is-active': route.name === 'screenings' }"
-        >
-          <v-icon icon="mdi-calendar-month-outline" size="23" />
-          <span>{{ t('app.screenings') }}</span>
         </RouterLink>
         <RouterLink
           to="/history"

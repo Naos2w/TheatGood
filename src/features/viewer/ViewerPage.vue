@@ -6,9 +6,8 @@ import SeatMap from '../../components/SeatMap.vue'
 import { appLocale } from '../../composables/usePreferences'
 import { findAuditorium } from '../auditoriums/catalog'
 import { cinemaDirectory, directoryHallName, directoryCinemaName } from '../auditoriums/directory'
-import { calculateSightline, createSeats } from '../auditoriums/geometry'
+import { createSeats } from '../auditoriums/geometry'
 import { neighbouringSeat } from '../auditoriums/seat-navigation'
-import { horizontalFovPresets, type HorizontalFovPreset } from './view-projection'
 import { useViewerStore } from '../../stores/viewer'
 
 const route = useRoute()
@@ -21,7 +20,6 @@ const seats = computed(() => (auditorium.value ? createSeats(auditorium.value) :
 const selectedSeat = computed(
   () => seats.value.find((seat) => seat.id === store.selectedSeatId) ?? seats.value[0],
 )
-const isOfficial = computed(() => auditorium.value?.provenance.seatLabels === 'official')
 const isFestivalReference = computed(() => auditorium.value?.id === 'vieshow-hsinyi-12')
 const sourceHall = computed(() =>
   cinemaDirectory.find((item) => item.modelId === auditorium.value?.id),
@@ -29,17 +27,10 @@ const sourceHall = computed(() =>
 const isImmersive = computed(() => route.query.view === '3d')
 const previousSeat = computed(() => neighbouringSeat(seats.value, store.selectedSeatId, -1))
 const nextSeat = computed(() => neighbouringSeat(seats.value, store.selectedSeatId, 1))
-const sightline = computed(() =>
-  selectedSeat.value && auditorium.value
-    ? calculateSightline(selectedSeat.value, auditorium.value.screen)
-    : null,
-)
 const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
 const resetViewToken = ref(0)
-/** User-tunable 3D camera projection: not a measured eye/device calibration. */
-const horizontalFov = ref<HorizontalFovPreset>(80)
 
 function seatName() {
   return sourceHall.value
@@ -157,22 +148,11 @@ function navigate(direction: -1 | 1) {
             <v-icon icon="mdi-chevron-left" size="25" />
             {{ t('app.back') }}
           </RouterLink>
-          <span class="viewer-map-page__count">{{
-            t('seats.seatCount', { count: seats.length })
-          }}</span>
         </div>
 
         <div class="viewer-map-page__heading">
-          <span class="eyebrow">THEATGOOD / SEAT MAP</span>
           <h1>{{ isFestivalReference ? t('viewer.festivalHistoricalTitle') : seatName() }}</h1>
           <p>{{ venueName() }}</p>
-          <span class="data-caption">{{
-            isFestivalReference
-              ? t('viewer.festivalReference')
-              : isOfficial
-                ? t('app.officialNote')
-                : t('seats.demoNote')
-          }}</span>
         </div>
 
         <nav
@@ -206,28 +186,6 @@ function navigate(direction: -1 | 1) {
             @select-seat="selectSeat"
           />
         </section>
-
-        <div class="map-provenance">
-          <v-icon icon="mdi-information-outline" size="18" />
-          <p>
-            {{
-              isFestivalReference
-                ? t('viewer.festivalCountWarning')
-                : isOfficial
-                  ? t('seats.layoutNote')
-                  : t('viewer.demoProvenance')
-            }}
-          </p>
-          <a
-            v-if="auditorium.sources.length"
-            :href="auditorium.sources[0]"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {{ t('app.openSource') }}
-            <v-icon icon="mdi-open-in-new" size="15" />
-          </a>
-        </div>
       </section>
 
       <div class="viewer-seat-action glass-panel">
@@ -275,7 +233,7 @@ function navigate(direction: -1 | 1) {
         :seats="seats"
         :selected-seat-id="store.selectedSeatId"
         :reset-view-token="resetViewToken"
-        :horizontal-fov="horizontalFov"
+        :horizontal-fov="80"
       />
 
       <div class="viewer-immersive__top">
@@ -291,7 +249,7 @@ function navigate(direction: -1 | 1) {
       </div>
 
       <div class="viewer-immersive__bottom">
-        <p class="viewer-immersive__hint">{{ t('viewer.drag') }}</p>
+        <p class="viewer-immersive__hint">{{ t('ux.dragHint') }}</p>
         <div class="viewer-switcher glass-panel">
           <button
             type="button"
@@ -328,50 +286,6 @@ function navigate(direction: -1 | 1) {
             <v-icon icon="mdi-bookmark-plus-outline" size="18" />
             {{ t('history.recordSeat') }}
           </button>
-          <details class="viewer-details">
-            <summary>
-              {{ t('viewer.details') }} <v-icon icon="mdi-chevron-down" size="17" />
-            </summary>
-            <label class="viewer-fov-control">
-              <span>{{ t('viewer.projectionFov') }}</span>
-              <select v-model.number="horizontalFov">
-                <option v-for="angle in horizontalFovPresets" :key="angle" :value="angle">
-                  {{ angle }}°
-                </option>
-              </select>
-            </label>
-            <p class="viewer-fov-note">{{ t('viewer.projectionCaveat') }}</p>
-            <dl v-if="sightline">
-              <div>
-                <dt>{{ t('viewer.distance') }}</dt>
-                <dd>{{ sightline.distance.toFixed(1) }} m</dd>
-              </div>
-              <div>
-                <dt>{{ t('viewer.horizontal') }}</dt>
-                <dd>{{ sightline.horizontalAngle.toFixed(1) }}°</dd>
-              </div>
-              <div>
-                <dt>{{ t('viewer.vertical') }}</dt>
-                <dd>{{ sightline.verticalAngle.toFixed(1) }}°</dd>
-              </div>
-              <div>
-                <dt>{{ t('viewer.offset') }}</dt>
-                <dd>{{ Math.abs(sightline.horizontalOffset).toFixed(1) }}°</dd>
-              </div>
-            </dl>
-            <p>
-              {{
-                isFestivalReference
-                  ? t('viewer.festivalCountWarning')
-                  : isOfficial
-                    ? t('viewer.provenance')
-                    : t('viewer.demoProvenance')
-              }}
-            </p>
-            <p v-if="isFestivalReference">{{ t('viewer.festivalWheelchair') }}</p>
-            <p v-if="auditorium.id === 'tfai-small'">{{ t('viewer.wheelchair') }}</p>
-            <p v-if="auditorium.id === 'spot-taipei'">{{ t('viewer.wheelchairSpot') }}</p>
-          </details>
         </div>
       </div>
     </div>
