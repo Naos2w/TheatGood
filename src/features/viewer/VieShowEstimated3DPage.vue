@@ -26,6 +26,7 @@ const seatId = ref('')
 const parameters = ref({ ...defaultVieShowPreviewParameters })
 const horizontalFov = ref<HorizontalFovPreset>(80)
 const resetViewToken = ref(0)
+const immersiveViewMode = ref<'seat' | 'overview'>('seat')
 const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
@@ -171,6 +172,9 @@ function setImmersive(value: boolean) {
 function resetParameters() {
   parameters.value = { ...defaultVieShowPreviewParameters }
   resetViewToken.value++
+}
+function toggleImmersiveViewMode() {
+  immersiveViewMode.value = immersiveViewMode.value === 'seat' ? 'overview' : 'seat'
 }
 </script>
 
@@ -484,6 +488,7 @@ function resetParameters() {
           :selected-seat-id="seatId"
           :reset-view-token="resetViewToken"
           :horizontal-fov="horizontalFov"
+          :view-mode="immersiveViewMode"
         />
         <div class="viewer-immersive__top">
           <button type="button" class="viewer-glass-button" @click="setImmersive(false)">
@@ -494,7 +499,13 @@ function resetParameters() {
           >
         </div>
         <div class="viewer-immersive__bottom">
-          <p class="viewer-immersive__hint">{{ t('vieshow3d.immersiveCaveat') }}</p>
+          <p class="viewer-immersive__hint">
+            {{
+              immersiveViewMode === 'overview'
+                ? t('vieshow3d.overviewHint')
+                : t('vieshow3d.immersiveCaveat')
+            }}
+          </p>
           <div class="viewer-switcher glass-panel">
             <button
               :disabled="!previous"
@@ -505,7 +516,11 @@ function resetParameters() {
             </button>
             <div class="viewer-switcher__seat" aria-live="polite">
               <strong>{{ seatId }}</strong>
-              <span>{{ t('vieshow3d.estimatedPov') }}</span>
+              <span>{{
+                immersiveViewMode === 'overview'
+                  ? t('vieshow3d.overviewTitle')
+                  : t('vieshow3d.estimatedPov')
+              }}</span>
             </div>
             <button :disabled="!next" :aria-label="t('viewer.next')" @click="switchSeat(1)">
               <v-icon icon="mdi-chevron-right" size="30" />
@@ -514,6 +529,21 @@ function resetParameters() {
           <div class="viewer-immersive__utility">
             <button type="button" class="viewer-reset" @click="resetViewToken++">
               <v-icon icon="mdi-restore" size="19" /> {{ t('viewer.reset') }}
+            </button>
+            <button type="button" class="viewer-reset" @click="toggleImmersiveViewMode">
+              <v-icon
+                :icon="
+                  immersiveViewMode === 'seat'
+                    ? 'mdi-view-dashboard-outline'
+                    : 'mdi-seat-recline-normal'
+                "
+                size="19"
+              />
+              {{
+                immersiveViewMode === 'seat'
+                  ? t('vieshow3d.overviewButton')
+                  : t('vieshow3d.seatViewButton')
+              }}
             </button>
             <details class="viewer-details">
               <summary>
