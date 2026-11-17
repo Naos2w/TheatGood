@@ -3630,7 +3630,10 @@ html[data-theme='light'] {
   --tg-border: #e3e7ef;
   --tg-accent: #1876e8;
   --tg-accent-contrast: #ffffff;
-  --tg-glass: rgba(255, 255, 255, 0.53);
+  --tg-glass: rgba(244, 250, 255, 0.16);
+  --tg-glass-rim: rgba(255, 255, 255, 0.82);
+  --tg-glass-specular: rgba(255, 255, 255, 0.58);
+  --tg-glass-shadow: rgba(38, 72, 122, 0.13);
   --tg-shadow: 0 14px 38px rgba(25, 47, 79, 0.095);
 }
 html[data-theme='dark'] {
@@ -3642,16 +3645,20 @@ html[data-theme='dark'] {
   --tg-border: #343e4f;
   --tg-accent: #85b8ff;
   --tg-accent-contrast: #132137;
-  --tg-glass: rgba(25, 31, 43, 0.55);
+  --tg-glass: rgba(18, 29, 45, 0.27);
+  --tg-glass-rim: rgba(255, 255, 255, 0.3);
+  --tg-glass-specular: rgba(255, 255, 255, 0.22);
+  --tg-glass-shadow: rgba(0, 0, 0, 0.26);
   --tg-shadow: 0 18px 55px rgba(0, 0, 0, 0.36);
 }
 .app-shell {
   background:
     radial-gradient(
-      ellipse 700px 450px at 8% -7%,
-      color-mix(in srgb, var(--tg-accent) 7%, transparent),
-      transparent 75%
+      ellipse 540px 300px at 12% 0%,
+      color-mix(in srgb, var(--tg-accent) 17%, transparent),
+      transparent 76%
     ),
+    radial-gradient(ellipse 490px 260px at 84% 4%, rgba(148, 168, 246, 0.12), transparent 79%),
     var(--tg-bg);
 }
 .glass-panel,
@@ -3677,9 +3684,22 @@ html[data-theme='dark'] .site-nav {
     0 12px 35px rgba(0, 0, 0, 0.24);
 }
 .site-header {
+  position: fixed;
+  inset: 0 0 auto;
+  width: 100%;
   background: transparent;
-  top: 0;
+  z-index: 30;
   padding-top: 10px;
+  pointer-events: none;
+}
+.site-header__inner {
+  pointer-events: auto;
+}
+.app-main {
+  padding-top: 76px;
+}
+.app-main--viewer {
+  padding-top: 0;
 }
 .site-header__inner {
   min-height: 66px;
@@ -3696,8 +3716,11 @@ html[data-theme='dark'] .site-nav {
   padding: 4px;
   margin-left: auto;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--tg-surface) 32%, transparent);
+  background: rgba(255, 255, 255, 0.025);
+  border: 0;
   box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .site-nav__link {
   padding: 10px 18px;
@@ -3710,8 +3733,11 @@ html[data-theme='dark'] .site-nav {
 .site-nav__link.is-active,
 .site-nav__link.router-link-active {
   color: var(--tg-text);
-  background: color-mix(in srgb, var(--tg-surface) 70%, transparent);
-  box-shadow: 0 2px 9px rgba(21, 41, 75, 0.08);
+  background: color-mix(in srgb, var(--tg-surface) 32%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tg-glass-rim) 52%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 2px 9px rgba(21, 41, 75, 0.08);
 }
 .settings-anchor .icon-button {
   background: color-mix(in srgb, var(--tg-surface) 38%, transparent);
@@ -4125,7 +4151,8 @@ html[data-theme='dark'] .site-nav {
     font-size: 11px;
   }
   .glass-tabbar__link.is-active {
-    background: color-mix(in srgb, var(--tg-surface) 72%, transparent);
+    background: color-mix(in srgb, var(--tg-surface) 36%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tg-glass-rim) 45%, transparent);
     box-shadow:
       inset 0 1px 1px rgba(255, 255, 255, 0.34),
       0 2px 8px rgba(0, 0, 0, 0.08);
@@ -4235,6 +4262,213 @@ html[data-theme='dark'] .site-nav {
     width: min(330px, calc(100vw - 34px));
     max-height: min(69dvh, 450px);
     overflow-y: auto;
+  }
+}
+
+/* Liquid-glass approximation: real backdrop translucency, a bright meniscus,
+   and shallow interior highlights. No fake screenshot-based refraction. */
+.site-header__inner,
+.glass-tabbar,
+.vieshow-3d-page__selection,
+.viewer-switcher.glass-panel {
+  background: var(--tg-glass);
+  border-color: var(--tg-glass-rim);
+  box-shadow:
+    0 10px 30px var(--tg-glass-shadow),
+    inset 0 1px 0 var(--tg-glass-specular),
+    inset 0 -1px 0 color-mix(in srgb, var(--tg-glass-rim) 45%, transparent);
+  -webkit-backdrop-filter: blur(13px) saturate(195%) contrast(1.055);
+  backdrop-filter: blur(13px) saturate(195%) contrast(1.055);
+  isolation: isolate;
+}
+.site-header__inner,
+.viewer-switcher.glass-panel {
+  position: relative;
+}
+.site-header__inner::before,
+.glass-tabbar::before,
+.vieshow-3d-page__selection::before,
+.viewer-switcher.glass-panel::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 130px 72px at var(--liquid-x, 12%) var(--liquid-y, -12%),
+      color-mix(in srgb, var(--tg-glass-specular) 74%, transparent),
+      transparent 82%
+    ),
+    radial-gradient(
+      ellipse 75% 125% at 4% -34%,
+      color-mix(in srgb, var(--tg-glass-specular) 55%, transparent),
+      transparent 66%
+    ),
+    radial-gradient(
+      ellipse 58% 120% at 104% 128%,
+      color-mix(in srgb, var(--tg-accent) 14%, transparent),
+      transparent 75%
+    ),
+    linear-gradient(
+      124deg,
+      color-mix(in srgb, var(--tg-glass-rim) 23%, transparent),
+      transparent 38%,
+      color-mix(in srgb, var(--tg-glass-rim) 12%, transparent)
+    );
+}
+.site-header__inner::after,
+.glass-tabbar::after,
+.vieshow-3d-page__selection::after,
+.viewer-switcher.glass-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow:
+    inset 1.3px 1.3px 0 var(--tg-glass-specular),
+    inset -1px -1px 0 color-mix(in srgb, var(--tg-glass-rim) 45%, transparent),
+    inset 0 -8px 14px -13px var(--tg-glass-specular);
+}
+.site-header__inner > *,
+.glass-tabbar > *,
+.vieshow-3d-page__selection > *,
+.viewer-switcher.glass-panel > * {
+  position: relative;
+  z-index: 1;
+}
+.site-header__inner {
+  background:
+    linear-gradient(
+      112deg,
+      color-mix(in srgb, var(--tg-glass-rim) 8%, transparent),
+      transparent 42%
+    ),
+    var(--tg-glass);
+}
+.settings-popover {
+  /* Menus should be readable but remain translucent. */
+  background: color-mix(in srgb, var(--tg-surface) 72%, transparent);
+}
+.settings-anchor .icon-button {
+  background: color-mix(in srgb, var(--tg-surface) 15%, transparent);
+}
+.viewer-switcher.glass-panel {
+  background: rgba(13, 24, 43, 0.34);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+html[data-theme='dark'] .viewer-switcher.glass-panel {
+  background: rgba(10, 15, 26, 0.45);
+}
+@media (max-width: 599px) {
+  .app-main:not(.app-main--viewer) {
+    padding-top: 67px;
+  }
+  .glass-tabbar {
+    left: max(14px, env(safe-area-inset-left));
+    right: max(14px, env(safe-area-inset-right));
+    width: auto;
+    transform: none;
+  }
+  .chain-cinema {
+    position: relative;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 44px;
+    gap: 10px;
+    align-items: center;
+  }
+  .chain-cinema__details {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .chain-cinema__details > span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.55;
+  }
+  .chain-cinema__name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.42;
+    font-size: 13px;
+  }
+  .chain-cinema__name::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .chain-cinema__actions {
+    justify-self: end;
+  }
+  .chain-cinema__actions .chain-cinema__choose {
+    display: none;
+  }
+  .chain-cinema__actions .chain-cinema__link--map {
+    position: relative;
+    z-index: 2;
+    flex: 0 0 44px;
+  }
+  .vieshow-3d-page__selection {
+    background: var(--tg-glass);
+  }
+}
+@media (max-width: 400px) {
+  .discovery-categories button {
+    white-space: normal;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .vieshow-3d-page__selection .button-primary {
+    min-width: 112px;
+    padding-inline: 9px;
+  }
+}
+.vieshow-3d-page__map-scroll {
+  width: 100%;
+  max-width: 100%;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.vieshow-3d-page__header h1,
+.chain-cinema-page__header h1 {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+/* Avoid translucent rims showing through when transparency is reduced. */
+@media (prefers-reduced-transparency: reduce) {
+  .site-header__inner,
+  .glass-tabbar,
+  .vieshow-3d-page__selection,
+  .viewer-switcher.glass-panel {
+    background: var(--tg-surface);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .site-header__inner::before,
+  .site-header__inner::after,
+  .glass-tabbar::before,
+  .glass-tabbar::after,
+  .vieshow-3d-page__selection::before,
+  .vieshow-3d-page__selection::after,
+  .viewer-switcher.glass-panel::before,
+  .viewer-switcher.glass-panel::after {
+    display: none;
+  }
+}
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .site-header__inner,
+  .glass-tabbar,
+  .vieshow-3d-page__selection,
+  .viewer-switcher.glass-panel {
+    background: var(--tg-surface);
   }
 }
 

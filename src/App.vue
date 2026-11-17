@@ -26,6 +26,23 @@ function chooseLocale(value: AppLocale) {
   appLocale.value = value
 }
 
+function updateGlassGlint(event: PointerEvent) {
+  if (!(event.currentTarget instanceof HTMLElement)) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const surface = event.currentTarget
+  const rect = surface.getBoundingClientRect()
+  if (!rect.width || !rect.height) return
+  const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100))
+  const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100))
+  surface.style.setProperty('--liquid-x', x.toFixed(1) + '%')
+  surface.style.setProperty('--liquid-y', y.toFixed(1) + '%')
+}
+function clearGlassGlint(event: PointerEvent) {
+  if (!(event.currentTarget instanceof HTMLElement)) return
+  event.currentTarget.style.removeProperty('--liquid-x')
+  event.currentTarget.style.removeProperty('--liquid-y')
+}
+
 function handleOutsidePointer(event: PointerEvent) {
   if (
     settingsOpen.value &&
@@ -44,7 +61,12 @@ onUnmounted(() => document.removeEventListener('pointerdown', handleOutsidePoint
   <v-app class="theatgood-app">
     <div class="app-shell" :class="{ 'app-shell--viewer': isViewer }">
       <header v-if="!isViewer" class="site-header">
-        <div class="site-header__inner">
+        <div
+          class="site-header__inner"
+          @pointermove="updateGlassGlint"
+          @pointerdown="updateGlassGlint"
+          @pointerleave="clearGlassGlint"
+        >
           <RouterLink class="brand" to="/" :aria-label="t('app.appName')">
             <span class="brand__mark" aria-hidden="true" />
             <span class="brand__name">TheatGood</span>
@@ -154,7 +176,14 @@ onUnmounted(() => document.removeEventListener('pointerdown', handleOutsidePoint
         <RouterView />
       </main>
 
-      <nav v-if="!isViewer" class="glass-tabbar glass-panel" :aria-label="t('app.mainNav')">
+      <nav
+        v-if="!isViewer"
+        class="glass-tabbar glass-panel"
+        :aria-label="t('app.mainNav')"
+        @pointermove="updateGlassGlint"
+        @pointerdown="updateGlassGlint"
+        @pointerleave="clearGlassGlint"
+      >
         <RouterLink to="/" class="glass-tabbar__link" :class="{ 'is-active': isCinemaRoute }">
           <v-icon icon="mdi-magnify" size="23" />
           <span>{{ t('app.home') }}</span>
