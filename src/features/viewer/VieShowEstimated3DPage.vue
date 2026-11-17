@@ -340,6 +340,28 @@ function resetParameters() {
               <small>{{ t('vieshow3d.visualEstimate') }}</small>
             </div>
           </div>
+          <div class="vieshow-3d-page__calibration" role="note">
+            <strong>{{ t('vieshow3d.proportionTitle') }}</strong>
+            <p v-if="screenSource">
+              {{
+                t('vieshow3d.knownScreenProportion', {
+                  width: screenSource.screenWidthM.toFixed(2),
+                  cells: geometry.calibration.occupiedColumns,
+                  ratio: Math.round(parameters.screenToSeatBlockWidthRatio * 100),
+                })
+              }}
+            </p>
+            <p v-else>{{ t('vieshow3d.unknownScreenProportion') }}</p>
+            <p>
+              {{
+                t('vieshow3d.derivedGridDimensions', {
+                  pitch: geometry.calibration.calculatedGridPitchM.toFixed(2),
+                  blockWidth: geometry.calibration.estimatedSeatBlockWidthM.toFixed(2),
+                })
+              }}
+            </p>
+            <small>{{ t('vieshow3d.ratioScaleWarning') }}</small>
+          </div>
           <div v-if="screenSource" class="vieshow-3d-page__source">
             <strong>{{ screenSource.format }} · {{ screenSource.projection }}</strong>
             <p>{{ t('vieshow3d.capacityCrossReference') }}</p>
@@ -358,7 +380,20 @@ function resetParameters() {
           </div>
           <p class="vieshow-3d-page__subtle">{{ t('vieshow3d.parametersExplanation') }}</p>
           <div class="vieshow-3d-page__sliders">
-            <label>
+            <label v-if="screenSource">
+              <span>
+                {{ t('vieshow3d.screenSeatBlockRatio') }} ·
+                {{ Math.round(parameters.screenToSeatBlockWidthRatio * 100) }}%
+              </span>
+              <input
+                v-model.number="parameters.screenToSeatBlockWidthRatio"
+                type="range"
+                min="0.55"
+                max="1.35"
+                step="0.01"
+              />
+            </label>
+            <label v-else>
               <span
                 >{{ t('vieshow3d.seatSpacing') }} · {{ parameters.seatSpacingM.toFixed(2) }} m</span
               >

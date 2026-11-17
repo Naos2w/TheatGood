@@ -165,6 +165,16 @@ export const messages = {
       rise: '模擬每排高度差',
       seatSpacing: '模擬座距',
       screenScale: '估算銀幕尺寸比例',
+      proportionTitle: '利用銀幕寬度校準座位區比例',
+      knownScreenProportion:
+        '已知銀幕寬度 {width} 公尺，2D 座位區橫向跨 {cells} 個格位；暫假設銀幕寬度是座位區寬度的 {ratio}%。',
+      unknownScreenProportion:
+        '此廳缺少可靠的銀幕實際寬度，因此仍使用可調的座位格距與銀幕比例進行概念估算。',
+      derivedGridDimensions:
+        '目前推算每個橫向格位約 {pitch} 公尺，整個座位區約 {blockWidth} 公尺寬（皆屬估算）。',
+      ratioScaleWarning:
+        '訂票頁格線未確認為等比例建築圖；銀幕示意線可能只是圖示。即使銀幕寬度有來源，比例、排距、坡度和前排距離仍未實測。',
+      screenSeatBlockRatio: '假設銀幕寬度／座位區寬度比例',
       visualEstimate: '概念估算，非現場量測',
       screenOfficial: '官方公布的銀幕尺寸；廳號依容量交叉對照',
       screenSecondary: '第三方參考尺寸，非威秀官方量測；廳號依容量交叉對照',
@@ -587,6 +597,16 @@ export const messages = {
       rise: 'Estimated rise per row',
       seatSpacing: 'Estimated seat spacing',
       screenScale: 'Estimated screen size scale',
+      proportionTitle: 'Scale the seating grid against the screen width',
+      knownScreenProportion:
+        'Known screen width: {width} m; the 2D seating block spans {cells} horizontal grid cells. For this preview, assume the screen spans {ratio}% of the seating block width.',
+      unknownScreenProportion:
+        'A reliable physical screen width is unavailable, so the model keeps adjustable estimates of seat spacing and screen proportions.',
+      derivedGridDimensions:
+        'Derived horizontal grid pitch: about {pitch} m, estimated occupied seating block: {blockWidth} m wide. Neither figure is a measurement.',
+      ratioScaleWarning:
+        'The booking grid is not a verified scaled architectural drawing; the depicted screen line may be decorative. A known screen width alone does not establish the seating-bank ratio, row spacing, rake or front-row distance.',
+      screenSeatBlockRatio: 'Assumed screen width / seating block width',
       visualEstimate: 'Visual assumption, not a measurement',
       screenOfficial:
         'Operator-published screen size; screen number inferred from the capacity match',
