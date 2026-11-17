@@ -192,6 +192,10 @@ export const messages = {
       sceneFailed: '3D 場景載入失敗；請返回座位圖。',
       loadingScene: '3D 場景載入中…',
       estimatedPov: '估算 3D 觀影視角',
+      overviewTitle: '3D 全廳概覽（概念模型）',
+      overviewButton: '全廳概覽',
+      seatViewButton: '座位視角',
+      overviewHint: '以估算模型鳥瞰座位、階梯、銀幕與牆面。並非實際影廳施工圖或現場攝影。',
       immersiveCaveat:
         '拖曳畫面環視，左右切換同排座位。此處距離、視角與銀幕高度皆為模擬值，不能視為 1:1 現場體驗。',
     },
@@ -628,6 +632,11 @@ export const messages = {
       sceneFailed: 'Could not load the 3D scene. Please return to the seat plan.',
       loadingScene: 'Loading the 3D auditorium…',
       estimatedPov: 'Estimated 3D point of view',
+      overviewTitle: 'Conceptual 3D auditorium overview',
+      overviewButton: 'Room overview',
+      seatViewButton: 'Seat POV',
+      overviewHint:
+        'Survey the seats, estimated tier decks, screen and walls. This is not an architectural drawing or actual theatre photography.',
       immersiveCaveat:
         'Drag to look around and use the arrows to switch seats in the same row. View angles, distances and screen height are simulated, not calibrated 1:1.',
     },
