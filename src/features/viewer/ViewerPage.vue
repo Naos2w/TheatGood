@@ -8,6 +8,7 @@ import { findAuditorium } from '../auditoriums/catalog'
 import { cinemaDirectory, directoryHallName, directoryCinemaName } from '../auditoriums/directory'
 import { calculateSightline, createSeats } from '../auditoriums/geometry'
 import { neighbouringSeat } from '../auditoriums/seat-navigation'
+import { horizontalFovPresets, type HorizontalFovPreset } from './view-projection'
 import { useViewerStore } from '../../stores/viewer'
 
 const route = useRoute()
@@ -21,6 +22,7 @@ const selectedSeat = computed(
   () => seats.value.find((seat) => seat.id === store.selectedSeatId) ?? seats.value[0],
 )
 const isOfficial = computed(() => auditorium.value?.provenance.seatLabels === 'official')
+const isFestivalReference = computed(() => auditorium.value?.id === 'vieshow-hsinyi-12')
 const sourceHall = computed(() =>
   cinemaDirectory.find((item) => item.modelId === auditorium.value?.id),
 )
@@ -36,6 +38,8 @@ const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
 const resetViewToken = ref(0)
+/** User-tunable 3D camera projection: not a measured eye/device calibration. */
+const horizontalFov = ref<HorizontalFovPreset>(80)
 
 function seatName() {
   return sourceHall.value
@@ -77,6 +81,21 @@ async function loadScene() {
   }
 }
 
+watch(
+  () => route.query.seat,
+  (seatId) => {
+    const model = auditorium.value
+    if (
+      model &&
+      typeof seatId === 'string' &&
+      createSeats(model).some((seat) => seat.id === seatId)
+    ) {
+      store.selectSeat(seatId)
+    }
+  },
+  { immediate: true },
+)
+
 watch(isImmersive, (immersive) => {
   if (immersive) void loadScene()
 })
@@ -100,6 +119,14 @@ function preview3d() {
   void router.push({ query: { ...route.query, view: '3d' } })
 }
 
+function recordSelectedSeat() {
+  if (!sourceHall.value?.modelId || !selectedSeat.value) return
+  void router.push({
+    path: '/history',
+    query: { auditorium: sourceHall.value.modelId, seat: selectedSeat.value.id },
+  })
+}
+
 function returnToSeats() {
   void router.replace({ query: { ...route.query, view: undefined } })
 }
@@ -119,7 +146,14 @@ function navigate(direction: -1 | 1) {
     <div v-show="!isImmersive" class="viewer-map-wrapper">
       <section class="container viewer-map-page">
         <div class="viewer-map-page__top">
-          <RouterLink to="/" class="back-link">
+          <RouterLink
+            :to="
+              isFestivalReference
+                ? '/cinemas/vieshow-taipei-hsinyi?hall=12#vieshow-seat-references'
+                : '/'
+            "
+            class="back-link"
+          >
             <v-icon icon="mdi-chevron-left" size="25" />
             {{ t('app.back') }}
           </RouterLink>
@@ -130,12 +164,38 @@ function navigate(direction: -1 | 1) {
 
         <div class="viewer-map-page__heading">
           <span class="eyebrow">THEATGOOD / SEAT MAP</span>
-          <h1>{{ seatName() }}</h1>
+          <h1>{{ isFestivalReference ? t('viewer.festivalHistoricalTitle') : seatName() }}</h1>
           <p>{{ venueName() }}</p>
           <span class="data-caption">{{
-            isOfficial ? t('app.officialNote') : t('seats.demoNote')
+            isFestivalReference
+              ? t('viewer.festivalReference')
+              : isOfficial
+                ? t('app.officialNote')
+                : t('seats.demoNote')
           }}</span>
         </div>
+
+        <nav
+          v-if="isFestivalReference"
+          class="viewer-festival-upgrade"
+          aria-label="viewer-festival-upgrade"
+        >
+          <div>
+            <strong>{{ t('viewer.festivalArchiveTitle') }}</strong>
+            <p>{{ t('viewer.festivalArchiveDescription') }}</p>
+          </div>
+          <div class="viewer-festival-upgrade__actions">
+            <RouterLink
+              class="viewer-festival-upgrade__primary"
+              to="/cinemas/vieshow-taipei-hsinyi/halls/vieshow-taipei-hsinyi-12"
+            >
+              <v-icon icon="mdi-seat-outline" size="18" /> {{ t('viewer.festivalOpenCurrent') }}
+            </RouterLink>
+            <RouterLink to="/cinemas/vieshow-taipei-hsinyi?hall=12#vieshow-seat-references">
+              {{ t('viewer.festivalBrowseHalls') }} <v-icon icon="mdi-arrow-right" size="17" />
+            </RouterLink>
+          </div>
+        </nav>
 
         <section class="seat-map-panel">
           <SeatMap
@@ -149,7 +209,15 @@ function navigate(direction: -1 | 1) {
 
         <div class="map-provenance">
           <v-icon icon="mdi-information-outline" size="18" />
-          <p>{{ isOfficial ? t('seats.layoutNote') : t('viewer.demoProvenance') }}</p>
+          <p>
+            {{
+              isFestivalReference
+                ? t('viewer.festivalCountWarning')
+                : isOfficial
+                  ? t('seats.layoutNote')
+                  : t('viewer.demoProvenance')
+            }}
+          </p>
           <a
             v-if="auditorium.sources.length"
             :href="auditorium.sources[0]"
@@ -167,11 +235,22 @@ function navigate(direction: -1 | 1) {
           <span>{{ t('seats.selected') }}</span>
           <strong>{{ selectedSeat.id }}</strong>
         </div>
-        <button class="button-primary" type="button" @click="preview3d">
-          <v-icon icon="mdi-eye-outline" size="20" />
-          {{ t('seats.preview') }}
-          <v-icon icon="mdi-arrow-top-right" size="18" />
-        </button>
+        <div class="viewer-seat-action__buttons">
+          <button
+            v-if="sourceHall?.modelId"
+            class="viewer-record-button"
+            type="button"
+            @click="recordSelectedSeat"
+          >
+            <v-icon icon="mdi-bookmark-plus-outline" size="18" />
+            {{ t('history.recordSeat') }}
+          </button>
+          <button class="button-primary" type="button" @click="preview3d">
+            <v-icon icon="mdi-eye-outline" size="20" />
+            {{ t('seats.preview') }}
+            <v-icon icon="mdi-arrow-top-right" size="18" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -196,6 +275,7 @@ function navigate(direction: -1 | 1) {
         :seats="seats"
         :selected-seat-id="store.selectedSeatId"
         :reset-view-token="resetViewToken"
+        :horizontal-fov="horizontalFov"
       />
 
       <div class="viewer-immersive__top">
@@ -239,10 +319,28 @@ function navigate(direction: -1 | 1) {
             <v-icon icon="mdi-restore" size="19" />
             {{ t('viewer.reset') }}
           </button>
+          <button
+            v-if="sourceHall?.modelId"
+            type="button"
+            class="viewer-reset viewer-immersive__record"
+            @click="recordSelectedSeat"
+          >
+            <v-icon icon="mdi-bookmark-plus-outline" size="18" />
+            {{ t('history.recordSeat') }}
+          </button>
           <details class="viewer-details">
             <summary>
               {{ t('viewer.details') }} <v-icon icon="mdi-chevron-down" size="17" />
             </summary>
+            <label class="viewer-fov-control">
+              <span>{{ t('viewer.projectionFov') }}</span>
+              <select v-model.number="horizontalFov">
+                <option v-for="angle in horizontalFovPresets" :key="angle" :value="angle">
+                  {{ angle }}°
+                </option>
+              </select>
+            </label>
+            <p class="viewer-fov-note">{{ t('viewer.projectionCaveat') }}</p>
             <dl v-if="sightline">
               <div>
                 <dt>{{ t('viewer.distance') }}</dt>
@@ -261,7 +359,16 @@ function navigate(direction: -1 | 1) {
                 <dd>{{ Math.abs(sightline.horizontalOffset).toFixed(1) }}°</dd>
               </div>
             </dl>
-            <p>{{ isOfficial ? t('viewer.provenance') : t('viewer.demoProvenance') }}</p>
+            <p>
+              {{
+                isFestivalReference
+                  ? t('viewer.festivalCountWarning')
+                  : isOfficial
+                    ? t('viewer.provenance')
+                    : t('viewer.demoProvenance')
+              }}
+            </p>
+            <p v-if="isFestivalReference">{{ t('viewer.festivalWheelchair') }}</p>
             <p v-if="auditorium.id === 'tfai-small'">{{ t('viewer.wheelchair') }}</p>
             <p v-if="auditorium.id === 'spot-taipei'">{{ t('viewer.wheelchairSpot') }}</p>
           </details>

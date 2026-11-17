@@ -1,0 +1,155 @@
+{
+  "modelVersion": 1,
+  "id": "vieshow-hsinyi-12",
+  "name": "12 廳（2026 金馬經典影展配置參考）",
+  "cinemaName": "台北信義威秀影城",
+  "format": "一般數位影廳／2026 影展座位排列參考（非即時售票）",
+  "description": "依 2026/07/24–08/13 金馬經典影展拓元公開之『台北信義威秀影城12廳』座位圖，重建圖中 A–P 排的一般座位 234 個，主要左右走道與 F／G 排間橫向走道；W14、W15 兩處輪椅位置另列但未建入一般座位。威秀 2026/05/21 包廳表另列此廳 244 席；影展配置圖連同輪椅位置僅能辨識 236 個位置，與 244 有 8 席差異，原因尚未確認，可能是影展特定座位配置。銀幕寬高、前排距離、座距、排距、階梯坡度與眼高均屬估算，不能將本 3D 視角視作實際影廳的精確尺寸。",
+  "confidence": "partial",
+  "sources": [
+    "https://tghff.tixcraft.com/activity/detail/26_ghcffp",
+    "https://static.tixcraft.com/images/activity/field/26_ghcffp_b776270b087a73b22f068979b7e79171.jpg",
+    "https://www.vscinemas.com.tw/upload/biz/biz_20260528001.pdf"
+  ],
+  "publishedSeatCount": 234,
+  "provenance": {
+    "screenDimensions": "estimated",
+    "seatLabels": "official",
+    "spatialGeometry": "estimated",
+    "checkedAt": "2026-11-16",
+    "notes": "座號取自金馬經典影展 2026/07/24–08/13 官方購票資訊示意圖，並非威秀最新售票承諾。圖中可明辨 234 個一般座位及 F 排 W14／W15 輪椅位置；威秀 2026/05/21 官方表列 244 席，差 8 席未釐清。3D 畫面所用銀幕寬高（8 × 3.4 m）、首排位置、座椅寬／間距、階梯高度及眼高均為程式估算。未直接複製原座位圖影像到 App，請參考來源確認真實座位。"
+  },
+  "screen": {
+    "width": 8,
+    "height": 3.4,
+    "centerX": 0,
+    "bottomY": 1.55,
+    "z": 0
+  },
+  "seatWidth": 0.56,
+  "seatSpacing": 0.64,
+  "aisleWidth": 0.95,
+  "eyeHeight": 1.17,
+  "rows": [
+    {
+      "label": "A",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 4.5,
+      "elevation": 0,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "B",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 5.52,
+      "elevation": 0.15,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "C",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 6.54,
+      "elevation": 0.3,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "D",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 7.56,
+      "elevation": 0.45,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "E",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16],
+      "z": 8.58,
+      "elevation": 0.6,
+      "aislesAfter": [1],
+      "gapAfter": [
+        {
+          "afterIndex": 12,
+          "width": 2.23
+        }
+      ]
+    },
+    {
+      "label": "F",
+      "numbers": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      "z": 9.6,
+      "elevation": 0.75,
+      "aislesAfter": [],
+      "xOffset": -0.64
+    },
+    {
+      "label": "G",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 12.12,
+      "elevation": 1.02,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "H",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 13.14,
+      "elevation": 1.17,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "I",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 14.16,
+      "elevation": 1.32,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "J",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 15.18,
+      "elevation": 1.47,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "K",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 16.2,
+      "elevation": 1.62,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "L",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 17.22,
+      "elevation": 1.77,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "M",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 18.24,
+      "elevation": 1.92,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "N",
+      "numbers": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      "z": 19.26,
+      "elevation": 2.07,
+      "aislesAfter": [1, 13]
+    },
+    {
+      "label": "O",
+      "numbers": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      "z": 20.28,
+      "elevation": 2.22,
+      "aislesAfter": [0, 12]
+    },
+    {
+      "label": "P",
+      "numbers": [11, 12, 13, 14],
+      "z": 21.3,
+      "elevation": 2.37,
+      "aislesAfter": [],
+      "xOffset": 2.56
+    }
+  ]
+}

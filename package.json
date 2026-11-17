@@ -16,6 +16,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx db/seed.ts",
     "db:seed:fixture": "tsx db/seed-fixture.ts",
+    "db:screenings:sync": "tsx scripts/sync-screenings.ts",
     "db:verify": "tsx db/verify.ts"
   },
   "repository": {
