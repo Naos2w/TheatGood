@@ -80,13 +80,13 @@ export const messages = {
       chainPublishedHallCounts: '已收錄 {count} 間影廳的官方席數 · 座位圖待確認',
       chainVenueFactsOnly: '已收錄官方影廳概況 · 個別座號仍待查證',
       chainSourceAria: '開啟 {name} 官方影城資料',
-      chainMapAria: '查看 {name} 的場址位置資料來源',
+      chainMapAria: '在地圖中開啟 {name} 的位置',
       chainLocationUnverified: '距離待核實，仍可依品牌與地區搜尋',
       chainMore: '查看其餘 {count} 間分館',
       chainLess: '收合分館列表',
       chainNoResults: '沒有符合目前搜尋／地區與品牌條件的連鎖影城。',
       chainDisclaimer:
-        '目前 {count}／{total} 間連鎖分館有來源場址座標；依場址直線距離排序，非出入口或實際交通里程，也不代表已有 3D／場次。OSM 地圖署名如下；其他資料來源請點分館位置圖示。',
+        '目前 {count}／{total} 間連鎖分館有來源場址座標；距離是直線估算，非實際行車里程。位置圖示在桌面開 Google Maps、手機嘗試開系統地圖 App；場址座標資料包含 OpenStreetMap，署名如下。',
     },
     seatRefs: {
       eyebrow: 'PUBLIC BOOKING CHART REFERENCES',
@@ -220,6 +220,8 @@ export const messages = {
       eyebrow: 'CHAIN CINEMA · VERIFIED COUNTS',
       officialSite: '查看影城官方資訊',
       officialShowtimes: '查看官方場次',
+      openMap: '使用手機地圖 App',
+      googleMaps: 'Google Maps',
       browseModelledHalls: '選擇影廳／座位 3D',
       showtimesExternalNote:
         '場次將於影城官方網站開啟；TheatGood 尚未同步該影城的即時場次或可售座位。',
@@ -538,13 +540,13 @@ export const messages = {
         '{count} halls with official seat counts · no verified seating plan',
       chainVenueFactsOnly: 'Published auditorium overview · individual seats unverified',
       chainSourceAria: 'Open the official venue information for {name}',
-      chainMapAria: 'Open the published venue location source for {name}',
+      chainMapAria: 'Open {name} in Maps',
       chainLocationUnverified: 'Distance unverified; venue remains searchable',
       chainMore: 'Show {count} more venues',
       chainLess: 'Show fewer venues',
       chainNoResults: 'No major-chain venues match the current search, area and brand.',
       chainDisclaimer:
-        'All {count} of {total} chain venues have sourced location points. Distances are estimates to venue sites, not entrances or travel routes, and do not imply live screenings or 3D models. OpenStreetMap attribution follows; click a venue location icon for its specific source.',
+        '{count} of {total} chain venues have sourced location points. Distances are straight-line estimates, not routes. Map links open Google Maps on desktop and attempt to hand off to the device map app on mobile. Location evidence includes OpenStreetMap; attribution follows.',
     },
     seatRefs: {
       eyebrow: 'PUBLIC BOOKING CHART REFERENCES',
@@ -687,6 +689,8 @@ export const messages = {
       eyebrow: 'CHAIN CINEMA · VERIFIED COUNTS',
       officialSite: 'Official cinema information',
       officialShowtimes: 'Official showtimes',
+      openMap: 'Open in Maps app',
+      googleMaps: 'Google Maps',
       browseModelledHalls: 'Choose a screen / 3D seat view',
       showtimesExternalNote:
         'The official cinema website opens in a new tab. TheatGood does not synchronise this cinema’s live sessions or ticket inventory.',

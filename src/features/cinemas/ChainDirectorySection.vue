@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { cinemaPublishedFacts, publishedNamedHallsForCinema } from './other-chain-facts'
@@ -13,6 +13,7 @@ import {
 } from './chain-directory'
 import { chainDistanceKm, sortChainsByDistance, verifiedChainPositions } from './chain-positions'
 import { vieShowCoverageForCinema } from './vieshow-seat-archive'
+import { cinemaMapUrl, currentMapPlatform, type MapPlatform } from './map-links'
 
 const props = defineProps<{
   query: string
@@ -22,6 +23,10 @@ const props = defineProps<{
   modelFilter: 'all' | '3d' | 'information'
 }>()
 const { t } = useI18n()
+const mapPlatform = ref<MapPlatform>('desktop')
+onMounted(() => {
+  mapPlatform.value = currentMapPlatform()
+})
 const selectedBrand = ref<ChainBrand | 'all'>('all')
 const expanded = ref(false)
 const brandNames = [
@@ -123,12 +128,11 @@ function formattedDistance(cinema: ChainCinema): string | undefined {
             <v-icon icon="mdi-chevron-right" size="17" />
           </RouterLink>
           <a
-            v-if="verifiedChainPositions[cinema.slug]"
-            :href="verifiedChainPositions[cinema.slug]?.sourceUrl"
+            :href="cinemaMapUrl(cinema, mapPlatform)"
             :aria-label="t('home.chainMapAria', { name: cinema.name })"
-            target="_blank"
+            :target="mapPlatform === 'desktop' ? '_blank' : undefined"
             rel="noopener noreferrer"
-            class="chain-cinema__link"
+            class="chain-cinema__link chain-cinema__link--map"
           >
             <v-icon icon="mdi-map-marker-outline" size="18" />
           </a>
@@ -137,7 +141,7 @@ function formattedDistance(cinema: ChainCinema): string | undefined {
             :aria-label="t('home.chainSourceAria', { name: cinema.name })"
             target="_blank"
             rel="noopener noreferrer"
-            class="chain-cinema__link"
+            class="chain-cinema__link chain-cinema__link--source"
           >
             <v-icon icon="mdi-open-in-new" size="18" />
           </a>

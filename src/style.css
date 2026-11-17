@@ -718,7 +718,7 @@ a {
   border-color: var(--tg-accent);
 }
 @media (max-width: 700px) {
-  .chain-cinema__actions .chain-cinema__link {
+  .chain-cinema__actions .chain-cinema__link--source {
     display: none;
   }
   .chain-cinema__symbol {
@@ -832,6 +832,8 @@ a {
   flex-wrap: wrap;
   gap: 9px;
 }
+.chain-cinema-page__map-link,
+.chain-cinema-page__map-fallback,
 .chain-cinema-page__choose-hall-link,
 .chain-cinema-page__showtime-link,
 .chain-cinema-page__source-link {
@@ -853,9 +855,18 @@ a {
   background: var(--tg-accent);
   border-color: var(--tg-accent);
 }
+.chain-cinema-page__map-link {
+  color: var(--tg-text);
+  background: var(--tg-secondary);
+}
+.chain-cinema-page__map-fallback {
+  color: var(--tg-accent);
+}
 .chain-cinema-page__showtime-link {
   color: var(--tg-muted);
 }
+.chain-cinema-page__map-link:focus-visible,
+.chain-cinema-page__map-fallback:focus-visible,
 .chain-cinema-page__choose-hall-link:focus-visible,
 .chain-cinema-page__showtime-link:focus-visible,
 .chain-cinema-page__source-link:focus-visible {
@@ -1200,6 +1211,7 @@ a {
 .seat-references__svg {
   display: block;
   max-width: none;
+  margin-inline: auto;
   color: #fff;
 }
 .seat-references__screen-label {

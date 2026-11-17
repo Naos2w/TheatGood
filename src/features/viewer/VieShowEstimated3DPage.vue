@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, shallowRef, watch, type Component } from 'vue'
+import { computed, nextTick, onMounted, ref, shallowRef, watch, type Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { chainCinemas } from '../cinemas/chain-directory'
+import { centreSeatGrid } from '../cinemas/centred-seat-grid'
 import {
   loadVieShowArchiveForCinema,
   type VieShowArchivedLayout,
@@ -20,6 +21,7 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const layout = shallowRef<VieShowArchivedLayout | null>(null)
+const mapScroll = ref<HTMLElement | null>(null)
 const venueLayouts = shallowRef<readonly VieShowArchivedLayout[]>([])
 const loading = ref(false)
 const failed = ref(false)
@@ -62,8 +64,20 @@ const sightline = computed(() =>
 )
 const cellWidth = 31
 const cellHeight = 31
-const mapWidth = computed(() => Math.max(540, (layout.value?.gridColumns ?? 0) * cellWidth + 44))
-const mapHeight = computed(() => Math.max(210, (layout.value?.gridRows ?? 0) * cellHeight + 78))
+const map = computed(() =>
+  layout.value ? centreSeatGrid(layout.value, cellWidth, cellHeight, 540) : null,
+)
+const mapWidth = computed(() => map.value?.width ?? 540)
+const mapHeight = computed(() => map.value?.height ?? 210)
+watch(
+  [hallId, mapWidth],
+  async () => {
+    await nextTick()
+    const scroll = mapScroll.value
+    if (scroll) scroll.scrollLeft = Math.max(0, (scroll.scrollWidth - scroll.clientWidth) / 2)
+  },
+  { flush: 'post' },
+)
 const countWarning = computed(() => {
   const item = layout.value
   if (!item) return ''
@@ -252,6 +266,7 @@ function toggleImmersiveViewMode() {
             <span>{{ t('vieshow3d.tapSeats') }}</span>
           </div>
           <div
+            ref="mapScroll"
             class="seat-references__scroll vieshow-3d-page__map-scroll"
             tabindex="0"
             :aria-label="t('vieshowSeatRefs.scrollMap')"
@@ -277,7 +292,16 @@ function toggleImmersiveViewMode() {
               >
                 {{ t('vieshowSeatRefs.screenDirection') }}
               </text>
-              <path :d="'M 55 38 L ' + (mapWidth - 55) + ' 38'" class="seat-references__screen" />
+              <path
+                :d="
+                  'M ' +
+                  (map?.screenStartX ?? 48) +
+                  ' 38 L ' +
+                  (map?.screenEndX ?? mapWidth - 48) +
+                  ' 38'
+                "
+                class="seat-references__screen"
+              />
               <g
                 v-for="seat in layout.seatPositions"
                 :key="seat[0]"
@@ -294,7 +318,7 @@ function toggleImmersiveViewMode() {
               >
                 <title>{{ seat[0] }}</title>
                 <rect
-                  :x="14 + (seat[2] - 1) * cellWidth"
+                  :x="map?.seatX(seat[2])"
                   :y="65 + (seat[1] - 1) * cellHeight"
                   width="26"
                   height="25"
@@ -304,7 +328,7 @@ function toggleImmersiveViewMode() {
                   "
                 />
                 <text
-                  :x="27 + (seat[2] - 1) * cellWidth"
+                  :x="map?.labelX(seat[2])"
                   :y="81 + (seat[1] - 1) * cellHeight"
                   text-anchor="middle"
                   class="seat-references__seat-label"
@@ -315,7 +339,7 @@ function toggleImmersiveViewMode() {
               <g v-for="(position, index) in layout.wheelchairPositions" :key="'wheel-' + index">
                 <title>{{ t('vieshowSeatRefs.wheelchairMarker') }}</title>
                 <rect
-                  :x="14 + (position[1] - 1) * cellWidth"
+                  :x="map?.seatX(position[1])"
                   :y="65 + (position[0] - 1) * cellHeight"
                   width="26"
                   height="25"
