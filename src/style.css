@@ -3143,6 +3143,29 @@ a {
   font-size: 18px;
   color: var(--tg-text);
 }
+.vieshow-3d-page__calibration {
+  margin: 18px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--tg-border);
+  border-radius: 13px;
+  background: var(--tg-secondary);
+  color: var(--tg-text);
+  line-height: 1.65;
+}
+.vieshow-3d-page__calibration strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+.vieshow-3d-page__calibration p {
+  margin: 6px 0;
+  font-size: 12px;
+}
+.vieshow-3d-page__calibration small {
+  display: block;
+  color: var(--tg-muted);
+  font-size: 11px;
+}
 .vieshow-3d-page__sliders {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -11,7 +11,10 @@ import {
  * theatre. Actual observed facts remain seat ID and row/column grid indices.
  */
 export interface VieShowPreviewParameters {
+  /** Fallback spacing when no cited screen width is available. */
   seatSpacingM: number
+  /** Estimated ratio: real screen width / occupied seating block width. */
+  screenToSeatBlockWidthRatio: number
   rowSpacingM: number
   rowRiseM: number
   frontDistanceM: number
@@ -20,6 +23,7 @@ export interface VieShowPreviewParameters {
 
 export const defaultVieShowPreviewParameters: Readonly<VieShowPreviewParameters> = {
   seatSpacingM: 0.66,
+  screenToSeatBlockWidthRatio: 0.86,
   rowSpacingM: 1.04,
   rowRiseM: 0.16,
   frontDistanceM: 5,
@@ -33,10 +37,22 @@ export interface SceneAuditoriumGeometry {
   rows: { label: string; z: number; elevation: number }[]
 }
 
+export interface VieShowProportionalCalibration {
+  /** Source width provides a metric anchor; the plan ratio itself is still an assumption. */
+  method: 'known-screen-width' | 'grid-only-estimate'
+  screenToSeatBlockWidthRatio: number
+  occupiedColumns: number
+  /** Horizontal grid pitch computed from the known screen or a user-defined fallback. */
+  calculatedGridPitchM: number
+  estimatedSeatBlockWidthM: number
+  ratioVerifiedAgainstScaledFloorPlan: false
+}
+
 export interface VieShowPreviewGeometry {
   auditorium: SceneAuditoriumGeometry
   seats: AuditoriumSeat[]
   wheelchairSpots: { x: number; z: number; elevation: number }[]
+  calibration: VieShowProportionalCalibration
   screenSpecification?: VieShowScreenSpecification
   screenDimensionsProvenance: 'operator-published' | 'independent-secondary' | 'estimated'
   seatPositionsProvenance: 'operator-public-booking-preview'
@@ -47,6 +63,37 @@ export interface VieShowPreviewGeometry {
 function assertParameter(value: number, min: number, max: number, label: string): void {
   if (!Number.isFinite(value) || value < min || value > max) {
     throw new RangeError('Invalid visual estimate: ' + label)
+  }
+}
+
+/**
+ * The booking grid is NOT a measured architectural drawing. When the screen
+ * width is known, its width supplies one absolute anchor, but the ratio of
+ * screen width to seating-bank width is an explicit, adjustable assumption.
+ * Depth, row spacing and room rake cannot be derived from that anchor alone.
+ */
+export function calculateVieShowProportionalCalibration(
+  occupiedColumns: number,
+  referenceScreenWidthM: number | undefined,
+  params: Pick<VieShowPreviewParameters, 'seatSpacingM' | 'screenToSeatBlockWidthRatio'>,
+): VieShowProportionalCalibration {
+  assertParameter(occupiedColumns, 1, 150, 'occupied columns')
+  assertParameter(params.seatSpacingM, 0.48, 0.95, 'seat spacing')
+  assertParameter(params.screenToSeatBlockWidthRatio, 0.55, 1.35, 'screen/seating ratio')
+  if (referenceScreenWidthM !== undefined) {
+    assertParameter(referenceScreenWidthM, 1, 70, 'screen width')
+  }
+  const calculatedGridPitchM =
+    referenceScreenWidthM === undefined
+      ? params.seatSpacingM
+      : referenceScreenWidthM / (occupiedColumns * params.screenToSeatBlockWidthRatio)
+  return {
+    method: referenceScreenWidthM === undefined ? 'grid-only-estimate' : 'known-screen-width',
+    screenToSeatBlockWidthRatio: params.screenToSeatBlockWidthRatio,
+    occupiedColumns,
+    calculatedGridPitchM,
+    estimatedSeatBlockWidthM: calculatedGridPitchM * occupiedColumns,
+    ratioVerifiedAgainstScaledFloorPlan: false,
   }
 }
 
@@ -72,6 +119,13 @@ export function deriveVieShowPreviewGeometry(
   const right = Math.max(...columns)
   const centre = (left + right) / 2
   const occupiedColumns = right - left + 1
+  const screenSpecification = vieShowScreenSpecification(cinemaSlug, layout)
+  const calibration = calculateVieShowProportionalCalibration(
+    occupiedColumns,
+    screenSpecification?.screenWidthM,
+    params,
+  )
+  const seatPitchM = calibration.calculatedGridPitchM
   const allRows = [...new Set(layout.seatPositions.map((seat) => seat[1]))].sort((a, b) => a - b)
   const rows = allRows.map((row) => ({
     label: String(row),
@@ -87,7 +141,7 @@ export function deriveVieShowPreviewGeometry(
       // Physical grid row, not an invented A/B row for numeric-only seat IDs.
       row: String(row),
       number: index + 1,
-      x: (column - centre) * params.seatSpacingM,
+      x: (column - centre) * seatPitchM,
       z: layoutRow.z,
       elevation: layoutRow.elevation,
       eyeY: layoutRow.elevation + 1.17,
@@ -95,15 +149,19 @@ export function deriveVieShowPreviewGeometry(
   })
 
   const wheelchairSpots = layout.wheelchairPositions.map(([row, column]) => ({
-    x: (column - centre) * params.seatSpacingM,
+    x: (column - centre) * seatPitchM,
     z: params.frontDistanceM + (row - allRows[0]!) * params.rowSpacingM,
     elevation: (row - allRows[0]!) * params.rowRiseM,
   }))
 
-  const screenSpecification = vieShowScreenSpecification(cinemaSlug, layout)
   const estimatedScreenWidthM = Math.max(
     6.5,
-    Math.min(23, occupiedColumns * params.seatSpacingM * 0.86 * params.estimatedScreenScale),
+    Math.min(
+      23,
+      calibration.estimatedSeatBlockWidthM *
+        params.screenToSeatBlockWidthRatio *
+        params.estimatedScreenScale,
+    ),
   )
   const screenWidth = screenSpecification?.screenWidthM ?? estimatedScreenWidthM
   const screenHeight = screenSpecification?.screenHeightM ?? estimatedScreenWidthM / 1.9
@@ -119,11 +177,12 @@ export function deriveVieShowPreviewGeometry(
     auditorium: {
       id: 'vieshow-preview-' + layout.id,
       screen,
-      seatWidth: params.seatSpacingM * 0.85,
+      seatWidth: seatPitchM * 0.85,
       rows,
     },
     seats,
     wheelchairSpots,
+    calibration,
     screenSpecification,
     screenDimensionsProvenance: screenSpecification?.dimensionSource ?? 'estimated',
     seatPositionsProvenance: 'operator-public-booking-preview',

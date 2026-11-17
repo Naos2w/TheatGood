@@ -7,11 +7,39 @@ import {
 } from '../cinemas/vieshow-screen-specs'
 import {
   defaultVieShowPreviewParameters,
+  calculateVieShowProportionalCalibration,
   deriveVieShowPreviewGeometry,
   initialVieShowPreviewSeat,
 } from './vieshow-approximate-scene'
 
 describe('source-aware nationwide Vie Show 3D preview geometry', () => {
+  it('derives a proportional horizontal grid using a known screen width and an explicitly unverified ratio', () => {
+    const fromScreen = calculateVieShowProportionalCalibration(
+      32,
+      22,
+      defaultVieShowPreviewParameters,
+    )
+    expect(fromScreen.method).toBe('known-screen-width')
+    expect(fromScreen.calculatedGridPitchM).toBeCloseTo(22 / (32 * 0.86), 8)
+    expect(fromScreen.estimatedSeatBlockWidthM).toBeCloseTo(22 / 0.86, 8)
+    expect(fromScreen.ratioVerifiedAgainstScaledFloorPlan).toBe(false)
+
+    const fromGrid = calculateVieShowProportionalCalibration(
+      32,
+      undefined,
+      defaultVieShowPreviewParameters,
+    )
+    expect(fromGrid.method).toBe('grid-only-estimate')
+    expect(fromGrid.calculatedGridPitchM).toBe(0.66)
+    expect(fromGrid.estimatedSeatBlockWidthM).toBeCloseTo(32 * 0.66, 8)
+    expect(() =>
+      calculateVieShowProportionalCalibration(32, 22, {
+        seatSpacingM: 0.66,
+        screenToSeatBlockWidthRatio: 0,
+      }),
+    ).toThrow(/ratio/)
+  })
+
   it('links the operator TITAN 22 × 12 m screen to the 391-seat public grid without inventing row pitch', async () => {
     const layouts = await loadVieShowArchiveForCinema('vieshow-muvie-taipei-a13')
     const titan = layouts.find((item) => item.hallNumber === 6)!
@@ -100,9 +128,24 @@ describe('source-aware nationwide Vie Show 3D preview geometry', () => {
       rowSpacingM: 1.5,
       rowRiseM: 0.25,
       seatSpacingM: 0.81,
+      screenToSeatBlockWidthRatio: 1.1,
     })
     expect(modified.seats.map((s) => s.id)).toEqual(base.seats.map((s) => s.id))
+    expect(modified.calibration.method).toBe('known-screen-width')
+    expect(modified.calibration.calculatedGridPitchM).toBeLessThan(
+      base.calibration.calculatedGridPitchM,
+    )
+    expect(modified.seats[0]?.x).not.toBeCloseTo(base.seats[0]!.x, 8)
+    expect(modified.calibration.ratioVerifiedAgainstScaledFloorPlan).toBe(false)
     expect(modified.auditorium.screen).toEqual(base.auditorium.screen)
+    const fallbackPitchDoesNotOverrideScreenAnchor = deriveVieShowPreviewGeometry(
+      'vieshow-muvie-taipei-a13',
+      layout,
+      { ...defaultVieShowPreviewParameters, seatSpacingM: 0.81 },
+    )
+    expect(fallbackPitchDoesNotOverrideScreenAnchor.seats.map((seat) => seat.x)).toEqual(
+      base.seats.map((seat) => seat.x),
+    )
     expect(modified.seats[0]?.z).not.toBe(base.seats[0]?.z)
     const backRow = layout.seatPositions.reduce((best, seat) => Math.max(best, seat[1]), 0)
     const baseBack = base.seats.find((seat) => seat.row === String(backRow))!
