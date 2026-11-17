@@ -1,62 +1,79 @@
 import { describe, expect, it } from 'vitest'
 import { chainCinemas } from '../cinemas/chain-directory'
+import { vieShowCoverageForCinema } from '../cinemas/vieshow-seat-archive'
+import {
+  verifiedFormatsForCinema,
+  cinemaHasFormat,
+  venueBrandLabel,
+  venueBrandVariant,
+  venuePrimaryLabel,
+} from '../cinemas/cinema-discovery-metadata'
 import {
   culturalCinemaHalls,
   culturalCinemaVenueCount,
-  includesCinemaCategory,
   searchChainCinemaVenues,
   searchCulturalCinemaHalls,
 } from './discovery-categories'
 import { directoryHallRoute } from '../cinemas/hall-navigation'
 
-describe('shared discovery categories with chain cinemas first', () => {
-  it('integrates five cultural/independent venues and nine halls without duplicating Vie Show', () => {
+describe('cinema-only public discovery, with retained cultural source data', () => {
+  it('only discovers cinemas that have usable, sourced seat maps', () => {
     expect(chainCinemas).toHaveLength(40)
+    const discoverable = searchChainCinemaVenues('', 'all', 'all')
+    expect(discoverable).toHaveLength(22)
+    expect(
+      discoverable.every(
+        (cinema) => (vieShowCoverageForCinema(cinema.slug)?.observedLabels ?? 0) > 0,
+      ),
+    ).toBe(true)
+    expect(discoverable.every((cinema) => cinema.brand === 'vieshow')).toBe(true)
+    // Keep other chains in the internal source directory until seats are sourced.
+    expect(searchChainCinemaVenues('', 'all', 'all', 'showtime')).toHaveLength(0)
+    expect(searchChainCinemaVenues('', 'all', 'all', 'miranew')).toHaveLength(0)
+    expect(searchChainCinemaVenues('', 'all', 'all', 'miramar')).toHaveLength(0)
+  })
+
+  it('filters only source-backed permanent branch formats, never guessed hall identities', () => {
+    expect(searchChainCinemaVenues('', 'all', 'imax')).toHaveLength(7)
+    expect(searchChainCinemaVenues('', 'all', '4dx')).toHaveLength(4)
+    expect(searchChainCinemaVenues('', 'all', 'giant')).toHaveLength(2)
+    expect(verifiedFormatsForCinema('vieshow-muvie-taichung-tigercity')).toEqual(['giant'])
+    expect(verifiedFormatsForCinema('vieshow-hsinchu-bigcity')).toEqual(['imax'])
+    expect(verifiedFormatsForCinema('vieshow-taipei-hsinyi')).toEqual(['4dx'])
+    expect(verifiedFormatsForCinema('vieshow-muvie-taipei-a13')).toEqual(['giant'])
+    expect(verifiedFormatsForCinema('vieshow-taipei-qsquare')).toEqual([])
+    expect(cinemaHasFormat('vieshow-taipei-qsquare', 'imax')).toBe(false)
+  })
+
+  it('searches mall names and regions, with mall-first labels rather than branding', () => {
+    const giantCity = searchChainCinemaVenues('Big City', 'all', 'all')
+    expect(giantCity.map((cinema) => cinema.slug)).toEqual(['vieshow-hsinchu-bigcity'])
+    expect(venuePrimaryLabel(giantCity[0]!)).toContain('巨城')
+    expect(searchChainCinemaVenues('南紡', 'all', 'all')).toHaveLength(1)
+    expect(searchChainCinemaVenues('', '臺北市', 'all').length).toBeGreaterThan(1)
+    expect(searchChainCinemaVenues('', '新竹市', 'imax').map((cinema) => cinema.slug)).toEqual([
+      'vieshow-hsinchu-bigcity',
+    ])
+    const muvie = chainCinemas.find((cinema) => cinema.slug === 'vieshow-muvie-taipei-a13')!
+    expect(venueBrandVariant(muvie)).toBe('muvie')
+    expect(venueBrandLabel(muvie)).toBe('MUVIE')
+    expect(venuePrimaryLabel(muvie)).toContain('A13')
+    expect(
+      venuePrimaryLabel(chainCinemas.find((cinema) => cinema.slug === 'vieshow-taipei-hsinyi')!),
+    ).toContain('信義')
+  })
+
+  it('keeps existing cultural models and source-only halls accessible by direct route, but not in the homepage discovery', () => {
     expect(culturalCinemaVenueCount).toBe(5)
     expect(culturalCinemaHalls).toHaveLength(9)
-    expect(new Set(culturalCinemaHalls.map((hall) => hall.cinemaSlug)).size).toBe(5)
-    expect(culturalCinemaHalls.some((hall) => hall.slug === 'vieshow-hsinyi-12')).toBe(false)
-    const chainVenueSlugs = new Set(chainCinemas.map((cinema) => cinema.slug))
-    expect(culturalCinemaHalls.every((hall) => !chainVenueSlugs.has(hall.cinemaSlug))).toBe(true)
-  })
-
-  it('uses one category control to show all, only chain, or only cultural entries', () => {
-    expect(
-      ['chain', 'cultural'].filter((category) =>
-        includesCinemaCategory('all', category as 'chain' | 'cultural'),
-      ),
-    ).toEqual(['chain', 'cultural'])
-    expect(includesCinemaCategory('chain', 'chain')).toBe(true)
-    expect(includesCinemaCategory('chain', 'cultural')).toBe(false)
-    expect(includesCinemaCategory('cultural', 'cultural')).toBe(true)
-    expect(includesCinemaCategory('cultural', 'chain')).toBe(false)
-  })
-
-  it('shares text, city and available-3D filters across both categories', () => {
-    expect(searchChainCinemaVenues('', 'all', 'all')).toHaveLength(40)
-    expect(searchChainCinemaVenues('', 'all', '3d')).toHaveLength(22)
-    expect(searchChainCinemaVenues('', 'all', 'information')).toHaveLength(18)
-    expect(searchChainCinemaVenues('', 'all', '3d', 'vieshow')).toHaveLength(22)
-    expect(searchChainCinemaVenues('', 'all', '3d', 'showtime')).toHaveLength(0)
-
-    expect(searchCulturalCinemaHalls('', 'all', 'all')).toHaveLength(9)
-    expect(
-      searchCulturalCinemaHalls('', 'all', '3d')
-        .map((hall) => hall.slug)
-        .sort(),
-    ).toEqual(['spot-taipei', 'tfai-small'])
-    expect(searchCulturalCinemaHalls('', 'all', 'information')).toHaveLength(7)
-    expect(searchCulturalCinemaHalls('光點', 'all', 'all')).toHaveLength(3)
-    expect(searchCulturalCinemaHalls('國影中心', '新北市', 'all')).toHaveLength(2)
-    expect(searchCulturalCinemaHalls('國影中心', '高雄市', 'all')).toHaveLength(0)
-    expect(searchCulturalCinemaHalls('信義威秀', 'all', 'all')).toHaveLength(0)
-  })
-
-  it('retains sourced cultural seat-view routes and information-only routes', () => {
     const bySlug = (slug: string) => culturalCinemaHalls.find((hall) => hall.slug === slug)!
     expect(directoryHallRoute(bySlug('tfai-small'))).toBe('/auditoriums/tfai-small')
     expect(directoryHallRoute(bySlug('spot-taipei'))).toBe('/auditoriums/spot-taipei')
     expect(directoryHallRoute(bySlug('tfai-big'))).toBe('/directory/tfai-big')
-    expect(culturalCinemaHalls.every((hall) => hall.sourceUrls.length > 0)).toBe(true)
+    expect(
+      searchCulturalCinemaHalls('', 'all', '3d')
+        .map((h) => h.slug)
+        .sort(),
+    ).toEqual(['spot-taipei', 'tfai-small'])
   })
 })

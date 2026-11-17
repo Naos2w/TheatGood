@@ -1,6 +1,7 @@
 import type { AuditoriumSeat } from '../auditoriums/geometry'
 import type { ScreenDefinition } from '../auditoriums/schema'
 import type { VieShowArchivedLayout } from '../cinemas/vieshow-seat-archive'
+import { DEFAULT_SCREEN_TO_SEAT_BLOCK_RATIO } from '../cinemas/seat-screen-assumptions'
 import {
   vieShowScreenSpecification,
   type VieShowScreenSpecification,
@@ -23,7 +24,7 @@ export interface VieShowPreviewParameters {
 
 export const defaultVieShowPreviewParameters: Readonly<VieShowPreviewParameters> = {
   seatSpacingM: 0.66,
-  screenToSeatBlockWidthRatio: 0.86,
+  screenToSeatBlockWidthRatio: DEFAULT_SCREEN_TO_SEAT_BLOCK_RATIO,
   rowSpacingM: 1.04,
   rowRiseM: 0.16,
   frontDistanceM: 5,

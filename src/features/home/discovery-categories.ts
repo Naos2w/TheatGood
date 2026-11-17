@@ -10,6 +10,11 @@ import {
   type ChainCinema,
 } from '../cinemas/chain-directory'
 import { vieShowCoverageForCinema } from '../cinemas/vieshow-seat-archive'
+import {
+  cinemaHasFormat,
+  venuePrimaryLabel,
+  type AuditoriumFormatFilter,
+} from '../cinemas/cinema-discovery-metadata'
 
 export type CinemaDiscoveryCategory = 'all' | 'chain' | 'cultural'
 export type CinemaDiscoveryModelFilter = 'all' | '3d' | 'information'
@@ -42,13 +47,28 @@ export function searchCulturalCinemaHalls(
 export function searchChainCinemaVenues(
   query: string,
   city: string,
-  modelFilter: CinemaDiscoveryModelFilter,
+  format: AuditoriumFormatFilter,
   brand: ChainBrand | 'all' = 'all',
 ): ChainCinema[] {
-  return searchChainCinemas(query, brand, city).filter((cinema) => {
-    const has3d = Boolean(vieShowCoverageForCinema(cinema.slug)?.observedLabels)
-    return modelFilter === 'all' || (modelFilter === '3d' ? has3d : !has3d)
-  })
+  // Public discovery is for choosing a SEAT, not browsing cinema descriptions.
+  // Don't surface operator branches without a verified, usable seat chart.
+  const term = query
+    .normalize('NFKC')
+    .toLocaleLowerCase()
+    .replace(/[\s\p{P}\p{S}]+/gu, '')
+  return searchChainCinemas('', brand, city).filter(
+    (cinema) =>
+      Boolean(vieShowCoverageForCinema(cinema.slug)?.observedLabels) &&
+      cinemaHasFormat(cinema.slug, format) &&
+      (!term ||
+        [cinema.name, cinema.address, cinema.city, venuePrimaryLabel(cinema)].some((field) =>
+          field
+            .normalize('NFKC')
+            .toLocaleLowerCase()
+            .replace(/[\s\p{P}\p{S}]+/gu, '')
+            .includes(term),
+        )),
+  )
 }
 
 export function includesCinemaCategory(
