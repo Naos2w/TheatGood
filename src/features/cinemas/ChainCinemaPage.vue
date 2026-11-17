@@ -94,6 +94,15 @@ function sourcedSeatModel(hallLabel: string): string | undefined {
         </div>
         <div class="chain-cinema-page__header-actions">
           <a
+            v-if="cinema.brand === 'vieshow'"
+            class="chain-cinema-page__choose-hall-link"
+            href="#vieshow-seat-references"
+          >
+            <v-icon icon="mdi-seat-outline" size="18" />
+            {{ t('chainDetail.browseModelledHalls') }}
+            <v-icon icon="mdi-arrow-down" size="17" />
+          </a>
+          <a
             v-if="showtime"
             :href="showtime.url"
             target="_blank"
@@ -146,81 +155,76 @@ function sourcedSeatModel(hallLabel: string): string | undefined {
       <MiranewSeatReferenceGallery :cinema-slug="slug" />
       <VieShowSeatReferenceGallery :cinema-slug="slug" />
 
-      <div class="chain-cinema-page__subheading">
-        <h2>{{ t('chainDetail.hallList') }}</h2>
-        <span v-if="provenanceDate">
+      <template v-if="cinema.brand !== 'vieshow'">
+        <div class="chain-cinema-page__subheading">
+          <h2>{{ t('chainDetail.hallList') }}</h2>
+          <span v-if="provenanceDate">
+            {{ t('chainDetail.checkedOn', { date: provenanceDate }) }}
+          </span>
+        </div>
+
+        <div v-if="halls.length" class="chain-cinema-page__list">
+          <article v-for="hall in halls" :key="hall.label" class="chain-cinema-page__hall">
+            <div>
+              <strong>
+                {{
+                  isNumericHall(hall.label)
+                    ? t('chainDetail.hallNumber', { number: hall.label })
+                    : hall.label
+                }}
+              </strong>
+              <small>{{ t('chainDetail.countOnly') }}</small>
+              <small
+                v-if="vieshowReferenceMessage(hall.label)"
+                class="chain-cinema-page__screen-fact"
+              >
+                {{ t(vieshowReferenceMessage(hall.label)!) }}
+              </small>
+              <template v-if="sourcedSeatModel(hall.label)">
+                <RouterLink
+                  class="chain-cinema-page__reference-preview"
+                  :to="'/auditoriums/' + sourcedSeatModel(hall.label)"
+                >
+                  <v-icon icon="mdi-seat-outline" size="16" />
+                  {{ t('chainDetail.festivalMapPreview') }}
+                </RouterLink>
+                <small class="chain-cinema-page__reference-warning">
+                  {{ t('chainDetail.festivalMapWarning') }}
+                </small>
+              </template>
+              <small
+                v-if="hall.screenWidthM && hall.screenHeightM"
+                class="chain-cinema-page__screen-fact"
+              >
+                {{
+                  t('chainDetail.screenDimensions', {
+                    width: hall.screenWidthM,
+                    height: hall.screenHeightM,
+                  })
+                }}
+                <a
+                  v-if="hall.screenSourceUrl"
+                  :href="hall.screenSourceUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >{{ t('chainDetail.screenSource') }}</a
+                >
+              </small>
+            </div>
+            <span>{{ t('chainDetail.seats', { count: fmt(hall.publishedSeatCount) }) }}</span>
+          </article>
+        </div>
+
+        <p v-else class="chain-cinema-page__empty">
           {{
             t(
-              halls.length && cinema.brand === 'vieshow'
-                ? 'chainDetail.countsAsOf'
-                : 'chainDetail.checkedOn',
-              { date: provenanceDate },
+              hasVenueMetrics || namedFormats.length
+                ? 'chainDetail.noHallBreakdown'
+                : 'chainDetail.notYetVerified',
             )
           }}
-        </span>
-      </div>
-
-      <div v-if="halls.length" class="chain-cinema-page__list">
-        <article v-for="hall in halls" :key="hall.label" class="chain-cinema-page__hall">
-          <div>
-            <strong>
-              {{
-                isNumericHall(hall.label)
-                  ? t('chainDetail.hallNumber', { number: hall.label })
-                  : hall.label
-              }}
-            </strong>
-            <small>{{ t('chainDetail.countOnly') }}</small>
-            <small
-              v-if="vieshowReferenceMessage(hall.label)"
-              class="chain-cinema-page__screen-fact"
-            >
-              {{ t(vieshowReferenceMessage(hall.label)!) }}
-            </small>
-            <template v-if="sourcedSeatModel(hall.label)">
-              <RouterLink
-                class="chain-cinema-page__reference-preview"
-                :to="'/auditoriums/' + sourcedSeatModel(hall.label)"
-              >
-                <v-icon icon="mdi-seat-outline" size="16" />
-                {{ t('chainDetail.festivalMapPreview') }}
-              </RouterLink>
-              <small class="chain-cinema-page__reference-warning">
-                {{ t('chainDetail.festivalMapWarning') }}
-              </small>
-            </template>
-            <small
-              v-if="hall.screenWidthM && hall.screenHeightM"
-              class="chain-cinema-page__screen-fact"
-            >
-              {{
-                t('chainDetail.screenDimensions', {
-                  width: hall.screenWidthM,
-                  height: hall.screenHeightM,
-                })
-              }}
-              <a
-                v-if="hall.screenSourceUrl"
-                :href="hall.screenSourceUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                >{{ t('chainDetail.screenSource') }}</a
-              >
-            </small>
-          </div>
-          <span>{{ t('chainDetail.seats', { count: fmt(hall.publishedSeatCount) }) }}</span>
-        </article>
-      </div>
-
-      <p v-else class="chain-cinema-page__empty">
-        {{
-          t(
-            hasVenueMetrics || namedFormats.length
-              ? 'chainDetail.noHallBreakdown'
-              : 'chainDetail.notYetVerified',
-          )
-        }}
-      </p>
+        </p>
+      </template>
 
       <div class="chain-cinema-page__provenance">
         <v-icon icon="mdi-information-outline" size="19" />

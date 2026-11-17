@@ -146,7 +146,14 @@ function navigate(direction: -1 | 1) {
     <div v-show="!isImmersive" class="viewer-map-wrapper">
       <section class="container viewer-map-page">
         <div class="viewer-map-page__top">
-          <RouterLink to="/" class="back-link">
+          <RouterLink
+            :to="
+              isFestivalReference
+                ? '/cinemas/vieshow-taipei-hsinyi?hall=12#vieshow-seat-references'
+                : '/'
+            "
+            class="back-link"
+          >
             <v-icon icon="mdi-chevron-left" size="25" />
             {{ t('app.back') }}
           </RouterLink>
@@ -157,7 +164,7 @@ function navigate(direction: -1 | 1) {
 
         <div class="viewer-map-page__heading">
           <span class="eyebrow">THEATGOOD / SEAT MAP</span>
-          <h1>{{ seatName() }}</h1>
+          <h1>{{ isFestivalReference ? t('viewer.festivalHistoricalTitle') : seatName() }}</h1>
           <p>{{ venueName() }}</p>
           <span class="data-caption">{{
             isFestivalReference
@@ -167,6 +174,28 @@ function navigate(direction: -1 | 1) {
                 : t('seats.demoNote')
           }}</span>
         </div>
+
+        <nav
+          v-if="isFestivalReference"
+          class="viewer-festival-upgrade"
+          aria-label="viewer-festival-upgrade"
+        >
+          <div>
+            <strong>{{ t('viewer.festivalArchiveTitle') }}</strong>
+            <p>{{ t('viewer.festivalArchiveDescription') }}</p>
+          </div>
+          <div class="viewer-festival-upgrade__actions">
+            <RouterLink
+              class="viewer-festival-upgrade__primary"
+              to="/cinemas/vieshow-taipei-hsinyi/halls/vieshow-taipei-hsinyi-12"
+            >
+              <v-icon icon="mdi-seat-outline" size="18" /> {{ t('viewer.festivalOpenCurrent') }}
+            </RouterLink>
+            <RouterLink to="/cinemas/vieshow-taipei-hsinyi?hall=12#vieshow-seat-references">
+              {{ t('viewer.festivalBrowseHalls') }} <v-icon icon="mdi-arrow-right" size="17" />
+            </RouterLink>
+          </div>
+        </nav>
 
         <section class="seat-map-panel">
           <SeatMap

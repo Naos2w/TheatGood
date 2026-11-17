@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import {
   loadVieShowArchiveForCinema,
   vieShowCoverageForCinema,
@@ -10,6 +10,8 @@ import {
 
 const props = defineProps<{ cinemaSlug: string }>()
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 const coverage = computed(() => vieShowCoverageForCinema(props.cinemaSlug))
 const candidates = ref<readonly VieShowArchivedLayout[]>([])
 const loading = ref(false)
@@ -33,7 +35,16 @@ watch(
       const layouts = await loadVieShowArchiveForCinema(slug)
       if (cancelled) return
       candidates.value = layouts
-      activeId.value = layouts[0]?.id ?? ''
+      const requested = typeof route.query.hall === 'string' ? route.query.hall : ''
+      activeId.value =
+        layouts.find(
+          (item) =>
+            item.id === requested ||
+            String(item.hallNumber) === requested ||
+            item.hallLabel === requested,
+        )?.id ??
+        layouts[0]?.id ??
+        ''
     } catch {
       if (!cancelled) failed.value = true
     } finally {
@@ -42,6 +53,29 @@ watch(
   },
   { immediate: true },
 )
+
+watch(
+  () => route.query.hall,
+  (requested) => {
+    if (typeof requested !== 'string') return
+    const match = candidates.value.find(
+      (item) =>
+        item.id === requested ||
+        String(item.hallNumber) === requested ||
+        item.hallLabel === requested,
+    )
+    if (match) activeId.value = match.id
+  },
+)
+
+function changeHall(id: string) {
+  const item = candidates.value.find((entry) => entry.id === id)
+  if (!item) return
+  activeId.value = item.id
+  void router.replace({
+    query: { ...route.query, hall: String(item.hallNumber ?? item.hallLabel) },
+  })
+}
 
 const active = computed(() => candidates.value.find((item) => item.id === activeId.value))
 const cellWidth = 30
@@ -121,9 +155,58 @@ const rows = computed(() => {
     <p v-else-if="failed" role="alert">{{ t('vieshowSeatRefs.failed') }}</p>
 
     <template v-else-if="candidates.length">
-      <label class="seat-references__picker">
-        <span>{{ t('vieshowSeatRefs.selectHall') }}</span>
-        <select v-model="activeId">
+      <div class="vieshow-hall-selector">
+        <div class="vieshow-hall-selector__heading">
+          <h3>{{ t('vieshowSeatRefs.selectHall') }}</h3>
+          <span>{{ t('vieshowSeatRefs.hallPickerHint') }}</span>
+        </div>
+        <div
+          class="vieshow-hall-selector__grid"
+          role="group"
+          :aria-label="t('vieshowSeatRefs.selectHall')"
+        >
+          <button
+            v-for="item in candidates"
+            :key="item.id"
+            type="button"
+            class="vieshow-hall-selector__tile"
+            :class="{
+              'vieshow-hall-selector__tile--active': item.id === activeId,
+              'vieshow-hall-selector__tile--warning': item.countComparison === 'different',
+            }"
+            :aria-pressed="item.id === activeId"
+            @click="changeHall(item.id)"
+          >
+            <strong>{{ item.hallLabel }}</strong>
+            <small>{{
+              t('vieshowSeatRefs.regularSeats', { count: item.ordinarySeatCount })
+            }}</small>
+            <span
+              v-if="item.countComparison === 'different'"
+              class="vieshow-hall-selector__warning"
+            >
+              <v-icon icon="mdi-alert-circle-outline" size="14" />
+              {{ t('vieshowSeatRefs.countNeedsReview') }}
+            </span>
+            <span v-else class="vieshow-hall-selector__ready">
+              <v-icon icon="mdi-check-circle-outline" size="14" />
+              {{ t('vieshowSeatRefs.hallPreviewReady') }}
+            </span>
+          </button>
+          <div
+            v-for="number in coverage.missingOfficialHalls"
+            :key="'missing-' + number"
+            class="vieshow-hall-selector__tile vieshow-hall-selector__tile--missing"
+            :aria-label="t('vieshowSeatRefs.missingHallAria', { number })"
+          >
+            <strong>{{ t('chainDetail.hallNumber', { number }) }}</strong>
+            <small>{{ t('vieshowSeatRefs.hallStillMissing') }}</small>
+          </div>
+        </div>
+      </div>
+      <label class="seat-references__picker vieshow-hall-selector__compact">
+        <span>{{ t('vieshowSeatRefs.quickSelect') }}</span>
+        <select :value="activeId" @change="changeHall(($event.target as HTMLSelectElement).value)">
           <option v-for="item in candidates" :key="item.id" :value="item.id">
             {{ hallOption(item) }}
           </option>
@@ -146,6 +229,14 @@ const rows = computed(() => {
           <v-icon icon="mdi-cube-scan" size="20" />
           {{ t('vieshow3d.preview3d') }}
           <v-icon icon="mdi-chevron-right" size="17" />
+        </RouterLink>
+        <RouterLink
+          v-if="cinemaSlug === 'vieshow-taipei-hsinyi' && active.hallNumber === 12"
+          class="vieshow-hall-selector__archive"
+          to="/auditoriums/vieshow-hsinyi-12"
+        >
+          <v-icon icon="mdi-archive-outline" size="17" />
+          {{ t('vieshowSeatRefs.olderFestivalReference') }}
         </RouterLink>
         <p class="seat-references__caution">{{ t('vieshowSeatRefs.notice') }}</p>
 

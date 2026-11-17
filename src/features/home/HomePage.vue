@@ -11,6 +11,8 @@ import {
   directoryHallName,
   searchCinemaDirectory,
 } from '../auditoriums/directory'
+import { vieShowArchiveSummary } from '../cinemas/vieshow-seat-archive'
+import { directoryHallRoute } from '../cinemas/hall-navigation'
 import {
   cinemaLocations,
   distanceToCinemaKm,
@@ -106,6 +108,18 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
         <span class="eyebrow">{{ t('home.eyebrow') }}</span>
         <h1>{{ t('home.headline') }}</h1>
         <p>{{ t('home.subhead') }}</p>
+        <a class="home-model-entry" href="#chain-directory-heading">
+          <span class="home-model-entry__summary">
+            <v-icon icon="mdi-cube-scan" size="23" />
+            <strong>{{
+              t('home.availableVieShow3d', {
+                count: vieShowArchiveSummary.venues,
+                layouts: vieShowArchiveSummary.layouts,
+              })
+            }}</strong>
+          </span>
+          <span>{{ t('home.chooseCinemaFirst') }} <v-icon icon="mdi-arrow-down" size="17" /></span>
+        </a>
       </div>
 
       <div class="home-discovery">
@@ -178,6 +192,7 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
           :city="cityFilter"
           :origin="currentPosition"
           :sort-by-distance="sortMode === 'distance'"
+          :model-filter="modelFilter"
         />
 
         <p class="discovery-note discovery-note--summary">
@@ -195,7 +210,7 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
               :key="hall.slug"
               class="auditorium-item"
               :class="{ 'auditorium-item--catalogue': !hall.modelId }"
-              :to="hall.modelId ? '/auditoriums/' + hall.modelId : '/directory/' + hall.slug"
+              :to="directoryHallRoute(hall)"
               :aria-label="
                 hall.modelId
                   ? t('home.openHall', { name: directoryHallName(hall, appLocale) })
@@ -225,7 +240,13 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
                 <span v-if="formattedDistance(hall)" class="auditorium-item__distance">
                   {{ t('home.distanceKm', { distance: formattedDistance(hall) }) }}
                 </span>
-                <small>{{ hall.modelId ? t('app.estimated') : t('home.no3dYet') }}</small>
+                <small>{{
+                  hall.modelId === 'vieshow-hsinyi-12'
+                    ? t('home.currentHallInsteadOfFestival')
+                    : hall.modelId
+                      ? t('app.estimated')
+                      : t('home.no3dYet')
+                }}</small>
               </span>
               <v-icon icon="mdi-chevron-right" size="23" class="auditorium-item__chevron" />
             </RouterLink>
