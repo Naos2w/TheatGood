@@ -2,8 +2,8 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 /**
- * One-hall video pilot. Keep the original film audio separate from the screen
- * texture; the shared Three.js camera and seat data are owned by the viewer.
+ * Source-verified hall media preview. Film audio stays separate from the screen
+ * texture; the existing Three.js camera and seat data belong to the viewer.
  */
 defineProps<{
   selectedSeatId: string

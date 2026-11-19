@@ -48,9 +48,19 @@ const slug = computed(() => String(route.params.slug))
 const hallId = computed(() => String(route.params.hallId))
 const venue = computed(() => chainCinemas.find((item) => item.slug === slug.value))
 const immersive = computed(() => route.query.view === '3d')
-// Only one sourced auditorium participates in the prototype. No other hall changes.
+// Reuse the accepted viewer only for archived halls whose seat counts match
+// the operator's published figures. All other halls keep their existing 3D controls.
+const mediaPreviewHalls = new Set([
+  'vieshow-muvie-taipei-a13-1', // 48 seats, original accepted pilot
+  'vieshow-taipei-ximen-7', // 143 seats
+  'vieshow-hsinchu-bigcity-2', // 268 seats
+  'vieshow-muvie-taipei-a13-6', // 391 seats
+])
 const pilotEnabled = computed(
-  () => slug.value === 'vieshow-muvie-taipei-a13' && hallId.value === 'vieshow-muvie-taipei-a13-1',
+  () =>
+    layout.value?.id === hallId.value &&
+    layout.value?.countComparison === 'exact' &&
+    mediaPreviewHalls.has(hallId.value),
 )
 const cinemaHallListRoute = computed(() => ({
   path: '/cinemas/' + slug.value,
@@ -495,6 +505,7 @@ function onPilotVideoElement(video: HTMLVideoElement | null) {
         </div>
         <CinemaSensoryPilot
           v-if="pilotEnabled && webglAvailable && !sceneError && sceneComponent"
+          :key="layout.id"
           :selected-seat-id="seatId"
           :can-previous="!!previous"
           :can-next="!!next"

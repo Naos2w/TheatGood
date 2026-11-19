@@ -8,7 +8,7 @@ import { createCinemaScreenTexture } from './cinema-screen-texture'
 const props = defineProps<{
   screen: ScreenDefinition
   room: CinemaRoomLayout
-  /** Only set for the opted-in one-hall pilot; all other halls keep the original procedural texture. */
+  /** Only set for selected source-verified halls; others keep the procedural screen texture. */
   demoVideo?: HTMLVideoElement | null
 }>()
 
