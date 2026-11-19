@@ -48,26 +48,23 @@ const slug = computed(() => String(route.params.slug))
 const hallId = computed(() => String(route.params.hallId))
 const venue = computed(() => chainCinemas.find((item) => item.slug === slug.value))
 const immersive = computed(() => route.query.view === '3d')
-// Reuse the accepted viewer only for archived halls whose seat counts match
-// the operator's published figures. All other halls keep their existing 3D controls.
-const mediaPreviewHalls = new Set([
-  'vieshow-muvie-taipei-a13-1', // 48 seats, original accepted pilot
-  'vieshow-taipei-ximen-7', // 143 seats
-  'vieshow-hsinchu-bigcity-2', // 268 seats
-  'vieshow-muvie-taipei-a13-6', // 391 seats
-  'vieshow-taipei-hsinyi-11', // 254 seats, official count verified
-  'vieshow-muvie-taichung-tigercity-3', // 230 seats, official count verified
-  'vieshow-kaohsiung-fe21-3', // 264 seats, official count verified
-  'vieshow-banqiao-megacity-1', // 183 seats, official count verified
-  'vieshow-linkou-mitsui-2', // 239 seats, official count verified
-  'vieshow-nangang-lalaport-6', // 204 seats, official count verified
-])
-const pilotEnabled = computed(
-  () =>
-    layout.value?.id === hallId.value &&
-    layout.value?.countComparison === 'exact' &&
-    mediaPreviewHalls.has(hallId.value),
-)
+// The archive loader validates each hall's source, unique seats and provenance.
+// Capacity discrepancies do not invalidate the sourced seat diagram: disclose
+// them rather than falsely claiming the 3D preview is a measured floor plan.
+const pilotEnabled = computed(() => layout.value?.id === hallId.value)
+const seatCountWarning = computed(() => {
+  const hall = layout.value
+  if (!hall) return ''
+  if (hall.countComparison === 'different' && hall.publishedSeatCount !== null)
+    return t('vieshowSeatRefs.countDifference', {
+      observed: hall.ordinarySeatCount,
+      published: hall.publishedSeatCount,
+    })
+  if (hall.countComparison === 'not-published') return t('vieshowSeatRefs.notPublished')
+  if (hall.countComparison === 'wheelchair-markers-match')
+    return t('vieshowSeatRefs.wheelchairCountMatch')
+  return ''
+})
 const cinemaHallListRoute = computed(() => ({
   path: '/cinemas/' + slug.value,
   query: layout.value ? { hall: String(layout.value.hallNumber ?? layout.value.hallLabel) } : {},
@@ -318,6 +315,7 @@ function onPilotVideoElement(video: HTMLVideoElement | null) {
             {{ venue.name }} <span>· {{ layout.hallLabel }}</span>
           </h1>
           <p>{{ t('ux.chooseSeatHint') }}</p>
+          <p v-if="seatCountWarning" role="note">{{ seatCountWarning }}</p>
         </header>
 
         <section class="vieshow-3d-page__map-section">
@@ -513,6 +511,7 @@ function onPilotVideoElement(video: HTMLVideoElement | null) {
           v-if="pilotEnabled && webglAvailable && !sceneError && sceneComponent"
           :key="layout.id"
           :selected-seat-id="seatId"
+          :seat-count-warning="seatCountWarning"
           :can-previous="!!previous"
           :can-next="!!next"
           :view-mode="immersiveViewMode"

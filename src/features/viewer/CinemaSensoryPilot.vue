@@ -2,11 +2,14 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 /**
- * Source-verified hall media preview. Film audio stays separate from the screen
- * texture; the existing Three.js camera and seat data belong to the viewer.
+ * Media preview for source-archived public seat diagrams. Published capacity
+ * may still differ; the viewer displays unresolved differences separately.
+ * Film audio stays separate from the Three.js screen texture.
  */
 defineProps<{
   selectedSeatId: string
+  /** Explain any discrepancy between the public session diagram and operator capacity. */
+  seatCountWarning?: string
   canPrevious: boolean
   canNext: boolean
   viewMode: 'seat' | 'overview'
@@ -143,6 +146,7 @@ onUnmounted(() => {
         <span :style="{ width: progress + '%' }" />
       </div>
       <p class="cinema-sensory-pilot__notice">{{ message }} 影廳比例和座位視角為估算模擬。</p>
+      <p v-if="seatCountWarning" role="note">{{ seatCountWarning }}</p>
       <p v-if="appleBrowser">Safari 相容版：影片已轉碼為 720p H.264/AAC，內容未剪輯。</p>
       <p>
         影片來源：
