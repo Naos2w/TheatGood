@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 /**
  * Media preview for source-archived public seat diagrams. Published capacity
@@ -20,7 +21,9 @@ const emit = defineEmits<{
   'next-seat': []
   'toggle-view-mode': []
   'reset-view': []
+  'record-seat': []
 }>()
+const { t } = useI18n()
 
 const ORIGINAL_WEBM_URL =
   'https://upload.wikimedia.org/wikipedia/commons/transcoded/b/b2/The_Daily_Dweebs_-_Blender_Open_Movie-full_movie.webm/The_Daily_Dweebs_-_Blender_Open_Movie-full_movie.webm.1080p.vp9.webm'
@@ -166,6 +169,9 @@ onUnmounted(() => {
       </p>
       <button type="button" class="cinema-sensory-pilot__reset" @click="resetViewAndClose">
         <v-icon icon="mdi-restore" size="16" /> 重設視角
+      </button>
+      <button type="button" class="cinema-sensory-pilot__reset" @click="emit('record-seat')">
+        <v-icon icon="mdi-bookmark-outline" size="16" /> {{ t('history.recordSeat') }}
       </button>
     </aside>
     <div

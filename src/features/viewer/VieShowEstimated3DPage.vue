@@ -276,6 +276,17 @@ function toggleImmersiveViewMode() {
 function onPilotVideoElement(video: HTMLVideoElement | null) {
   pilotVideo.value = video
 }
+function recordSelectedSeat() {
+  if (!layout.value || !selected.value) return
+  void router.push({
+    path: '/history',
+    query: {
+      vieshowCinema: slug.value,
+      vieshowHall: layout.value.id,
+      seat: seatId.value,
+    },
+  })
+}
 </script>
 
 <template>
@@ -520,6 +531,7 @@ function onPilotVideoElement(video: HTMLVideoElement | null) {
           @next-seat="switchSeat(1)"
           @toggle-view-mode="toggleImmersiveViewMode"
           @reset-view="resetViewToken++"
+          @record-seat="recordSelectedSeat"
         />
         <div v-if="!pilotEnabled" class="viewer-immersive__bottom">
           <p class="viewer-immersive__hint">
