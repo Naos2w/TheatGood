@@ -439,7 +439,7 @@ export const messages = {
       verifiedSeat: '這個座號可對應目前的影廳模型，可返回座位圖確認視角。',
       modelSeatHelp: '輸入官方模型中的座號才會有視角預覽；其他座號仍可作為自己的文字紀錄。',
       manualSeatHelp: '尚無此廳的完整座位配置。座號會以文字記錄，不會產生虛構的 3D 視角。',
-      archivedSeatNote: '已帶入來源座位圖的影廳與座號。這筆紀錄只保存在本瀏覽器，目前尚不能從足跡頁直接返回該 3D 視角。',
+      archivedSeatNote: '已帶入來源座位圖的影廳與座號，紀錄只保存在本瀏覽器。儲存後若座號仍存在於來源座位圖，即可從足跡頁返回該 3D 視角。',
       openSeatMap: '查看 2D 座位圖',
       save: '儲存紀錄',
       saveChanges: '儲存修改',
@@ -952,7 +952,7 @@ export const messages = {
       manualSeatHelp:
         'A complete seating plan is unavailable. The seat will be stored as text, without an invented 3D view.',
       archivedSeatNote:
-        'The cinema, auditorium and seat are prefilled from a sourced seating plan. This record stays in this browser and cannot yet reopen that 3D view from the history page.',
+        'The cinema, auditorium and seat are prefilled from a sourced plan and saved only in this browser. You can reopen the 3D view from your history if that seat remains in the archived plan.',
       openSeatMap: 'Open 2D seat map',
       save: 'Save record',
       saveChanges: 'Save changes',

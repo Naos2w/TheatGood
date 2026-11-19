@@ -7,6 +7,7 @@ import {
   watchCinemaOptions,
   watchHallOptions,
   watchPreviewRoute,
+  watchVieShowPreviewRoute,
   type ManualWatchDraft,
   type ManualWatchEntry,
 } from './manual-history'
@@ -76,6 +77,63 @@ describe('free-text manual viewing footprint', () => {
     expect(watchPreviewRoute(record({ modelVersion: 2 }))).toBeNull()
     expect(watchPreviewRoute(record({ cinemaSlug: 'vieshow-taipei-hsinyi' }))).toBeNull()
     expect(watchPreviewRoute(record({ modelId: null }))).toBeNull()
+  })
+
+  it('reopens a sourced Vie Show or MUVIE seat only when its archived hall and label still match', async () => {
+    const archived = (cinemaSlug: string, hallName: string, seatLabel: string) =>
+      record({
+        cinemaSlug,
+        cinemaName: '測試威秀影城',
+        hallName,
+        seatLabel,
+        modelId: null,
+        modelVersion: null,
+      })
+    const hsinyi = archived('vieshow-taipei-hsinyi', '11 廳', 'G08')
+    expect(await watchVieShowPreviewRoute(hsinyi)).toEqual({
+      path: '/cinemas/vieshow-taipei-hsinyi/halls/vieshow-taipei-hsinyi-11',
+      query: { seat: 'G08', view: '3d' },
+    })
+    expect(
+      await watchVieShowPreviewRoute(archived('vieshow-taipei-hsinyi', '第11廳', 'G08')),
+    ).toEqual(await watchVieShowPreviewRoute(hsinyi))
+    expect(
+      await watchVieShowPreviewRoute(archived('vieshow-hualien-paradiso', '第B廳', 'E12')),
+    ).toEqual({
+      path: '/cinemas/vieshow-hualien-paradiso/halls/vieshow-hualien-paradiso-b',
+      query: { seat: 'E12', view: '3d' },
+    })
+    expect(
+      await watchVieShowPreviewRoute(archived('vieshow-hsinchu-fe21', 'GC1', 'D06')),
+    ).toEqual({
+      path: '/cinemas/vieshow-hsinchu-fe21/halls/vieshow-hsinchu-fe21-gc1',
+      query: { seat: 'D06', view: '3d' },
+    })
+    // The legacy festival screen 12 model must never be inferred from a
+    // source-archived screen 12 record with an explicitly absent model ID.
+    expect(
+      await watchVieShowPreviewRoute(archived('vieshow-taipei-hsinyi', '12 廳', 'I01')),
+    ).toEqual({
+      path: '/cinemas/vieshow-taipei-hsinyi/halls/vieshow-taipei-hsinyi-12',
+      query: { seat: 'I01', view: '3d' },
+    })
+    for (const entry of [
+      archived('vieshow-taipei-hsinyi', '11 廳', 'FAKE999'),
+      archived('vieshow-taipei-hsinyi', '13 廳', 'G08'),
+      archived('vieshow-hualien-paradiso', 'B廳', 'E12'),
+      archived('vieshow-hualien-paradiso', '第B廳', ''),
+      archived('nonexistent', '11 廳', 'G08'),
+      archived('spot-taipei', '11 廳', 'G08'),
+      { ...hsinyi, modelId: 'vieshow-hsinyi-12', modelVersion: 1 },
+      { ...hsinyi, modelVersion: 1 },
+    ]) {
+      expect(await watchVieShowPreviewRoute(entry)).toBeNull()
+    }
+    // Existing versioned catalogue links must continue to work as before.
+    expect(watchPreviewRoute(record())).toEqual({
+      path: '/auditoriums/spot-taipei',
+      query: { seat: '1-1' },
+    })
   })
 
   it('counts individual visits and preserves distinct user-entered film names', () => {

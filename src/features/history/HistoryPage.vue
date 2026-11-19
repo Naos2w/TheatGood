@@ -20,6 +20,7 @@ import {
   watchCinemaOptions,
   watchHallOptions,
   watchPreviewRoute,
+  watchVieShowPreviewRoute,
   type ManualWatchEntry,
 } from './manual-history'
 import { useManualWatchHistoryStore } from '../../stores/manual-watch-history'
@@ -82,6 +83,40 @@ const cinemaFilters = computed(() => [
 const years = computed(() =>
   [...new Set(store.entries.map((entry) => entry.watchedOn.slice(0, 4)))].sort().reverse(),
 )
+// Resolve actual archived seat labels before exposing a 3D link. Recheck when
+// entries are edited, deleted or updated from another browser tab.
+const sourcedPreviewRoutes = ref<
+  Record<string, NonNullable<Awaited<ReturnType<typeof watchVieShowPreviewRoute>>>>
+>({})
+watch(
+  () => store.entries,
+  async (entries, _previous, onCleanup) => {
+    let cancelled = false
+    onCleanup(() => {
+      cancelled = true
+    })
+    sourcedPreviewRoutes.value = {}
+    const previews = await Promise.all(
+      entries.map(async (entry) => {
+        try {
+          return [entry.id, await watchVieShowPreviewRoute(entry)] as const
+        } catch {
+          return [entry.id, null] as const
+        }
+      }),
+    )
+    if (!cancelled) {
+      const valid: typeof sourcedPreviewRoutes.value = {}
+      for (const [id, preview] of previews) if (preview) valid[id] = preview
+      sourcedPreviewRoutes.value = valid
+    }
+  },
+  { immediate: true },
+)
+function previewRouteForEntry(entry: ManualWatchEntry) {
+  return watchPreviewRoute(entry) ?? sourcedPreviewRoutes.value[entry.id] ?? null
+}
+
 const records = computed(() =>
   filterWatchHistory(store.entries, {
     query: query.value,
@@ -519,7 +554,7 @@ watch(
             <small>{{ t('history.selfReported') }}</small>
           </div>
           <div class="manual-history__record-actions">
-            <RouterLink v-if="watchPreviewRoute(entry)" :to="watchPreviewRoute(entry)!">
+            <RouterLink v-if="previewRouteForEntry(entry)" :to="previewRouteForEntry(entry)!">
               <v-icon icon="mdi-eye-outline" size="17" />
               {{ t('history.previewSeat') }}
             </RouterLink>
