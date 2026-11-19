@@ -1,0 +1,346 @@
+/* 2D seat selection — one visual/interaction model across phone, tablet and desktop.
+ * Only the viewing window changes. Authentic seat coordinates and order stay intact. */
+.vieshow-3d-page__workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+}
+.vieshow-3d-page__map-area {
+  min-width: 0;
+}
+.vieshow-3d-page__map-tools {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 7px;
+  min-height: 48px;
+}
+.vieshow-3d-page__orientation {
+  display: none;
+}
+.vieshow-3d-page__map-tools .vieshow-3d-page__orientation {
+  margin-bottom: 0;
+}
+.vieshow-3d-page__zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--tg-border);
+  border-radius: 13px;
+  background: var(--tg-secondary);
+}
+.vieshow-3d-page__zoom-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--tg-text);
+  font-size: 12px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+.vieshow-3d-page__zoom-controls button:nth-child(2) {
+  min-width: 58px;
+}
+.vieshow-3d-page__zoom-controls button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+.vieshow-3d-page__zoom-controls button:hover:not(:disabled),
+.vieshow-3d-page__zoom-controls button:focus-visible {
+  background: var(--tg-surface);
+}
+.vieshow-3d-page__zoom-controls button:focus-visible {
+  outline: 2px solid #2878d6;
+  outline-offset: 1px;
+}
+.vieshow-3d-page__map-scroll {
+  width: 100%;
+  max-width: 100%;
+  max-height: min(66dvh, 700px);
+  overflow: auto;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  margin: 0;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.vieshow-3d-page__seat rect {
+  transition:
+    fill 120ms ease,
+    stroke 120ms ease,
+    filter 120ms ease;
+}
+.vieshow-3d-page__seat rect.vieshow-3d-page__seat--active {
+  fill: #ffdb76;
+  stroke: #1166c2;
+  stroke-width: 3.5px;
+  paint-order: stroke fill;
+  filter: drop-shadow(0 0 4px rgba(41, 129, 238, 0.82));
+}
+.vieshow-3d-page__seat .vieshow-3d-page__seat-label--active {
+  fill: #13283c;
+  font-weight: 900;
+  font-size: 9.5px;
+  stroke: none;
+  paint-order: normal;
+}
+.vieshow-3d-page__seat:focus-visible rect {
+  stroke: #ffffff;
+  stroke-width: 3.5px;
+  filter: drop-shadow(0 0 3px #1166c2);
+}
+.vieshow-3d-page__seat:focus-visible .seat-references__seat-label {
+  font-weight: 900;
+}
+.vieshow-3d-page__map-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+  color: var(--tg-muted);
+  font-size: 12px;
+}
+.vieshow-3d-page__map-status strong {
+  color: var(--tg-text);
+  background: var(--tg-secondary);
+  border-radius: 8px;
+  padding: 4px 9px;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.vieshow-3d-page__selected-dot {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  border-radius: 4px;
+  background: #ffdb76;
+  border: 2px solid #1166c2;
+}
+.vieshow-3d-page__selected-summary {
+  display: none;
+}
+.vieshow-3d-page__selection select {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  border-color: color-mix(in srgb, var(--tg-accent) 52%, var(--tg-border));
+}
+.vieshow-3d-page__selection:focus-within {
+  /* No overlay on the whole panel; let each real control own its focus state. */
+  outline: none;
+}
+.vieshow-3d-page__selection select:focus-visible,
+.vieshow-3d-page__selection button:focus-visible {
+  outline: 3px solid #2878d6;
+  outline-offset: 2px;
+}
+
+@media (max-width: 1023px) {
+  .vieshow-3d-page__map-tools {
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+}
+@media (max-width: 599px) {
+  .vieshow-3d-page__map-scroll {
+    /* The selection initially sits at the centre of this scrollable window.
+     * Leave the real seats at readable native size rather than shrinking them. */
+    max-height: clamp(300px, 50dvh, 460px);
+  }
+  .vieshow-3d-page__section-heading {
+    margin-bottom: 10px;
+  }
+  .vieshow-3d-page__orientation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 7px;
+    color: var(--tg-muted);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .vieshow-3d-page__map-status {
+    justify-content: center;
+    margin-top: 9px;
+    font-size: 11px;
+  }
+  .vieshow-3d-page__selection {
+    /* Label sits above the field. Align the two *controls* by their bottoms. */
+    align-items: flex-end;
+  }
+  .vieshow-3d-page__selection label {
+    gap: 5px;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+  .vieshow-3d-page__selection select,
+  .vieshow-3d-page__selection .button-primary {
+    box-sizing: border-box;
+    height: 48px;
+    min-height: 48px;
+  }
+  .vieshow-3d-page__selection select {
+    font-size: 18px;
+    font-weight: 850;
+    border: 2px solid #2878d6;
+    background: var(--tg-surface);
+    color: var(--tg-text);
+  }
+  .vieshow-3d-page__selection .button-primary {
+    padding-block: 0;
+  }
+  .vieshow-3d-page__selected-summary {
+    display: none;
+  }
+}
+@media (min-width: 600px) and (max-width: 1023px) {
+  .vieshow-3d-page__orientation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 7px;
+    color: var(--tg-muted);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .vieshow-3d-page__map-scroll {
+    /* Keep the seat picker and 3D action within a typical portrait tablet view. */
+    max-height: min(54dvh, 520px);
+  }
+  .vieshow-3d-page__selection {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    border-top: 1px solid var(--tg-border);
+    padding-top: 13px;
+  }
+  .vieshow-3d-page__selection label {
+    flex: 1 1 auto;
+    max-width: 300px;
+  }
+  .vieshow-3d-page__selection select,
+  .vieshow-3d-page__selection .button-primary {
+    box-sizing: border-box;
+    height: 48px;
+    min-height: 48px;
+  }
+  .vieshow-3d-page__selection .button-primary {
+    flex: 0 0 auto;
+    width: auto;
+    padding-block: 0;
+  }
+}
+@media (min-width: 1024px) {
+  .vieshow-3d-page__header {
+    margin-top: 10px;
+  }
+  .vieshow-3d-page__map-section {
+    margin-top: 13px;
+  }
+  .vieshow-3d-page__workbench {
+    grid-template-columns: minmax(0, 1fr) minmax(235px, 255px);
+    gap: 19px;
+    align-items: start;
+  }
+  .vieshow-3d-page__map-scroll {
+    max-height: min(70dvh, 750px);
+  }
+  .vieshow-3d-page__map-status {
+    display: none;
+  }
+  .vieshow-3d-page__selection {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    position: sticky;
+    top: 85px;
+    padding: 18px;
+    background: color-mix(in srgb, var(--tg-secondary) 72%, var(--tg-surface));
+    border: 1px solid var(--tg-border);
+    border-radius: 18px;
+  }
+  .vieshow-3d-page__selected-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .vieshow-3d-page__selected-summary span {
+    color: var(--tg-muted);
+    font-size: 12px;
+  }
+  .vieshow-3d-page__selected-summary strong {
+    color: var(--tg-text);
+    font-size: 30px;
+    font-weight: 850;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+  }
+  .vieshow-3d-page__selection label,
+  .vieshow-3d-page__selection select,
+  .vieshow-3d-page__selection .button-primary {
+    width: 100%;
+  }
+  .vieshow-3d-page__selection label {
+    align-items: stretch;
+  }
+}
+/* Other supported 2D seat maps use the same selected-seat meaning. */
+.seat-map__seat--selected,
+.seat-map__seat--selected:hover {
+  background: #ffdb76;
+  color: #13283c;
+  border: 2px solid #1166c2;
+  box-shadow:
+    0 0 0 2px var(--tg-surface),
+    0 0 0 4px #1166c2,
+    0 2px 8px rgba(17, 102, 194, 0.22);
+}
+.seat-map__seat--selected.seat-map__seat--visited {
+  box-shadow:
+    0 0 0 2px var(--tg-surface),
+    0 0 0 4px #1166c2;
+}
+.legend-spot--selected {
+  background: #ffdb76;
+  border: 1px solid #1166c2;
+}
+/* Rapid previous/next taps in the 3D viewer must not trigger Safari's
+ * double-tap page zoom. `touch-action: manipulation` removes double-tap zoom
+ * without disabling intentional pinch zoom for the rest of the website.
+ * Apply it to the entire control surface as well as buttons so neighbouring
+ * tap targets behave consistently; leave the 3D canvas gesture logic alone. */
+.viewer-immersive__top,
+.viewer-immersive__bottom,
+.viewer-switcher,
+.viewer-switcher button,
+.viewer-immersive__utility button,
+.viewer-immersive__top button {
+  touch-action: manipulation;
+}
+.viewer-switcher,
+.viewer-switcher button,
+.viewer-switcher__seat {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vieshow-3d-page__seat rect {
+    transition: none;
+  }
+}

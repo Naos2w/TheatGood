@@ -1,5 +1,5 @@
 import type { AuditoriumSeat } from '../auditoriums/geometry'
-import type { SceneAuditoriumGeometry } from './vieshow-approximate-scene'
+import type { SceneAuditoriumGeometry } from './cinema-scene-model'
 
 export interface CinemaTier {
   row: string

@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { TresCanvas } from '@tresjs/core'
-import { Group, PerspectiveCamera, Vector3, type CanvasTexture } from 'three'
+import { PerspectiveCamera } from 'three'
 import type { AuditoriumSeat } from '../auditoriums/geometry'
-import type { SceneAuditoriumGeometry } from './vieshow-approximate-scene'
+import type { CinemaWheelchairSpot, SceneAuditoriumGeometry } from './cinema-scene-model'
+import { cinemaCameraDirection, cinemaCameraPosition, cinemaCameraTarget } from './cinema-camera'
 import { verticalFovFromHorizontal } from './view-projection'
 import { deriveCinemaRoomLayout } from './cinema-room-layout'
-import { createCinemaSeatInstances, disposeCinemaSeatInstances } from './cinema-seat-instances'
-import { createCinemaScreenTexture } from './cinema-screen-texture'
+import CinemaRoomRenderer from './CinemaRoomRenderer.vue'
+import CinemaScreenRenderer from './CinemaScreenRenderer.vue'
+import CinemaSeatsRenderer from './CinemaSeatsRenderer.vue'
 
 const props = defineProps<{
   auditorium: SceneAuditoriumGeometry
@@ -16,8 +18,10 @@ const props = defineProps<{
   resetViewToken: number
   horizontalFov: number
   viewMode?: 'seat' | 'overview'
-  wheelchairSpots?: { x: number; z: number; elevation: number }[]
+  wheelchairSpots?: CinemaWheelchairSpot[]
+  demoVideo?: HTMLVideoElement | null
 }>()
+const emit = defineEmits<{ 'orientation-change': [yaw: number, pitch: number] }>()
 
 const canvasBox = ref<HTMLElement | null>(null)
 const camera = new PerspectiveCamera(55, 16 / 9, 0.08, 220)
@@ -29,22 +33,7 @@ const room = computed(() =>
 const selectedRow = computed(() =>
   room.value.tiers.find((tier) => tier.row === selected.value?.row),
 )
-const seatInstances = shallowRef<Group | null>(null)
-const projectionTexture = shallowRef<CanvasTexture | null>(null)
 
-const viewTarget = computed(() =>
-  props.viewMode === 'overview'
-    ? new Vector3(
-        screen.value.centerX,
-        Math.max(1.4, room.value.roomHeight * 0.31),
-        room.value.frontWallZ + room.value.roomDepth * 0.29,
-      )
-    : new Vector3(
-        screen.value.centerX,
-        screen.value.bottomY + screen.value.height / 2,
-        screen.value.z,
-      ),
-)
 let resizeObserver: ResizeObserver | undefined
 let animationFrame = 0
 let mounted = false
@@ -54,25 +43,13 @@ let activePointer: number | null = null
 let lastPoint = { x: 0, y: 0 }
 
 function orientCamera() {
-  // Compose sightline-relative yaw in world space so looking behind the seat
-  // cannot accidentally roll or invert the floor/ceiling orientation.
-  const targetPosition = viewTarget.value.clone()
-  if (props.viewMode === 'overview' && camera.aspect < 0.7) {
-    // Portrait has a very wide vertical FOV when horizontal FOV is fixed.
-    // Aim lower so the auditorium rather than the dark ceiling fills the frame.
-    targetPosition.y = Math.max(0.85, room.value.roomHeight * 0.12)
-  }
-  const towardsScreen = targetPosition.sub(camera.position)
-  const horizontalDistance = Math.hypot(towardsScreen.x, towardsScreen.z)
-  const baseYaw = Math.atan2(towardsScreen.x, -towardsScreen.z)
-  const basePitch = Math.atan2(towardsScreen.y, horizontalDistance)
-  const rotatedYaw = baseYaw + yaw
-  const rotatedPitch = Math.max(-1.25, Math.min(1.25, basePitch + pitch))
-  const direction = new Vector3(
-    Math.sin(rotatedYaw) * Math.cos(rotatedPitch),
-    Math.sin(rotatedPitch),
-    -Math.cos(rotatedYaw) * Math.cos(rotatedPitch),
+  const target = cinemaCameraTarget(
+    screen.value,
+    room.value,
+    props.viewMode ?? 'seat',
+    camera.aspect,
   )
+  const direction = cinemaCameraDirection(camera.position, target, yaw, pitch)
   camera.up.set(0, 1, 0)
   camera.lookAt(camera.position.clone().add(direction))
   camera.updateMatrixWorld()
@@ -82,15 +59,9 @@ function moveToSelected() {
   if (!selected.value) return
   yaw = 0
   pitch = 0
+  emit('orientation-change', yaw, pitch)
   if (animationFrame) cancelAnimationFrame(animationFrame)
-  const target =
-    props.viewMode === 'overview'
-      ? new Vector3(
-          0,
-          Math.min(room.value.roomHeight - 1.1, room.value.roomHeight * 0.73),
-          room.value.rearWallZ - 0.85,
-        )
-      : new Vector3(selected.value.x, selected.value.eyeY, selected.value.z)
+  const target = cinemaCameraPosition(selected.value, room.value, props.viewMode ?? 'seat')
   const reduceMotion =
     typeof window !== 'undefined' &&
     typeof window.matchMedia === 'function' &&
@@ -119,6 +90,7 @@ function moveToSelected() {
 function resetView() {
   yaw = 0
   pitch = 0
+  emit('orientation-change', yaw, pitch)
   orientCamera()
 }
 
@@ -128,17 +100,19 @@ function pointerDown(event: PointerEvent) {
   lastPoint = { x: event.clientX, y: event.clientY }
   canvasBox.value?.setPointerCapture(event.pointerId)
 }
+
 function pointerMove(event: PointerEvent) {
   if (event.pointerId !== activePointer) return
   const dx = event.clientX - lastPoint.x
   const dy = event.clientY - lastPoint.y
   lastPoint = { x: event.clientX, y: event.clientY }
-  // Full horizontal look-around; tilt is bounded to avoid camera flipping.
   const newYaw = yaw - dx * 0.004
   yaw = Math.atan2(Math.sin(newYaw), Math.cos(newYaw))
   pitch = Math.max(-0.9, Math.min(0.9, pitch - dy * 0.0036))
+  emit('orientation-change', yaw, pitch)
   orientCamera()
 }
+
 function pointerUp(event: PointerEvent) {
   if (activePointer === event.pointerId) activePointer = null
 }
@@ -154,18 +128,6 @@ function resizeCamera() {
   camera.updateProjectionMatrix()
   if (props.viewMode === 'overview') orientCamera()
 }
-
-// Only recreate a few instanced mesh batches when the physical estimate changes,
-// rather than rendering one Three.Mesh per individual seat.
-watch(
-  () => [props.seats, props.auditorium.seatWidth] as const,
-  ([seats, seatWidth]) => {
-    const previous = seatInstances.value
-    seatInstances.value = createCinemaSeatInstances(seats, seatWidth)
-    if (previous) void nextTick(() => disposeCinemaSeatInstances(previous))
-  },
-  { immediate: true },
-)
 
 watch(
   () => [
@@ -187,12 +149,6 @@ watch(() => props.horizontalFov, resizeCamera)
 
 onMounted(() => {
   mounted = true
-  try {
-    projectionTexture.value = createCinemaScreenTexture()
-  } catch {
-    // Retain the plain screen material when Canvas 2D is unavailable.
-    projectionTexture.value = null
-  }
   resizeCamera()
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(resizeCamera)
@@ -203,8 +159,6 @@ onUnmounted(() => {
   mounted = false
   resizeObserver?.disconnect()
   if (animationFrame) cancelAnimationFrame(animationFrame)
-  if (seatInstances.value) disposeCinemaSeatInstances(seatInstances.value)
-  projectionTexture.value?.dispose()
 })
 </script>
 
@@ -233,122 +187,11 @@ onUnmounted(() => {
         :intensity="8"
         :distance="room.roomDepth * 0.48"
       />
+      <CinemaRoomRenderer :room="room" :wheelchair-spots="wheelchairSpots" />
+      <CinemaScreenRenderer :screen="screen" :room="room" :demo-video="demoVideo" />
+      <CinemaSeatsRenderer :seats="seats" :seat-width="auditorium.seatWidth" />
 
-      <!-- The entire envelope is estimated, not taken from an architectural survey. -->
-      <TresMesh :position="[0, -0.25, room.centerZ]" :rotation="[-Math.PI / 2, 0, 0]">
-        <TresPlaneGeometry :args="[room.roomWidth, room.roomDepth]" />
-        <TresMeshStandardMaterial color="#111725" :roughness="0.99" />
-      </TresMesh>
-      <TresMesh
-        v-for="side in [-1, 1]"
-        :key="'wall-' + side"
-        :position="[(side * room.roomWidth) / 2, room.roomHeight / 2, room.centerZ]"
-      >
-        <TresBoxGeometry :args="[0.24, room.roomHeight, room.roomDepth]" />
-        <TresMeshStandardMaterial color="#161e2e" :roughness="0.97" />
-      </TresMesh>
-      <TresMesh :position="[0, room.roomHeight / 2, room.frontWallZ]">
-        <TresBoxGeometry :args="[room.roomWidth, room.roomHeight, 0.36]" />
-        <TresMeshStandardMaterial color="#080d18" :roughness="1" />
-      </TresMesh>
-      <TresMesh :position="[0, room.roomHeight / 2, room.rearWallZ]">
-        <TresBoxGeometry :args="[room.roomWidth, room.roomHeight, 0.32]" />
-        <TresMeshStandardMaterial color="#131a2b" :roughness="0.98" />
-      </TresMesh>
-      <TresMesh :position="[0, room.roomHeight + 0.1, room.centerZ]">
-        <TresBoxGeometry :args="[room.roomWidth, 0.22, room.roomDepth]" />
-        <TresMeshStandardMaterial color="#131927" :roughness="0.98" />
-      </TresMesh>
-
-      <!-- Dark acoustic cladding and baffles, all presentational estimates. -->
-      <TresGroup v-for="(panel, index) in room.acousticPanels" :key="'acoustic-' + index">
-        <TresMesh
-          v-for="side in [-1, 1]"
-          :key="'acoustic-' + side"
-          :position="[side * (room.roomWidth / 2 - 0.2), room.roomHeight * 0.5, panel.z]"
-        >
-          <TresBoxGeometry :args="[0.085, panel.height, Math.min(1.5, room.roomDepth / 8)]" />
-          <TresMeshStandardMaterial color="#253047" :roughness="0.97" />
-        </TresMesh>
-      </TresGroup>
-      <TresMesh
-        v-for="(baffle, index) in room.ceilingBaffles"
-        :key="'ceiling-' + index"
-        :position="[0, room.roomHeight - 0.12, baffle.z]"
-      >
-        <TresBoxGeometry :args="[room.roomWidth - 0.6, 0.24, baffle.depth]" />
-        <TresMeshStandardMaterial color="#1d2636" :roughness="0.96" />
-      </TresMesh>
-
-      <!-- Screen frame, original procedural image and a shallow projection stage. -->
-      <TresMesh :position="[screen.centerX, screen.bottomY + screen.height / 2, screen.z - 0.1]">
-        <TresBoxGeometry :args="[screen.width + 0.52, screen.height + 0.52, 0.18]" />
-        <TresMeshStandardMaterial color="#0a0d15" :roughness="0.86" />
-      </TresMesh>
-      <TresMesh :position="[screen.centerX, screen.bottomY + screen.height / 2, screen.z + 0.018]">
-        <TresPlaneGeometry :args="[screen.width, screen.height]" />
-        <TresMeshBasicMaterial v-if="projectionTexture" :map="projectionTexture" />
-        <TresMeshBasicMaterial v-else color="#718ba8" />
-      </TresMesh>
-      <TresMesh :position="[0, -0.1, screen.z + 1.2]">
-        <TresBoxGeometry :args="[Math.min(room.roomWidth - 1, screen.width + 1.8), 0.2, 2.2]" />
-        <TresMeshStandardMaterial color="#141c2b" :roughness="0.94" />
-      </TresMesh>
-
-      <!-- Raised decks match observed row positions; heights/pitches remain adjustable estimates. -->
-      <TresMesh
-        v-for="tier in room.tiers"
-        :key="'deck-' + tier.row"
-        :position="[0, tier.centerY, tier.z]"
-      >
-        <TresBoxGeometry
-          :args="[room.roomWidth - 0.45, tier.height, Math.max(0.22, tier.depth - 0.02)]"
-        />
-        <TresMeshStandardMaterial color="#242d3d" :roughness="0.97" />
-      </TresMesh>
-      <TresMesh
-        v-for="tier in room.tiers"
-        :key="'nosing-' + tier.row"
-        :position="[0, tier.elevation + 0.012, tier.frontZ + 0.035]"
-      >
-        <TresBoxGeometry :args="[room.roomWidth - 1.25, 0.025, 0.07]" />
-        <TresMeshStandardMaterial color="#5d6574" :roughness="0.91" />
-      </TresMesh>
-
-      <!-- Dark visual seams at observed seat gaps, not an official evacuation plan. -->
-      <TresMesh
-        v-for="(gap, index) in room.aisleTraces"
-        :key="'gap-' + index"
-        :position="[gap.x, gap.elevation + 0.025, gap.z]"
-      >
-        <TresBoxGeometry :args="[gap.width, 0.02, gap.depth]" />
-        <TresMeshStandardMaterial color="#121d2b" :roughness="0.96" />
-      </TresMesh>
-
-      <!-- Low aisle guide lights, with no implied measured fixture positions. -->
-      <TresGroup v-for="tier in room.tiers" :key="'guides-' + tier.row">
-        <TresMesh
-          v-for="side in [-1, 1]"
-          :key="'guide-' + side"
-          :position="[side * (room.roomWidth / 2 - 0.46), tier.elevation + 0.043, tier.z]"
-        >
-          <TresBoxGeometry :args="[0.065, 0.025, Math.max(0.22, tier.depth - 0.1)]" />
-          <TresMeshStandardMaterial color="#dfae78" emissive="#c67b3c" :emissive-intensity="0.85" />
-        </TresMesh>
-      </TresGroup>
-
-      <TresMesh
-        v-for="(position, index) in wheelchairSpots ?? []"
-        :key="'wheelchair-' + index"
-        :position="[position.x, position.elevation + 0.046, position.z]"
-        :rotation="[-Math.PI / 2, 0, 0]"
-      >
-        <TresPlaneGeometry :args="[0.76, 0.76]" />
-        <TresMeshStandardMaterial color="#5b8d9b" :roughness="0.91" />
-      </TresMesh>
-      <primitive v-if="seatInstances" :object="seatInstances" />
-
-      <!-- The selected seat gets a restrained marker in room overview only. -->
+      <!-- The selected seat stays in the same physical coordinate system. -->
       <TresMesh
         v-if="selected && viewMode === 'overview'"
         :position="[selected.x, selected.elevation + 1.52, selected.z]"
@@ -356,7 +199,6 @@ onUnmounted(() => {
         <TresSphereGeometry :args="[0.14, 12, 8]" />
         <TresMeshBasicMaterial color="#ffd59b" />
       </TresMesh>
-
       <TresMesh
         v-if="selected && selectedRow"
         :position="[selected.x, selectedRow.elevation + 0.022, selected.z]"
