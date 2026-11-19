@@ -60,7 +60,7 @@ watch(
     document.documentElement.dataset.theme = theme
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', theme === 'dark' ? '#131720' : '#f5f6f9')
+      ?.setAttribute('content', theme === 'dark' ? '#0b0d13' : '#ffffff')
   },
   { immediate: true },
 )

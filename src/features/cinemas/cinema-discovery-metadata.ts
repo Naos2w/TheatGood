@@ -68,6 +68,148 @@ const venueLandmarks: Readonly<Record<string, string>> = {
   'vieshow-muvie-taichung-tigercity': 'TIGER CITY 老虎城',
 }
 
+/** Recognisable mall identity assets, sourced from official sites or published brand partners.
+ * Never substitute a cinema logo for the mall logo; keep provenance for each asset. */
+export interface MallIdentityAsset {
+  src: string
+  /** Exact image provenance: a published HTTPS source or a user-upload: reference. */
+  sourceUrl: string
+  kind: 'logo' | 'wordmark'
+}
+
+const mallLogoAssets: Readonly<Record<string, MallIdentityAsset>> = {
+  'vieshow-nangang-lalaport': {
+    src: '/malls/lalaport-mark.png',
+    sourceUrl: 'https://seeklogo.com/vector-logo/445083/lalaport',
+    kind: 'logo',
+  },
+  'vieshow-linkou-mitsui': {
+    src: '/malls/mitsui-outlet-mark.png',
+    sourceUrl: 'https://www.cathaypacific.com/cx/zh_TW/our-partners/mitsui-outlet-park-taiwan.html',
+    kind: 'logo',
+  },
+  'vieshow-tainan-tsmall': {
+    src: '/malls/tsmall-mark.png',
+    sourceUrl: 'https://www.hotel-tainan.com.tw/jp/spot/ins.php?index_id=69&index_m_id=11',
+    kind: 'logo',
+  },
+  'vieshow-taipei-qsquare': {
+    src: '/malls/qsquare-app.png',
+    sourceUrl: 'https://apps.apple.com/tw/app/id1182868124',
+    kind: 'logo',
+  },
+  'vieshow-xindian-yulon': {
+    src: '/malls/yulon-square.png',
+    sourceUrl: 'https://apps.apple.com/tw/app/id6449417323',
+    kind: 'logo',
+  },
+  'vieshow-banqiao-megacity': {
+    src: '/malls/megacity-square.png',
+    sourceUrl: 'user-upload:2026-11-17-megacity',
+    kind: 'logo',
+  },
+  'vieshow-zhonghe-global': {
+    src: '/malls/globalmall-square.png',
+    sourceUrl: 'https://apps.apple.com/tw/app/id1095134873',
+    kind: 'logo',
+  },
+  'vieshow-taoyuan-tonlin': {
+    src: '/malls/tonlin-square.png',
+    sourceUrl: 'https://apps.apple.com/tw/app/id1462854530',
+    kind: 'logo',
+  },
+  'vieshow-taoyuan-geleven': {
+    src: '/malls/geleven-square.png',
+    sourceUrl: 'https://groupg.org/wp-content/uploads/2024/09/--1024x835.png',
+    kind: 'logo',
+  },
+  'vieshow-toufen-shangshun': {
+    src: '/malls/shangshun-mark.svg',
+    sourceUrl: 'https://www.ss-plaza.com.tw/wp-content/uploads/2024/05/logo_color.svg',
+    kind: 'logo',
+  },
+  'vieshow-hsinchu-fe21': {
+    src: '/malls/feds-symbol-square.png',
+    sourceUrl: 'https://www.feds.com.tw/',
+    kind: 'logo',
+  },
+  'vieshow-hsinchu-bigcity': {
+    src: '/malls/bigcity.ico',
+    sourceUrl: 'https://www.febigcity.com/',
+    kind: 'logo',
+  },
+  'vieshow-taichung-topcity': {
+    src: '/malls/topcity.png',
+    sourceUrl: 'https://www.topcity.com.tw/',
+    kind: 'logo',
+  },
+  'vieshow-taichung-ifg': {
+    src: '/malls/ifg-square.png',
+    sourceUrl: 'user-upload:2026-11-17-ifg',
+    kind: 'logo',
+  },
+  'vieshow-tainan-fe21': {
+    src: '/malls/feds-symbol-square.png',
+    sourceUrl: 'https://www.feds.com.tw/',
+    kind: 'logo',
+  },
+  'vieshow-tainan-focus': {
+    src: '/malls/focus-logo.svg',
+    sourceUrl: 'https://www.focusquare.com.tw/',
+    kind: 'logo',
+  },
+  'vieshow-kaohsiung-fe21': {
+    src: '/malls/feds-symbol-square.png',
+    sourceUrl: 'https://www.feds.com.tw/',
+    kind: 'logo',
+  },
+  'vieshow-hualien-paradiso': {
+    src: '/malls/paradiso-square.png',
+    sourceUrl: 'user-upload:2026-11-17-paradiso',
+    kind: 'logo',
+  },
+  'vieshow-muvie-taipei-a13': {
+    src: '/malls/feds-symbol-square.png',
+    sourceUrl: 'https://www.feds.com.tw/',
+    kind: 'logo',
+  },
+  'vieshow-muvie-taichung-tigercity': {
+    src: '/malls/tigercity-mark.png',
+    sourceUrl: 'https://www.tigercity.com.tw/',
+    kind: 'logo',
+  },
+  'miranew-taimall': {
+    src: '/malls/taimall-app-logo.png',
+    sourceUrl: 'https://www.taimall.com.tw/',
+    kind: 'logo',
+  },
+}
+
+export function mallIdentityAsset(cinemaSlug: string): MallIdentityAsset | undefined {
+  return mallLogoAssets[cinemaSlug]
+}
+
+// Only freestanding Vie Show venues currently listed in the official directory.
+// Never replace a missing shopping-centre logo with a cinema logo by accident.
+const freestandingVieShow = new Set(['vieshow-taipei-hsinyi', 'vieshow-taipei-ximen'])
+
+const vieShowBrandAsset: MallIdentityAsset = {
+  src: '/brands/vieshow-symbol.png',
+  sourceUrl: 'https://www.mitsui-shopping-park.com.tw/images/sidebar_info_4.jpg',
+  kind: 'logo',
+}
+
+export function cinemaIdentityAsset(
+  cinema: Pick<ChainCinema, 'slug' | 'brand'>,
+): MallIdentityAsset | undefined {
+  const shoppingCentre = mallIdentityAsset(cinema.slug)
+  if (shoppingCentre) return shoppingCentre
+  if (cinema.brand === 'vieshow' && freestandingVieShow.has(cinema.slug)) {
+    return vieShowBrandAsset
+  }
+  return undefined
+}
+
 export function venuePrimaryLabel(cinema: Pick<ChainCinema, 'slug' | 'name'>): string {
   const landmark = venueLandmarks[cinema.slug]
   if (landmark) return landmark

@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import type { GeoPoint } from '../auditoriums/proximity'
 import { appLocale } from '../../composables/usePreferences'
-import type { ChainCinema } from './chain-directory'
+import { chainCinemas, type ChainBrand, type ChainCinema } from './chain-directory'
 import { chainDistanceKm, sortChainsByDistance } from './chain-positions'
-import { searchChainCinemaVenues } from '../home/discovery-categories'
+import {
+  cinemaHasVerifiedSeatMap,
+  searchChainCinemaVenues,
+  type CinemaDiscoveryModelFilter,
+} from '../home/discovery-categories'
 import {
   venueBrandLabel,
   venueBrandVariant,
   venuePrimaryLabel,
   verifiedFormatsForCinema,
+  cinemaIdentityAsset,
   type AuditoriumFormatFilter,
 } from './cinema-discovery-metadata'
 import { cinemaMapUrl, currentMapPlatform, type MapPlatform } from './map-links'
@@ -22,6 +27,8 @@ const props = defineProps<{
   origin: GeoPoint | null
   sortByDistance: boolean
   formatFilter: AuditoriumFormatFilter
+  brandFilter: ChainBrand | 'all'
+  modelFilter: CinemaDiscoveryModelFilter
 }>()
 const { t } = useI18n()
 const mapPlatform = ref<MapPlatform>('desktop')
@@ -29,9 +36,21 @@ onMounted(() => {
   mapPlatform.value = currentMapPlatform()
 })
 const expanded = ref(false)
+watch(
+  () => [props.query, props.city, props.formatFilter, props.brandFilter, props.modelFilter],
+  () => {
+    expanded.value = false
+  },
+)
 
 const filtered = computed(() =>
-  searchChainCinemaVenues(props.query, props.city, props.formatFilter),
+  searchChainCinemaVenues(
+    props.query,
+    props.city,
+    props.formatFilter,
+    props.brandFilter,
+    props.modelFilter,
+  ),
 )
 const ordered = computed(() =>
   props.sortByDistance && props.origin
@@ -53,20 +72,7 @@ function distanceLabel(cinema: ChainCinema): string | undefined {
 }
 
 function formatLabel(format: string): string {
-  return format === 'giant' ? t('home.giantScreen') : format.toUpperCase()
-}
-
-function brandInitials(cinema: ChainCinema): string {
-  switch (cinema.brand) {
-    case 'vieshow':
-      return 'VS'
-    case 'showtime':
-      return 'ST'
-    case 'miramar':
-      return 'MM'
-    case 'miranew':
-      return 'MN'
-  }
+  return format === 'giant' ? 'TITAN' : format.toUpperCase()
 }
 </script>
 
@@ -74,8 +80,18 @@ function brandInitials(cinema: ChainCinema): string {
   <section class="chain-directory" aria-labelledby="chain-directory-heading">
     <div class="chain-directory__heading">
       <h2 id="chain-directory-heading">{{ t('home.chainsTitle') }}</h2>
+      <span class="chain-directory__count">{{
+        t('home.chainsCount', { count: filtered.length, total: chainCinemas.length })
+      }}</span>
       <span v-if="origin" class="chain-directory__nearest-note">{{ t('home.nearestFirst') }}</span>
     </div>
+    <p
+      v-if="visible.some((cinema) => verifiedFormatsForCinema(cinema.slug).length)"
+      class="chain-directory__format-explanation"
+    >
+      <v-icon icon="mdi-information-outline" size="15" />
+      {{ t('home.specialFormatNote') }}
+    </p>
 
     <div v-if="visible.length" class="chain-directory__list">
       <article
@@ -87,23 +103,49 @@ function brandInitials(cinema: ChainCinema): string {
         <RouterLink
           class="chain-cinema__whole"
           :to="'/cinemas/' + cinema.slug"
-          :aria-label="cinema.name"
+          :aria-label="
+            cinema.name +
+            (verifiedFormatsForCinema(cinema.slug).length
+              ? '，' +
+                t('home.specialFormatsLabel') +
+                '：' +
+                verifiedFormatsForCinema(cinema.slug).map(formatLabel).join('、')
+              : '')
+          "
         >
-          <span class="chain-cinema__symbol chain-cinema__brand-symbol" aria-hidden="true">
+          <span
+            class="chain-cinema__symbol chain-cinema__mall-symbol"
+            :class="{
+              'chain-cinema__mall-symbol--wide': cinemaIdentityAsset(cinema)?.kind === 'wordmark',
+            }"
+            aria-hidden="true"
+          >
             <img
-              v-if="cinema.brand === 'vieshow'"
-              src="/brands/vieshow.ico"
-              width="32"
-              height="32"
+              v-if="cinemaIdentityAsset(cinema)"
+              :src="cinemaIdentityAsset(cinema)?.src"
+              width="40"
+              height="40"
               alt=""
               loading="lazy"
             />
-            <span v-else>{{ brandInitials(cinema) }}</span>
+            <v-icon v-else icon="mdi-map-marker-outline" size="23" />
           </span>
           <span class="chain-cinema__details">
             <strong class="chain-cinema__mall">{{ venuePrimaryLabel(cinema) }}</strong>
             <span class="chain-cinema__identity">
-              <span class="chain-cinema__brand-chip">{{ venueBrandLabel(cinema) }}</span>
+              <span
+                class="chain-cinema__brand-chip"
+                :aria-label="t('home.chainBrand') + '：' + venueBrandLabel(cinema)"
+              >
+                <img
+                  v-if="cinema.brand === 'vieshow'"
+                  src="/brands/vieshow-symbol.png"
+                  alt=""
+                  width="14"
+                  height="14"
+                />
+                {{ venueBrandLabel(cinema) }}
+              </span>
               <span class="chain-cinema__city">{{ cinema.city }}</span>
               <span v-if="distanceLabel(cinema)" class="chain-cinema__distance">
                 {{ t('home.distanceKm', { distance: distanceLabel(cinema) }) }}
@@ -113,9 +155,34 @@ function brandInitials(cinema: ChainCinema): string {
               v-if="verifiedFormatsForCinema(cinema.slug).length"
               class="chain-cinema__format-tags"
             >
-              <span v-for="format in verifiedFormatsForCinema(cinema.slug)" :key="format">{{
-                formatLabel(format)
-              }}</span>
+              <small class="chain-cinema__format-prefix">{{ t('home.specialFormatsLabel') }}</small>
+              <span
+                v-for="format in verifiedFormatsForCinema(cinema.slug)"
+                :key="format"
+                class="chain-cinema__format-badge"
+                :class="'chain-cinema__format-badge--' + format"
+                >{{ formatLabel(format) }}</span
+              >
+            </span>
+            <span
+              class="chain-cinema__model-status"
+              :class="{
+                'chain-cinema__model-status--ready': cinemaHasVerifiedSeatMap(cinema.slug),
+              }"
+            >
+              <v-icon
+                :icon="
+                  cinemaHasVerifiedSeatMap(cinema.slug)
+                    ? 'mdi-check-circle-outline'
+                    : 'mdi-information-outline'
+                "
+                size="14"
+              />
+              {{
+                cinemaHasVerifiedSeatMap(cinema.slug)
+                  ? t('home.chainSeatMapReady')
+                  : t('home.chainInfoOnly')
+              }}
             </span>
           </span>
           <v-icon icon="mdi-chevron-right" size="20" class="chain-cinema__chevron" />

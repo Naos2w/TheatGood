@@ -10,6 +10,7 @@ import {
   type ChainCinema,
 } from '../cinemas/chain-directory'
 import { vieShowCoverageForCinema } from '../cinemas/vieshow-seat-archive'
+import { cinemaPublishedFacts } from '../cinemas/other-chain-facts'
 import {
   cinemaHasFormat,
   venuePrimaryLabel,
@@ -44,31 +45,57 @@ export function searchCulturalCinemaHalls(
   )
 }
 
+export function cinemaHasVerifiedSeatMap(slug: string): boolean {
+  return (vieShowCoverageForCinema(slug)?.observedLabels ?? 0) > 0
+}
+
+function cinemaMatchesVerifiedFormat(slug: string, format: AuditoriumFormatFilter): boolean {
+  if (cinemaHasFormat(slug, format)) return true
+  // The other operators have branch-level format facts, not a numbered seat map.
+  // "Giant" stays limited to explicitly sourced TITAN, not other giant-screen brands.
+  const advertised = cinemaPublishedFacts[slug]?.namedFormats ?? []
+  if (format === 'imax') return advertised.some((name) => name.toUpperCase() === 'IMAX')
+  if (format === '4dx') return advertised.some((name) => name.toUpperCase().includes('4DX'))
+  return false
+}
+
+/** Discover every sourced chain venue. Availability of a 2D/3D seating
+ * model is an explicit filter, never a prerequisite for appearing in search. */
 export function searchChainCinemaVenues(
   query: string,
   city: string,
   format: AuditoriumFormatFilter,
   brand: ChainBrand | 'all' = 'all',
+  modelFilter: CinemaDiscoveryModelFilter = 'all',
 ): ChainCinema[] {
-  // Public discovery is for choosing a SEAT, not browsing cinema descriptions.
-  // Don't surface operator branches without a verified, usable seat chart.
   const term = query
     .normalize('NFKC')
     .toLocaleLowerCase()
     .replace(/[\s\p{P}\p{S}]+/gu, '')
-  return searchChainCinemas('', brand, city).filter(
-    (cinema) =>
-      Boolean(vieShowCoverageForCinema(cinema.slug)?.observedLabels) &&
-      cinemaHasFormat(cinema.slug, format) &&
-      (!term ||
-        [cinema.name, cinema.address, cinema.city, venuePrimaryLabel(cinema)].some((field) =>
-          field
-            .normalize('NFKC')
-            .toLocaleLowerCase()
-            .replace(/[\s\p{P}\p{S}]+/gu, '')
-            .includes(term),
-        )),
-  )
+  return searchChainCinemas('', brand, city).filter((cinema) => {
+    const modelled = cinemaHasVerifiedSeatMap(cinema.slug)
+    if (modelFilter === '3d' && !modelled) return false
+    if (modelFilter === 'information' && modelled) return false
+    if (!cinemaMatchesVerifiedFormat(cinema.slug, format)) return false
+    const fields = [
+      cinema.name,
+      cinema.address,
+      cinema.city,
+      cinema.brand,
+      venuePrimaryLabel(cinema),
+      ...(cinemaPublishedFacts[cinema.slug]?.namedFormats ?? []),
+    ]
+    return (
+      !term ||
+      fields.some((field) =>
+        field
+          .normalize('NFKC')
+          .toLocaleLowerCase()
+          .replace(/[\s\p{P}\p{S}]+/gu, '')
+          .includes(term),
+      )
+    )
+  })
 }
 
 export function includesCinemaCategory(
