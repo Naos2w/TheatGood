@@ -55,6 +55,9 @@ const mediaPreviewHalls = new Set([
   'vieshow-taipei-ximen-7', // 143 seats
   'vieshow-hsinchu-bigcity-2', // 268 seats
   'vieshow-muvie-taipei-a13-6', // 391 seats
+  'vieshow-taipei-hsinyi-11', // 254 seats, official count verified
+  'vieshow-muvie-taichung-tigercity-3', // 230 seats, official count verified
+  'vieshow-kaohsiung-fe21-3', // 264 seats, official count verified
 ])
 const pilotEnabled = computed(
   () =>
