@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import SeatMap from '../../components/SeatMap.vue'
+import VieShowHistoryFootprint from './VieShowHistoryFootprint.vue'
 import {
   groupWatchFootprints,
   footstepVisitsForSeat,
@@ -533,8 +534,12 @@ watch(
                 </span>
               </div>
             </template>
+            <VieShowHistoryFootprint
+              v-if="!group.model && group.cinemaSlug?.startsWith('vieshow-')"
+              :group="group"
+            />
             <div
-              v-if="group.textOnlySeats.length || !group.model"
+              v-else-if="group.textOnlySeats.length || !group.model"
               class="manual-history__text-footprints"
             >
               <p>{{ t(group.model ? 'history.unmappedSeatNotes' : 'history.noSeatMapYet') }}</p>
