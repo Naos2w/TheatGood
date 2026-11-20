@@ -5,5 +5,5 @@
  */
 export const DEFAULT_SCREEN_TO_SEAT_BLOCK_RATIO = 0.86
 
-/** Horizontal *camera* FOV, not screen size; a comfortable presentation preset. */
-export const DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV = 65
+/** Horizontal camera FOV, not screen size: wider to avoid giant-screen overfill on desktops. */
+export const DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV = 80

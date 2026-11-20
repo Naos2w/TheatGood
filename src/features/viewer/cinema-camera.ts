@@ -5,6 +5,9 @@ import type { CinemaRoomLayout } from './cinema-room-layout'
 
 export type CinemaViewMode = 'seat' | 'overview'
 
+/** A modelled head pose, not a measured viewer's head angle. */
+export type CinemaEyeAim = 'eye-level' | 'screen-centre'
+
 /** Shared POV / overview poses; no chain-specific seat number or geometry assumptions. */
 export function cinemaCameraPosition(
   selected: AuditoriumSeat,
@@ -36,10 +39,13 @@ export function cinemaCameraDirection(
   target: Vector3,
   yaw: number,
   pitch: number,
+  aim: CinemaEyeAim = 'screen-centre',
 ): Vector3 {
   const delta = target.clone().sub(position)
   const baseYaw = Math.atan2(delta.x, -delta.z)
-  const basePitch = Math.atan2(delta.y, Math.hypot(delta.x, delta.z))
+  // Head pointing to the screen is not the same as a natural horizontal gaze.
+  // Keep the actual eye position for BOTH modes; only camera orientation varies.
+  const basePitch = aim === 'eye-level' ? 0 : Math.atan2(delta.y, Math.hypot(delta.x, delta.z))
   const finalYaw = baseYaw + yaw
   const finalPitch = Math.max(-1.25, Math.min(1.25, basePitch + pitch))
   return new Vector3(

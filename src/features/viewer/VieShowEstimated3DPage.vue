@@ -38,6 +38,7 @@ const seatId = ref('')
 const mapZoom = ref(1)
 const resetViewToken = ref(0)
 const immersiveViewMode = ref<'seat' | 'overview'>('seat')
+const eyeAim = ref<'eye-level' | 'screen-centre'>('eye-level')
 const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
@@ -273,6 +274,9 @@ function setImmersive(value: boolean) {
 function toggleImmersiveViewMode() {
   immersiveViewMode.value = immersiveViewMode.value === 'seat' ? 'overview' : 'seat'
 }
+function toggleEyeAim() {
+  eyeAim.value = eyeAim.value === 'eye-level' ? 'screen-centre' : 'eye-level'
+}
 function onPilotVideoElement(video: HTMLVideoElement | null) {
   pilotVideo.value = video
 }
@@ -507,6 +511,7 @@ function recordSelectedSeat() {
           :selected-seat-id="seatId"
           :reset-view-token="resetViewToken"
           :horizontal-fov="DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV"
+          :eye-aim="eyeAim"
           :view-mode="immersiveViewMode"
           :demo-video="pilotEnabled ? pilotVideo : null"
         />
@@ -526,6 +531,8 @@ function recordSelectedSeat() {
           :can-previous="!!previous"
           :can-next="!!next"
           :view-mode="immersiveViewMode"
+          :eye-aim="eyeAim"
+          @toggle-eye-aim="toggleEyeAim"
           @video-element="onPilotVideoElement"
           @previous-seat="switchSeat(-1)"
           @next-seat="switchSeat(1)"
@@ -560,6 +567,10 @@ function recordSelectedSeat() {
           <div class="viewer-immersive__utility">
             <button type="button" class="viewer-reset" @click="resetViewToken++">
               <v-icon icon="mdi-restore" size="19" /> {{ t('viewer.reset') }}
+            </button>
+            <button type="button" class="viewer-reset" @click="toggleEyeAim">
+              <v-icon icon="mdi-eye-outline" size="19" />
+              {{ eyeAim === 'eye-level' ? t('vieshow3d.aimAtScreen') : t('vieshow3d.eyeLevel') }}
             </button>
             <button type="button" class="viewer-reset" @click="toggleImmersiveViewMode">
               <v-icon
