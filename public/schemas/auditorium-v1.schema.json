@@ -88,6 +88,15 @@
         },
         "z": {
           "type": "number"
+        },
+        "tiltDegrees": {
+          "type": "number",
+          "minimum": -30,
+          "maximum": 30
+        },
+        "projectionAspectRatio": {
+          "type": "number",
+          "exclusiveMinimum": 0
         }
       },
       "required": ["width", "height", "centerX", "bottomY", "z"],
@@ -117,7 +126,7 @@
         "properties": {
           "label": {
             "type": "string",
-            "pattern": "^[A-Z]+$"
+            "pattern": "^(?:[A-Z]+|[1-9][0-9]?)$"
           },
           "numbers": {
             "minItems": 1,
