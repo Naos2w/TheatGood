@@ -12,6 +12,27 @@ const referenceHalls = [
 ]
 
 describe('brand-independent auditorium scene and camera', () => {
+  it('does not alter N09 eye position when switching between level and screen-centred head orientation', async () => {
+    const layouts = await loadVieShowArchiveForCinema('vieshow-banqiao-megacity')
+    const hall = layouts.find((item) => item.hallNumber === 6)!
+    const model = deriveVieShowPreviewGeometry('vieshow-banqiao-megacity', hall)
+    const seat = model.seats.find((item) => item.id === 'N09')!
+    const room = deriveCinemaRoomLayout(model.auditorium, model.seats, model.wheelchairSpots)
+    const eye = cinemaCameraPosition(seat, room, 'seat')
+    const target = cinemaCameraTarget(model.auditorium.screen, room, 'seat', 16 / 9)
+
+    expect(eye.y).toBeCloseTo(3.41)
+    const natural = cinemaCameraDirection(eye, target, 0, 0, 'eye-level')
+    const centred = cinemaCameraDirection(eye, target, 0, 0, 'screen-centre')
+    expect(natural.y).toBeCloseTo(0)
+    expect(centred.y).toBeGreaterThan(0.15)
+    expect(natural.x).toBeCloseTo(centred.x)
+    expect(natural.length()).toBeCloseTo(1)
+    expect(centred.length()).toBeCloseTo(1)
+    expect(cinemaCameraPosition(seat, room, 'seat').toArray()).toEqual(eye.toArray())
+    expect(cinemaCameraDirection(eye, target, 0, 0.1, 'eye-level').y).toBeGreaterThan(0)
+  })
+
   it('preserves POV and overview poses across three real archived Vie Show seat arrangements', async () => {
     for (const { slug, hall } of referenceHalls) {
       const layouts = await loadVieShowArchiveForCinema(slug)

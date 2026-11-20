@@ -35,7 +35,7 @@ describe('2D screen reference and estimated 3D viewport consistency', () => {
     )
   })
 
-  it('uses a less wide default camera without changing any estimated physical screen dimension', async () => {
+  it('uses a wider viewer lens without changing any estimated physical screen dimension', async () => {
     const hall = (await loadVieShowArchiveForCinema('vieshow-hsinchu-bigcity')).find(
       (item) => item.hallNumber === 2,
     )!
@@ -43,13 +43,13 @@ describe('2D screen reference and estimated 3D viewport consistency', () => {
     const projectedWidthAtDistance = (horizontalFov: number, z: number) =>
       model.auditorium.screen.width / (2 * z * Math.tan((horizontalFov * Math.PI) / 360))
     const seat = model.seats.find((s) => s.id === 'K24')!
-    expect(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV).toBe(65)
+    expect(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV).toBe(80)
     expect(
       projectedWidthAtDistance(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV, seat.z),
-    ).toBeGreaterThan(projectedWidthAtDistance(80, seat.z))
+    ).toBeLessThan(projectedWidthAtDistance(65, seat.z))
     expect(
       verticalFovFromHorizontal(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV, 16 / 9),
-    ).toBeLessThan(verticalFovFromHorizontal(80, 16 / 9))
+    ).toBeGreaterThan(verticalFovFromHorizontal(65, 16 / 9))
     expect(model.auditorium.screen.width).toBeGreaterThan(0)
   })
 })

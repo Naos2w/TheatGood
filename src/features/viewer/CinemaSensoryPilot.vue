@@ -14,12 +14,14 @@ defineProps<{
   canPrevious: boolean
   canNext: boolean
   viewMode: 'seat' | 'overview'
+  eyeAim: 'eye-level' | 'screen-centre'
 }>()
 const emit = defineEmits<{
   'video-element': [video: HTMLVideoElement | null]
   'previous-seat': []
   'next-seat': []
   'toggle-view-mode': []
+  'toggle-eye-aim': []
   'reset-view': []
   'record-seat': []
 }>()
@@ -143,6 +145,14 @@ onUnmounted(() => {
           <v-icon icon="mdi-close" size="18" />
         </button>
       </div>
+      <p role="status">
+        {{ t('vieshow3d.currentEyeAim') }}:
+        {{ eyeAim === 'eye-level' ? t('vieshow3d.eyeLevel') : t('vieshow3d.screenCentred') }}
+      </p>
+      <button type="button" class="cinema-sensory-pilot__reset" @click="emit('toggle-eye-aim')">
+        <v-icon icon="mdi-eye-outline" size="16" />
+        {{ eyeAim === 'eye-level' ? t('vieshow3d.aimAtScreen') : t('vieshow3d.eyeLevel') }}
+      </button>
       <p>《The Daily Dweebs》｜Blender Foundation</p>
       <p>{{ formatTime(elapsed) }} / {{ formatTime(duration) }} · 座位 {{ selectedSeatId }}</p>
       <div class="cinema-sensory-pilot__progress" aria-hidden="true">
