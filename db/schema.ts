@@ -157,12 +157,21 @@ export const watchLogs = pgTable(
       onDelete: 'set null',
     }),
     watchedAt: timestamp('watched_at', { withTimezone: true }).notNull(),
+    // Exact user-supplied calendar date; legacy watched_at contains a time and cannot
+    // round-trip date-only local history reliably across time zones.
+    watchedOn: date('watched_on'),
     seatLabel: varchar('seat_label', { length: 20 }),
     movieTitle: varchar('movie_title', { length: 250 }).notNull(),
     cinemaName: varchar('cinema_name', { length: 200 }),
+    cinemaSlug: varchar('cinema_slug', { length: 120 }),
     auditoriumName: varchar('auditorium_name', { length: 160 }),
+    // Browser-local model reference is a slug/version, not necessarily the UUID
+    // foreign key used for published auditorium_model_versions.
+    localModelId: varchar('local_model_id', { length: 120 }),
+    localModelVersion: integer('local_model_version'),
     manualEntry: boolean('manual_entry').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }),
   },
   (table) => [index('watch_logs_user_watched_idx').on(table.userId, table.watchedAt)],
 )
