@@ -4,7 +4,7 @@
 >
 > 建立日期：2026-11-14｜狀態：P0 真實台灣影廳小影格已導入；幾何精度及後端尚待擴充
 >
-> **2026-11-20 Dev 整合基準（已核對 Git）：** `develop` 已 Squash Merge #41（威秀來源化 3D 影片與 Beta UI）、#42（觀影紀錄座位連結保留）、#44（可選銀幕傾角／投影畫幅）、#45（222 廳視角可信度稽核）、#46（私人足跡雲端匯入資料契約），HEAD `0a378b8`；`staging` 仍在 `314dc94`，`main` 尚未升級。舊功能分支未提交的研究／腳本／媒體原樣保留，禁止整批混入 PR。
+> **2026-11-20 Dev 整合基準（已核對 Git）：** `develop` 已 Squash Merge #41、#42、#44、#45、#46，以及 #47（Neon Auth／RLS、私人足跡 Gateway 與測試），HEAD `b4477a5`；`staging` 仍在 `314dc94`，`main` 尚未升級。舊功能分支未提交的研究／腳本／媒體原樣保留，禁止整批混入 PR。
 >
 > **執行順序（只整合 Dev）：** P0 整理現有 TODO、避免重複和污染 → P1 依來源改善銀幕與座位視角幾何（先補可選投影畫幅／傾角運算與測試，未知值不捏造）→ P2 Google 登入、Neon 私人足跡隔離／同步 → P3 累積功能後另行建立有版本號的 Staging 候選供集中實機驗收。禁用常駐 4184／Tailscale 8444 自啟，不提前晉升 staging/main。
 >
@@ -13,6 +13,8 @@
 > **2026-11-20 P2 私人觀影足跡同步前置（開發候選，非雲端上線）：** 已唯讀確認 Neon `develop` 的 `watch_logs` 資料表存在，但 **Neon Auth 未啟用**。本批只準備向下相容的五欄 Migration、瀏覽器／後端共用資料驗證、無損日期／影廳／座號／模型版本轉換，以及首次登入後須經使用者同意的匯入規劃（拒絕異帳號、壞資料與同 ID 衝突自動覆寫）。未執行 DB Migration、沒有 Google OAuth／可用私人 API／實際跨帳號 DB 測試，不能把這項標為 P2 完成。見 [離線契約](docs/cloud-watch-history-contract-2026-11-20.md)；下一步必須先完成真正驗證過的登入與伺服器端 owner-scoped 存取，才能討論雲端同步／實機驗收。
 >
 > **2026-11-20 P2 登入與資料隔離驗證（隔離 Neon 分支，尚未設定實際 Dev）：** 已在 `scratch-p2-auth-isolation-20261120` 啟用 Neon Managed Better Auth 與 Data API，將 `watch_logs` 加上 RLS／匿名拒絕／驗證 JWT owner 預設值。實際以 A/B 兩個臨時帳號測試：未登入 HTTP 401；B 無法查、改、刪 A 紀錄，偽造 owner 的 INSERT HTTP 403；A 可自行新增與刪除測試資料。新增獨立 RLS SQL、按需載入的 Google 登入／登出與私人足跡資料介接（未連 UI）、11 項新增單元測試。**現有 Neon develop 仍無 Auth／Data API／RLS，SQL 未套用該分支；Google 真正跳轉、正式帳號同步與 UI 尚未驗收。** 詳見 [Auth/RLS 稽核](docs/private-history-auth-rls-2026-11-20.md)。下一步應先經 Dev 資料庫 Migration 與安全測試、確認 Google OAuth origins，再預覽及確認登入 UI，持續保留原本 localStorage 資料；Staging/Main 不變。
+>
+> **2026-11-20 P2 Dev 後端安全啟用（已驗證實際 Neon develop）：** 已透過 Drizzle 直連執行 `0002_easy_spot`，更新 Migration 紀錄；Neon `develop` 的 Managed Better Auth、Google shared OAuth、Data API 與 `watch_logs` 四種 RLS 已啟用，且只給 `authenticated` 角色該表 CRUD 權限。真實 Dev A／B 雙帳號測試：匿名／壞 JWT 拒絕、A/B 互不可讀改刪、偽造擁有者 INSERT HTTP 403、本人可正常新增／更新／刪除，測試列已清除，`watch_logs` 為 0 筆。Google OAuth 只驗證啟動 HTTP 200、Google 跳轉 HTTP 302；電子郵件／密碼登入與註冊已在 Dev 關閉。**尚未完成 Google 真人登入回跳／Session 恢復、登入 UI 預覽、匯入同意流程與跨裝置同步；Staging／Main 不變**。正式 Dev Site URL 尚無法從目前 Vercel 連接取得，未來需確認正確帳戶／專案及 trusted origins。見 [Neon Auth/RLS 稽核](docs/private-history-auth-rls-2026-11-20.md)。
 >
 > **2026-11-16 產品方向更新（最新需求優先）：** TheatGood 是「台灣影廳的 2D／3D 座位視角模擬器＋個人觀影足跡」，**不必連接真實電影場次、不審核電影是否真實上映**。
 >
@@ -176,11 +178,11 @@
 ### P2.1 安全儲存與認證（不應阻擋手動介面原型）
 
 - [x] 已完成手動觀影紀錄頁的瀏覽器本機 MVP（`localStorage`）：任意電影名稱與日期、已收錄或自填影城／廳別／座位，不連線真實場次、TMDB、Neon；跨裝置帳號／同步仍未實作。遇到儲存阻擋或舊資料損壞時不假裝儲存成功、亦不覆蓋不可讀的舊內容。
-- [ ] 驗證 Neon Auth / Data API 的產品可用性、Google OAuth 整合與資料權限模型。
+- [ ] Neon Auth、Data API 與 PostgreSQL RLS 已於 Dev 驗證，Google shared OAuth 啟動可跳轉 Google；**尚需使用者實際 Google 登入回跳、Session 恢復與 Dev 站點 trusted origin 驗收**，通過後才勾選整體整合。
 - [ ] 建立 Google 登入、登出與登入狀態恢復。
-- [ ] 設定使用者資料隔離：採 PostgreSQL RLS（若透過 Data API 直接存取）或伺服器端授權檢查。
-- [ ] 測試使用者 A 無法查詢、修改或刪除使用者 B 的觀影紀錄。
-- [ ] 不將資料庫管理權限、OAuth Secret 或服務金鑰放進前端。
+- [x] **僅 Dev 後端**：`watch_logs` 已 ENABLE＋FORCE RLS；四種 CRUD Policy 與 `auth.user_id()` 預設 owner 真實生效，Data API 未授權匿名查表。Staging／Main 尚未啟用。
+- [x] **Dev 後端實測**：A／B 使用真實 Neon Auth JWT，各自可 CRUD 自有紀錄、不能查改刪對方紀錄；偽造他人 owner 的 INSERT 拒絕，測試列已清除。後續仍需 Google 帳號 UI／瀏覽器實測。
+- [x] Dev Gateway 只接受分支專屬的公開 Auth／Data API URL，`DATABASE_URL`、OAuth Secret、Neon 管理權限均不經 `VITE_` 暴露；Dev Data API 僅授權 `authenticated` 使用 `watch_logs`。
 
 ### P2.2 手動觀影紀錄（核心功能）
 
