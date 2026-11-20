@@ -15,6 +15,7 @@ import { loadVieShowArchiveForCinema } from '../cinemas/vieshow-seat-archive'
 import {
   filterWatchHistory,
   makeManualDraft,
+  mustPreserveTextOnlyWatchEntry,
   summariseWatchHistory,
   todayInTaipei,
   watchCinemaOptions,
@@ -52,6 +53,9 @@ const form = reactive<HistoryForm>(emptyForm())
 const formOpen = ref(false)
 // Archived Vie Show grids are sourced previews, not the older versioned catalogue model.
 const archivedSeatPrefill = ref(false)
+// Editing a saved text-only seat must never silently attach a different legacy
+// model simply because its displayed auditorium name matches.
+const preserveTextOnlyEdit = ref(false)
 const editingId = ref<string | null>(null)
 const formError = ref(false)
 const saveMessage = ref(false)
@@ -64,7 +68,7 @@ const cinemaOptions = watchCinemaOptions
 const hallOptions = computed(() => watchHallOptions(form.cinemaKey))
 const selectedHall = computed(() => hallOptions.value.find((hall) => hall.name === form.hallKey))
 const selectedModel = computed(() => {
-  if (archivedSeatPrefill.value) return undefined
+  if (archivedSeatPrefill.value || preserveTextOnlyEdit.value) return undefined
   const id = selectedHall.value?.modelId
   return id ? findAuditorium(id) : undefined
 })
@@ -146,6 +150,7 @@ function selectedFootprintVisits(group: SeatFootprintGroup) {
 function resetForm() {
   Object.assign(form, emptyForm())
   archivedSeatPrefill.value = false
+  preserveTextOnlyEdit.value = false
   editingId.value = null
   formError.value = false
 }
@@ -160,12 +165,14 @@ function cancelForm() {
 }
 function onCinemaChange() {
   archivedSeatPrefill.value = false
+  preserveTextOnlyEdit.value = false
   form.hallKey = '__other__'
   form.customHall = ''
   form.seatLabel = ''
 }
 function onHallChange() {
   archivedSeatPrefill.value = false
+  preserveTextOnlyEdit.value = false
   form.seatLabel = ''
 }
 function selectedCinemaName(): string {
@@ -204,6 +211,8 @@ function save() {
 function edit(entry: ManualWatchEntry) {
   resetForm()
   editingId.value = entry.id
+  preserveTextOnlyEdit.value = mustPreserveTextOnlyWatchEntry(entry)
+  archivedSeatPrefill.value = Boolean(sourcedPreviewRoutes.value[entry.id])
   form.movieTitle = entry.movieTitle
   form.watchedOn = entry.watchedOn
   const knownCinema = cinemaOptions.find((option) => option.slug === entry.cinemaSlug)
