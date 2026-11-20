@@ -56,7 +56,12 @@ const slug = computed(() => cinema.value?.slug ?? '')
 
       <template v-else>
         <OtherChainFactsPanel :cinema="cinema" />
-        <details v-if="cinema.brand === 'miranew'" class="chain-cinema-page__preview-details">
+        <details
+          v-if="cinema.brand === 'miranew'"
+          id="miranew-seat-references"
+          class="chain-cinema-page__preview-details"
+          :open="typeof route.query.miranewPattern === 'string'"
+        >
           <summary>{{ t('ux.exploreSeatReferences') }}</summary>
           <MiranewSeatReferenceGallery :cinema-slug="slug" />
         </details>

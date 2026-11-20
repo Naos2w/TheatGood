@@ -18,6 +18,8 @@ defineProps<{
   /** Model-derived required look angles; they are NOT surveyed physical head angles. */
   verticalGaze?: number
   horizontalGaze?: number
+  /** Hide history creation when a source grid has no verified permanent hall identity. */
+  recordSeatEnabled?: boolean
 }>()
 const emit = defineEmits<{
   'video-element': [video: HTMLVideoElement | null]
@@ -196,7 +198,12 @@ onUnmounted(() => {
       <button type="button" class="cinema-sensory-pilot__reset" @click="resetViewAndClose">
         <v-icon icon="mdi-restore" size="16" /> 重設視角
       </button>
-      <button type="button" class="cinema-sensory-pilot__reset" @click="emit('record-seat')">
+      <button
+        v-if="recordSeatEnabled !== false"
+        type="button"
+        class="cinema-sensory-pilot__reset"
+        @click="emit('record-seat')"
+      >
         <v-icon icon="mdi-bookmark-outline" size="16" /> {{ t('history.recordSeat') }}
       </button>
     </aside>

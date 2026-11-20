@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { chainCinemas } from '../cinemas/chain-directory'
 import { vieShowCoverageForCinema } from '../cinemas/vieshow-seat-archive'
+import { seatLayoutReferencesForCinema } from '../cinemas/official-seat-layouts'
 import {
   verifiedFormatsForCinema,
   cinemaHasFormat,
@@ -22,8 +23,8 @@ describe('cinema-only public discovery, with retained cultural source data', () 
     expect(chainCinemas).toHaveLength(40)
     const discoverable = searchChainCinemaVenues('', 'all', 'all')
     expect(discoverable).toHaveLength(40)
-    expect(discoverable.filter((cinema) => cinemaHasVerifiedSeatMap(cinema.slug))).toHaveLength(22)
-    expect(discoverable.filter((cinema) => !cinemaHasVerifiedSeatMap(cinema.slug))).toHaveLength(18)
+    expect(discoverable.filter((cinema) => cinemaHasVerifiedSeatMap(cinema.slug))).toHaveLength(24)
+    expect(discoverable.filter((cinema) => !cinemaHasVerifiedSeatMap(cinema.slug))).toHaveLength(16)
     expect(searchChainCinemaVenues('', 'all', 'all', 'vieshow')).toHaveLength(22)
     expect(searchChainCinemaVenues('', 'all', 'all', 'showtime')).toHaveLength(15)
     expect(searchChainCinemaVenues('', 'all', 'all', 'miranew')).toHaveLength(2)
@@ -31,11 +32,16 @@ describe('cinema-only public discovery, with retained cultural source data', () 
 
     const modelled = searchChainCinemaVenues('', 'all', 'all', 'all', '3d')
     const information = searchChainCinemaVenues('', 'all', 'all', 'all', 'information')
-    expect(modelled).toHaveLength(22)
+    expect(modelled).toHaveLength(24)
     expect(
-      modelled.every((cinema) => (vieShowCoverageForCinema(cinema.slug)?.observedLabels ?? 0) > 0),
+      modelled.every(
+        (cinema) =>
+          (vieShowCoverageForCinema(cinema.slug)?.observedLabels ?? 0) > 0 ||
+          seatLayoutReferencesForCinema(cinema.slug).length > 0,
+      ),
     ).toBe(true)
-    expect(information).toHaveLength(18)
+    expect(modelled.filter((cinema) => cinema.brand === 'miranew')).toHaveLength(2)
+    expect(information).toHaveLength(16)
     expect(information.every((cinema) => !cinemaHasVerifiedSeatMap(cinema.slug))).toBe(true)
     expect(searchChainCinemaVenues('', 'all', 'all', 'showtime', '3d')).toHaveLength(0)
     expect(searchChainCinemaVenues('', 'all', 'all', 'showtime', 'information')).toHaveLength(15)
