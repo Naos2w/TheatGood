@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import SeatMap from '../../components/SeatMap.vue'
 import {
   groupWatchFootprints,
@@ -11,6 +11,7 @@ import {
 import { findAuditorium } from '../auditoriums/catalog'
 import { cinemaDirectory } from '../auditoriums/directory'
 import { createSeats } from '../auditoriums/geometry'
+import { loadVieShowArchiveForCinema } from '../cinemas/vieshow-seat-archive'
 import {
   filterWatchHistory,
   makeManualDraft,
@@ -19,12 +20,14 @@ import {
   watchCinemaOptions,
   watchHallOptions,
   watchPreviewRoute,
+  watchVieShowPreviewRoute,
   type ManualWatchEntry,
 } from './manual-history'
 import { useManualWatchHistoryStore } from '../../stores/manual-watch-history'
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const store = useManualWatchHistoryStore()
 
 interface HistoryForm {
@@ -47,6 +50,8 @@ const emptyForm = (): HistoryForm => ({
 })
 const form = reactive<HistoryForm>(emptyForm())
 const formOpen = ref(false)
+// Archived Vie Show grids are sourced previews, not the older versioned catalogue model.
+const archivedSeatPrefill = ref(false)
 const editingId = ref<string | null>(null)
 const formError = ref(false)
 const saveMessage = ref(false)
@@ -59,6 +64,7 @@ const cinemaOptions = watchCinemaOptions
 const hallOptions = computed(() => watchHallOptions(form.cinemaKey))
 const selectedHall = computed(() => hallOptions.value.find((hall) => hall.name === form.hallKey))
 const selectedModel = computed(() => {
+  if (archivedSeatPrefill.value) return undefined
   const id = selectedHall.value?.modelId
   return id ? findAuditorium(id) : undefined
 })
@@ -77,6 +83,40 @@ const cinemaFilters = computed(() => [
 const years = computed(() =>
   [...new Set(store.entries.map((entry) => entry.watchedOn.slice(0, 4)))].sort().reverse(),
 )
+// Resolve actual archived seat labels before exposing a 3D link. Recheck when
+// entries are edited, deleted or updated from another browser tab.
+const sourcedPreviewRoutes = ref<
+  Record<string, NonNullable<Awaited<ReturnType<typeof watchVieShowPreviewRoute>>>>
+>({})
+watch(
+  () => store.entries,
+  async (entries, _previous, onCleanup) => {
+    let cancelled = false
+    onCleanup(() => {
+      cancelled = true
+    })
+    sourcedPreviewRoutes.value = {}
+    const previews = await Promise.all(
+      entries.map(async (entry) => {
+        try {
+          return [entry.id, await watchVieShowPreviewRoute(entry)] as const
+        } catch {
+          return [entry.id, null] as const
+        }
+      }),
+    )
+    if (!cancelled) {
+      const valid: typeof sourcedPreviewRoutes.value = {}
+      for (const [id, preview] of previews) if (preview) valid[id] = preview
+      sourcedPreviewRoutes.value = valid
+    }
+  },
+  { immediate: true },
+)
+function previewRouteForEntry(entry: ManualWatchEntry) {
+  return watchPreviewRoute(entry) ?? sourcedPreviewRoutes.value[entry.id] ?? null
+}
+
 const records = computed(() =>
   filterWatchHistory(store.entries, {
     query: query.value,
@@ -105,6 +145,7 @@ function selectedFootprintVisits(group: SeatFootprintGroup) {
 
 function resetForm() {
   Object.assign(form, emptyForm())
+  archivedSeatPrefill.value = false
   editingId.value = null
   formError.value = false
 }
@@ -118,11 +159,13 @@ function cancelForm() {
   resetForm()
 }
 function onCinemaChange() {
+  archivedSeatPrefill.value = false
   form.hallKey = '__other__'
   form.customHall = ''
   form.seatLabel = ''
 }
 function onHallChange() {
+  archivedSeatPrefill.value = false
   form.seatLabel = ''
 }
 function selectedCinemaName(): string {
@@ -193,6 +236,59 @@ watch(
     const seats = createSeats(findAuditorium(modelQuery)!)
     form.seatLabel =
       typeof seatQuery === 'string' && seats.some((seat) => seat.id === seatQuery) ? seatQuery : ''
+  },
+  { immediate: true },
+)
+// The sourced Vie Show viewer can prefill the existing local history form.
+// Validate against its archived seat labels, and never attach the older festival
+// model merely because an auditorium number happens to match.
+watch(
+  () => [route.query.vieshowCinema, route.query.vieshowHall, route.query.seat] as const,
+  async ([cinemaKey, hallId, seat], _previous, onCleanup) => {
+    if (
+      typeof cinemaKey !== 'string' ||
+      typeof hallId !== 'string' ||
+      typeof seat !== 'string' ||
+      !cinemaOptions.some((cinema) => cinema.slug === cinemaKey) ||
+      !hallId.startsWith(cinemaKey + '-')
+    )
+      return
+
+    let cancelled = false
+    onCleanup(() => {
+      cancelled = true
+    })
+    try {
+      const layouts = await loadVieShowArchiveForCinema(cinemaKey)
+      if (cancelled) return
+      const hall = layouts.find((item) => item.id === hallId)
+      if (!hall || !hall.seatPositions.some(([label]) => label === seat)) return
+
+      openNew()
+      form.cinemaKey = cinemaKey
+      const sameHall = watchHallOptions(cinemaKey).find(
+        (option) => option.name.replace(/[第\s]/g, '') === hall.hallLabel.replace(/[第\s]/g, ''),
+      )
+      form.hallKey = sameHall?.name ?? '__other__'
+      form.customHall = sameHall ? '' : hall.hallLabel
+      form.seatLabel = seat
+      archivedSeatPrefill.value = true
+
+      // Consume only this one-time link, preserving the user's unfinished form
+      // across reloads or revisits without accidentally reopening a saved draft.
+      void router.replace({
+        path: route.path,
+        query: {
+          ...route.query,
+          vieshowCinema: undefined,
+          vieshowHall: undefined,
+          seat: undefined,
+        },
+        hash: route.hash,
+      })
+    } catch {
+      // An unavailable or invalid archive must not create an unverified record.
+    }
   },
   { immediate: true },
 )
@@ -302,7 +398,10 @@ watch(
           />
         </label>
       </div>
-      <p v-if="selectedModel" class="manual-history__seat-note">
+      <p v-if="archivedSeatPrefill" class="manual-history__seat-note">
+        {{ t('history.archivedSeatNote') }}
+      </p>
+      <p v-else-if="selectedModel" class="manual-history__seat-note">
         {{ t(seatHasPreview ? 'history.verifiedSeat' : 'history.modelSeatHelp') }}
         <RouterLink :to="'/auditoriums/' + selectedModel.id">{{
           t('history.openSeatMap')
@@ -455,7 +554,7 @@ watch(
             <small>{{ t('history.selfReported') }}</small>
           </div>
           <div class="manual-history__record-actions">
-            <RouterLink v-if="watchPreviewRoute(entry)" :to="watchPreviewRoute(entry)!">
+            <RouterLink v-if="previewRouteForEntry(entry)" :to="previewRouteForEntry(entry)!">
               <v-icon icon="mdi-eye-outline" size="17" />
               {{ t('history.previewSeat') }}
             </RouterLink>

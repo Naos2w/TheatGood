@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
+import { hallFormatTags } from './hall-format-tags'
 import {
   loadVieShowArchiveForCinema,
   vieShowCoverageForCinema,
@@ -16,6 +17,10 @@ const halls = ref<readonly VieShowArchivedLayout[]>([])
 const loading = ref(false)
 const failed = ref(false)
 const highlighted = computed(() => (typeof route.query.hall === 'string' ? route.query.hall : ''))
+// Compute once per hall instead of repeating source checks for every badge.
+const hallTiles = computed(() =>
+  halls.value.map((hall) => ({ hall, formats: hallFormatTags(props.cinemaSlug, hall) })),
+)
 
 watch(
   () => props.cinemaSlug,
@@ -52,6 +57,9 @@ watch(
       <div>
         <h2 id="vieshow-seat-references-heading">{{ t('ux.chooseHall') }}</h2>
         <p>{{ t('ux.chooseHallHint') }}</p>
+        <small class="vieshow-hall-selector__legend-hint">{{
+          t('vieshowSeatRefs.formatEvidenceHint')
+        }}</small>
       </div>
     </div>
 
@@ -61,7 +69,7 @@ watch(
     <div v-else class="vieshow-hall-selector">
       <div class="vieshow-hall-selector__grid">
         <RouterLink
-          v-for="hall in halls"
+          v-for="{ hall, formats } in hallTiles"
           :key="hall.id"
           :to="'/cinemas/' + cinemaSlug + '/halls/' + hall.id"
           class="vieshow-hall-selector__tile vieshow-hall-selector__link"
@@ -72,8 +80,43 @@ watch(
               highlighted === hall.hallLabel,
           }"
         >
-          <strong>{{ hall.hallLabel }}</strong>
-          <span>
+          <span class="vieshow-hall-selector__tile-heading">
+            <strong>{{ hall.hallLabel }}</strong>
+            <small>{{
+              t('vieshowSeatRefs.seatCountShort', { count: hall.ordinarySeatCount })
+            }}</small>
+          </span>
+          <span class="vieshow-hall-selector__format-slot">
+            <span v-if="formats.length" class="vieshow-hall-selector__formats">
+              <span
+                v-for="format in formats"
+                :key="format.label"
+                class="vieshow-hall-selector__format"
+                :class="{
+                  'vieshow-hall-selector__format--inferred':
+                    format.confidence === 'capacity-cross-reference',
+                  'vieshow-hall-selector__format--premium': format.label === 'GOLD CLASS',
+                  'vieshow-hall-selector__format--imax': format.label === 'IMAX',
+                  'vieshow-hall-selector__format--titan': format.label === 'TITAN',
+                }"
+                :title="
+                  format.confidence === 'capacity-cross-reference'
+                    ? t('vieshowSeatRefs.inferredFormatExplanation')
+                    : undefined
+                "
+              >
+                {{ format.label }}
+                <small v-if="format.confidence === 'capacity-cross-reference'">{{
+                  t('vieshowSeatRefs.formatUnverified')
+                }}</small>
+              </span>
+            </span>
+            <span v-else class="vieshow-hall-selector__format-default">
+              <v-icon icon="mdi-seat-outline" size="14" />
+              {{ t('vieshowSeatRefs.mapAvailable') }}
+            </span>
+          </span>
+          <span class="vieshow-hall-selector__tile-action">
             {{ t('ux.chooseSeat') }}
             <v-icon icon="mdi-chevron-right" size="16" />
           </span>
@@ -84,8 +127,16 @@ watch(
           class="vieshow-hall-selector__tile vieshow-hall-selector__tile--missing"
           :aria-label="t('vieshowSeatRefs.missingHallAria', { number })"
         >
-          <strong>{{ t('chainDetail.hallNumber', { number }) }}</strong>
-          <small>{{ t('ux.unavailable') }}</small>
+          <span class="vieshow-hall-selector__tile-heading">
+            <strong>{{ t('chainDetail.hallNumber', { number }) }}</strong>
+          </span>
+          <span class="vieshow-hall-selector__format-slot">
+            <small>{{ t('vieshowSeatRefs.hallStillMissing') }}</small>
+          </span>
+          <span class="vieshow-hall-selector__tile-action">
+            <v-icon icon="mdi-lock-outline" size="14" />
+            {{ t('ux.unavailable') }}
+          </span>
         </div>
       </div>
     </div>

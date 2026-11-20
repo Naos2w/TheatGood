@@ -6,6 +6,7 @@ import { chainCinemas } from './chain-directory'
 import { cinemaMapUrl, currentMapPlatform, googleMapsUrl, type MapPlatform } from './map-links'
 import VieShowSeatReferenceGallery from './VieShowSeatReferenceGallery.vue'
 import MiranewSeatReferenceGallery from './MiranewSeatReferenceGallery.vue'
+import OtherChainFactsPanel from './OtherChainFactsPanel.vue'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -53,15 +54,13 @@ const slug = computed(() => cinema.value?.slug ?? '')
 
       <VieShowSeatReferenceGallery v-if="cinema.brand === 'vieshow'" :cinema-slug="slug" />
 
-      <div v-else class="chain-cinema-page__simple-empty">
-        <v-icon icon="mdi-movie-open-outline" size="34" />
-        <h2>{{ t('ux.moreCinemasSoon') }}</h2>
-        <p>{{ t('ux.moreCinemasSoonDetail') }}</p>
+      <template v-else>
+        <OtherChainFactsPanel :cinema="cinema" />
         <details v-if="cinema.brand === 'miranew'" class="chain-cinema-page__preview-details">
           <summary>{{ t('ux.exploreSeatReferences') }}</summary>
           <MiranewSeatReferenceGallery :cinema-slug="slug" />
         </details>
-      </div>
+      </template>
     </template>
 
     <p v-else class="search-empty" role="status">{{ t('chainDetail.notFound') }}</p>

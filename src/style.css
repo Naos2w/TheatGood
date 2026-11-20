@@ -4214,7 +4214,8 @@ html[data-theme='dark'] .site-nav {
   .vieshow-3d-page__selection {
     position: fixed;
     z-index: 35;
-    bottom: calc(13px + env(safe-area-inset-bottom));
+    /* Lower the floating picker slightly while retaining Safari's safe area. */
+    bottom: calc(6px + env(safe-area-inset-bottom));
     left: 14px;
     right: 14px;
     display: flex;

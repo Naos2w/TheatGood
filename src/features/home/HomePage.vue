@@ -4,7 +4,8 @@ import { useI18n } from 'vue-i18n'
 import ChainDirectorySection from '../cinemas/ChainDirectorySection.vue'
 import type { GeoPoint } from '../auditoriums/proximity'
 import type { AuditoriumFormatFilter } from '../cinemas/cinema-discovery-metadata'
-import { searchChainCinemaVenues } from './discovery-categories'
+import { chainCinemas, type ChainBrand } from '../cinemas/chain-directory'
+import { searchChainCinemaVenues, type CinemaDiscoveryModelFilter } from './discovery-categories'
 
 type LocationStatus = 'idle' | 'loading' | 'ready' | 'denied' | 'unavailable' | 'timeout'
 
@@ -12,6 +13,31 @@ const { t } = useI18n()
 const search = ref('')
 const cityFilter = ref('all')
 const formatFilter = ref<AuditoriumFormatFilter>('all')
+const brandFilter = ref<ChainBrand | 'all'>('all')
+const modelFilter = ref<CinemaDiscoveryModelFilter>('all')
+const chainBrands: { value: ChainBrand | 'all'; key: string; count: number }[] = [
+  { value: 'all', key: 'home.chainAll', count: chainCinemas.length },
+  {
+    value: 'vieshow',
+    key: 'home.chainVieshow',
+    count: chainCinemas.filter((cinema) => cinema.brand === 'vieshow').length,
+  },
+  {
+    value: 'showtime',
+    key: 'home.chainShowtime',
+    count: chainCinemas.filter((cinema) => cinema.brand === 'showtime').length,
+  },
+  {
+    value: 'miramar',
+    key: 'home.chainMiramar',
+    count: chainCinemas.filter((cinema) => cinema.brand === 'miramar').length,
+  },
+  {
+    value: 'miranew',
+    key: 'home.chainMiranew',
+    count: chainCinemas.filter((cinema) => cinema.brand === 'miranew').length,
+  },
+]
 const currentPosition = ref<GeoPoint | null>(null)
 const locationStatus = ref<LocationStatus>('idle')
 const cities = [
@@ -125,6 +151,28 @@ function locate() {
               <option value="4dx">4DX</option>
             </select>
           </label>
+          <label class="discovery-filter discovery-filter--availability">
+            <span>{{ t('home.modelFilter') }}</span>
+            <select v-model="modelFilter">
+              <option value="all">{{ t('home.allModels') }}</option>
+              <option value="3d">{{ t('home.only3d') }}</option>
+              <option value="information">{{ t('home.onlyInformation') }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="home-brand-switch" role="group" :aria-label="t('home.chainBrand')">
+          <button
+            v-for="brand in chainBrands"
+            :key="brand.value"
+            type="button"
+            :class="{ 'is-active': brandFilter === brand.value }"
+            :aria-pressed="brandFilter === brand.value"
+            @click="brandFilter = brand.value"
+          >
+            {{ t(brand.key) }}
+            <span class="home-brand-switch__count">{{ brand.count }}</span>
+          </button>
         </div>
 
         <ChainDirectorySection
@@ -133,6 +181,8 @@ function locate() {
           :origin="currentPosition"
           :sort-by-distance="Boolean(currentPosition)"
           :format-filter="formatFilter"
+          :brand-filter="brandFilter"
+          :model-filter="modelFilter"
         />
       </div>
     </div>

@@ -1,5 +1,7 @@
 import type { AuditoriumSeat } from '../auditoriums/geometry'
 import type { ScreenDefinition } from '../auditoriums/schema'
+import type { CinemaSceneModel } from './cinema-scene-model'
+export type { SceneAuditoriumGeometry } from './cinema-scene-model'
 import type { VieShowArchivedLayout } from '../cinemas/vieshow-seat-archive'
 import { DEFAULT_SCREEN_TO_SEAT_BLOCK_RATIO } from '../cinemas/seat-screen-assumptions'
 import {
@@ -31,13 +33,6 @@ export const defaultVieShowPreviewParameters: Readonly<VieShowPreviewParameters>
   estimatedScreenScale: 1,
 }
 
-export interface SceneAuditoriumGeometry {
-  id: string
-  screen: ScreenDefinition
-  seatWidth: number
-  rows: { label: string; z: number; elevation: number }[]
-}
-
 export interface VieShowProportionalCalibration {
   /** Source width provides a metric anchor; the plan ratio itself is still an assumption. */
   method: 'known-screen-width' | 'grid-only-estimate'
@@ -49,10 +44,7 @@ export interface VieShowProportionalCalibration {
   ratioVerifiedAgainstScaledFloorPlan: false
 }
 
-export interface VieShowPreviewGeometry {
-  auditorium: SceneAuditoriumGeometry
-  seats: AuditoriumSeat[]
-  wheelchairSpots: { x: number; z: number; elevation: number }[]
+export interface VieShowPreviewGeometry extends CinemaSceneModel {
   calibration: VieShowProportionalCalibration
   screenSpecification?: VieShowScreenSpecification
   screenDimensionsProvenance: 'operator-published' | 'independent-secondary' | 'estimated'

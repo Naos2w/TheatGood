@@ -11,31 +11,41 @@ import {
 import {
   culturalCinemaHalls,
   culturalCinemaVenueCount,
+  cinemaHasVerifiedSeatMap,
   searchChainCinemaVenues,
   searchCulturalCinemaHalls,
 } from './discovery-categories'
 import { directoryHallRoute } from '../cinemas/hall-navigation'
 
 describe('cinema-only public discovery, with retained cultural source data', () => {
-  it('only discovers cinemas that have usable, sourced seat maps', () => {
+  it('discovers all 40 sourced chain venues while distinguishing modelled seating from information-only branches', () => {
     expect(chainCinemas).toHaveLength(40)
     const discoverable = searchChainCinemaVenues('', 'all', 'all')
-    expect(discoverable).toHaveLength(22)
+    expect(discoverable).toHaveLength(40)
+    expect(discoverable.filter((cinema) => cinemaHasVerifiedSeatMap(cinema.slug))).toHaveLength(22)
+    expect(discoverable.filter((cinema) => !cinemaHasVerifiedSeatMap(cinema.slug))).toHaveLength(18)
+    expect(searchChainCinemaVenues('', 'all', 'all', 'vieshow')).toHaveLength(22)
+    expect(searchChainCinemaVenues('', 'all', 'all', 'showtime')).toHaveLength(15)
+    expect(searchChainCinemaVenues('', 'all', 'all', 'miranew')).toHaveLength(2)
+    expect(searchChainCinemaVenues('', 'all', 'all', 'miramar')).toHaveLength(1)
+
+    const modelled = searchChainCinemaVenues('', 'all', 'all', 'all', '3d')
+    const information = searchChainCinemaVenues('', 'all', 'all', 'all', 'information')
+    expect(modelled).toHaveLength(22)
     expect(
-      discoverable.every(
-        (cinema) => (vieShowCoverageForCinema(cinema.slug)?.observedLabels ?? 0) > 0,
-      ),
+      modelled.every((cinema) => (vieShowCoverageForCinema(cinema.slug)?.observedLabels ?? 0) > 0),
     ).toBe(true)
-    expect(discoverable.every((cinema) => cinema.brand === 'vieshow')).toBe(true)
-    // Keep other chains in the internal source directory until seats are sourced.
-    expect(searchChainCinemaVenues('', 'all', 'all', 'showtime')).toHaveLength(0)
-    expect(searchChainCinemaVenues('', 'all', 'all', 'miranew')).toHaveLength(0)
-    expect(searchChainCinemaVenues('', 'all', 'all', 'miramar')).toHaveLength(0)
+    expect(information).toHaveLength(18)
+    expect(information.every((cinema) => !cinemaHasVerifiedSeatMap(cinema.slug))).toBe(true)
+    expect(searchChainCinemaVenues('', 'all', 'all', 'showtime', '3d')).toHaveLength(0)
+    expect(searchChainCinemaVenues('', 'all', 'all', 'showtime', 'information')).toHaveLength(15)
+    expect(searchChainCinemaVenues('宏匯', 'all', 'all')).toHaveLength(0)
+    expect(searchChainCinemaVenues('SCREENX', 'all', 'all', 'showtime').length).toBeGreaterThan(1)
   })
 
   it('filters only source-backed permanent branch formats, never guessed hall identities', () => {
-    expect(searchChainCinemaVenues('', 'all', 'imax')).toHaveLength(7)
-    expect(searchChainCinemaVenues('', 'all', '4dx')).toHaveLength(4)
+    expect(searchChainCinemaVenues('', 'all', 'imax')).toHaveLength(8)
+    expect(searchChainCinemaVenues('', 'all', '4dx')).toHaveLength(6)
     expect(searchChainCinemaVenues('', 'all', 'giant')).toHaveLength(2)
     expect(verifiedFormatsForCinema('vieshow-muvie-taichung-tigercity')).toEqual(['giant'])
     expect(verifiedFormatsForCinema('vieshow-hsinchu-bigcity')).toEqual(['imax'])
