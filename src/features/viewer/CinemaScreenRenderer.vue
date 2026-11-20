@@ -4,6 +4,7 @@ import { CanvasTexture, LinearFilter, SRGBColorSpace, VideoTexture } from 'three
 import type { ScreenDefinition } from '../auditoriums/schema'
 import type { CinemaRoomLayout } from './cinema-room-layout'
 import { createCinemaScreenTexture } from './cinema-screen-texture'
+import { deriveScreenProjection } from '../auditoriums/screen-projection'
 
 const props = defineProps<{
   screen: ScreenDefinition
@@ -15,6 +16,7 @@ const props = defineProps<{
 const projectionTexture = shallowRef<CanvasTexture | null>(null)
 const videoTexture = shallowRef<VideoTexture | null>(null)
 const selectedTexture = computed(() => videoTexture.value ?? projectionTexture.value)
+const projection = computed(() => deriveScreenProjection(props.screen))
 
 onMounted(() => {
   try {
@@ -62,12 +64,18 @@ onUnmounted(() => {
 
 <template>
   <TresGroup>
-    <TresMesh :position="[screen.centerX, screen.bottomY + screen.height / 2, screen.z - 0.1]">
+    <TresMesh
+      :position="[screen.centerX, projection.centreY, screen.z - 0.1]"
+      :rotation="[projection.rotationX, 0, 0]"
+    >
       <TresBoxGeometry :args="[screen.width + 0.52, screen.height + 0.52, 0.18]" />
       <TresMeshStandardMaterial color="#0a0d15" :roughness="0.86" />
     </TresMesh>
-    <TresMesh :position="[screen.centerX, screen.bottomY + screen.height / 2, screen.z + 0.018]">
-      <TresPlaneGeometry :args="[screen.width, screen.height]" />
+    <TresMesh
+      :position="[screen.centerX, projection.centreY, screen.z + 0.018]"
+      :rotation="[projection.rotationX, 0, 0]"
+    >
+      <TresPlaneGeometry :args="[projection.width, projection.height]" />
       <TresMeshBasicMaterial v-if="selectedTexture" :map="selectedTexture" />
       <TresMeshBasicMaterial v-else color="#718ba8" />
     </TresMesh>
