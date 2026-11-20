@@ -485,6 +485,8 @@ export const messages = {
       seatVisitCount: '坐過 {count} 次',
       notVisitedSeat: '尚未記錄坐過這裡',
       verifiedFootprintMap: '此座位圖來自有來源的影廳模型；座距與坡度可能仍為估算。',
+      archivedFootprintMap:
+        '綠色座位是你在威秀來源座位圖上記錄過的位置；此圖不代表實測距離或當前售票狀態。',
       noSeatMapYet: '尚未取得此影廳的完整座位配置；以下只呈現你輸入的座號，不會創造虛構座位圖。',
       unmappedSeatNotes: '以下座號來自未對上目前模型、舊版模型或自由文字紀錄，不會誤標在座位圖上。',
       unknownHall: '影廳未指定',
@@ -1021,6 +1023,8 @@ export const messages = {
       notVisitedSeat: 'No visit recorded at this seat yet',
       verifiedFootprintMap:
         'This map uses an evidenced auditorium layout; seat spacing and elevation may still be estimates.',
+      archivedFootprintMap:
+        'Green seats mark your visits on a sourced Vie Show seating plan. Distances and live seat availability are not verified.',
       noSeatMapYet:
         'There is no verified complete layout for this auditorium. Your written seat labels are retained without inventing a seating plan.',
       unmappedSeatNotes:
