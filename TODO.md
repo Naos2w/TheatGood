@@ -4,7 +4,7 @@
 >
 > 建立日期：2026-11-14｜狀態：P0 真實台灣影廳小影格已導入；幾何精度及後端尚待擴充
 >
-> **2026-11-20 Dev 整合基準（已核對 Git）：** `develop` 已 Squash Merge #41、#42、#44、#45、#46、#47，以及 #48（Neon Dev Auth/RLS 實際啟用紀錄），HEAD `afdd054`；`staging` 仍在 `314dc94`，`main` 尚未升級。舊功能分支未提交的研究／腳本／媒體原樣保留，禁止整批混入 PR。
+> **2026-11-20 Dev 整合基準（已核對 Git）：** `develop` 已 Squash Merge #41、#42、#44、#45、#46、#47、#48，以及 #49（銀幕類型研究與跨裝置 POV 初版），HEAD `e17f444`；`staging` 仍在 `314dc94`，`main` 尚未升級。舊功能分支未提交的研究／腳本／媒體原樣保留，禁止整批混入 PR。
 >
 > **執行順序（只整合 Dev）：** P0 整理現有 TODO、避免重複和污染 → P1 依來源改善銀幕與座位視角幾何（先補可選投影畫幅／傾角運算與測試，未知值不捏造）→ P2 Google 登入、Neon 私人足跡隔離／同步 → P3 累積功能後另行建立有版本號的 Staging 候選供集中實機驗收。禁用常駐 4184／Tailscale 8444 自啟，不提前晉升 staging/main。
 >
@@ -16,7 +16,9 @@
 >
 > **2026-11-20 P2 Dev 後端安全啟用（已驗證實際 Neon develop）：** 已透過 Drizzle 直連執行 `0002_easy_spot`，更新 Migration 紀錄；Neon `develop` 的 Managed Better Auth、Google shared OAuth、Data API 與 `watch_logs` 四種 RLS 已啟用，且只給 `authenticated` 角色該表 CRUD 權限。真實 Dev A／B 雙帳號測試：匿名／壞 JWT 拒絕、A/B 互不可讀改刪、偽造擁有者 INSERT HTTP 403、本人可正常新增／更新／刪除，測試列已清除，`watch_logs` 為 0 筆。Google OAuth 只驗證啟動 HTTP 200、Google 跳轉 HTTP 302；電子郵件／密碼登入與註冊已在 Dev 關閉。**尚未完成 Google 真人登入回跳／Session 恢復、登入 UI 預覽、匯入同意流程與跨裝置同步；Staging／Main 不變**。正式 Dev Site URL 尚無法從目前 Vercel 連接取得，未來需確認正確帳戶／專案及 trusted origins。見 [Neon Auth/RLS 稽核](docs/private-history-auth-rls-2026-11-20.md)。
 >
-> **2026-11-20 P1 銀幕材質與跨裝置 POV（本開發分支）：** 已區分一般 2D／偏光式 3D、IMAX、4DX/MX4D、ScreenX/ULTRA 4DX、LED Miraclass；同廳 2D／3D 不必換物理幕面，IMAX 不保證固定弧度、4DX 不保證曲面，ScreenX 是主幕加左右側投影牆。各影廳缺乏可核對的布幕塗層與曲率時**不自動填數值**。來源見 [銀幕與裝置 POV 稽核](docs/auditoriums/screen-surfaces-and-device-pov-2026-11-20.md)。觀看視角改用較寬的 80° 虛擬水平 FOV（非人眼實測），手機/平板直式限制超大垂直廣角，超寬桌面避免極窄垂直視野；3D 可切換「自然平視／銀幕中心」，不修改來源座位或銀幕尺寸。**待 CI、實際手機／平板／桌面 WebGL 互動視覺驗收；不等於已測得 IMAX 幕布或已完成曲面建模，Staging/Main 不變。**
+> **2026-11-20 P1 銀幕材質與跨裝置 POV（本開發分支）：** 已區分一般 2D／偏光式 3D、IMAX、4DX/MX4D、ScreenX/ULTRA 4DX、LED Miraclass；同廳 2D／3D 不必換物理幕面，IMAX 不保證固定弧度、4DX 不保證曲面，ScreenX 是主幕加左右側投影牆。各影廳缺乏可核對的布幕塗層與曲率時**不自動填數值**。來源見 [銀幕與裝置 POV 稽核](docs/auditoriums/screen-surfaces-and-device-pov-2026-11-20.md)。**PR #49 原始預設曾採**較寬的 80° 虛擬水平 FOV（非人眼實測），手機/平板直式限制超大垂直廣角，超寬桌面避免極窄垂直視野；3D 可切換「自然平視／銀幕中心」，不修改來源座位或銀幕尺寸。**待 CI、實際手機／平板／桌面 WebGL 互動視覺驗收；不等於已測得 IMAX 幕布或已完成曲面建模，Staging/Main 不變。**
+>
+> **2026-11-20 P1 螢幕中心視角修正（實際使用者 A11／N31 截圖回饋，本功能分支）：** 選座預設以**眼睛所在座位朝銀幕中心**，恢復 65° 鏡頭基準；水平參考僅為可選輔助，重設視角回主視線。資訊面板增加以原有 3D 模型估算的「垂直仰／俯角、左右偏角」，讓置中觀看後仍能比較不同座位需轉頭角度；所有座位維持**相同 FOV，不按座號單獨縮放**。保留手機／平板／電腦的畫面比例調整，未修改座號、銀幕寬高、排距、坡度或模型版本。來源與限制見 [銀幕與跨裝置 POV 稽核修正](docs/auditoriums/screen-surfaces-and-device-pov-2026-11-20.md)。**這是選座 UI 與模擬的預設修正，非已實測 1:1；待 CI／實機 UAT，Staging/Main 不變**。
 >
 > **2026-11-16 產品方向更新（最新需求優先）：** TheatGood 是「台灣影廳的 2D／3D 座位視角模擬器＋個人觀影足跡」，**不必連接真實電影場次、不審核電影是否真實上映**。
 >

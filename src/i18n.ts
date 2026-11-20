@@ -250,10 +250,12 @@ export const messages = {
       overviewTitle: '3D 全廳概覽（概念模型）',
       overviewButton: '全廳概覽',
       seatViewButton: '座位視角',
-      eyeLevel: '自然平視',
+      eyeLevel: '水平參考視角',
       aimAtScreen: '對準銀幕中心',
-      screenCentred: '對準銀幕中心',
+      screenCentred: '銀幕中心（預設）',
       currentEyeAim: '視線模式',
+      screenCentreAngles:
+        '看向銀幕中心：垂直 {vertical}、水平 {horizontal}（估算，正值為向上／右）',
 
       overviewHint: '以估算模型鳥瞰座位、階梯、銀幕與牆面。並非實際影廳施工圖或現場攝影。',
       immersiveCaveat:
@@ -772,10 +774,12 @@ export const messages = {
       overviewTitle: 'Conceptual 3D auditorium overview',
       overviewButton: 'Room overview',
       seatViewButton: 'Seat POV',
-      eyeLevel: 'Look level ahead',
+      eyeLevel: 'Level-view reference',
       aimAtScreen: 'Aim at screen centre',
-      screenCentred: 'Screen-centred gaze',
+      screenCentred: 'Screen-centred (default)',
       currentEyeAim: 'Viewing direction',
+      screenCentreAngles:
+        'Towards the screen centre: vertical {vertical}, horizontal {horizontal} (estimated; positive means up/right)',
 
       overviewHint:
         'Survey the seats, estimated tier decks, screen and walls. This is not an architectural drawing or actual theatre photography.',

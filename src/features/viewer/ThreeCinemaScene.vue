@@ -8,6 +8,7 @@ import {
   cinemaCameraDirection,
   cinemaCameraPosition,
   cinemaCameraTarget,
+  DEFAULT_CINEMA_EYE_AIM,
   type CinemaEyeAim,
 } from './cinema-camera'
 import { responsiveCinemaFov } from './view-projection'
@@ -22,7 +23,7 @@ const props = defineProps<{
   selectedSeatId: string
   resetViewToken: number
   horizontalFov: number
-  /** Natural level gaze or a deliberate look towards the screen centre. */
+  /** Look at the screen centre by default; level reference is optional. */
   eyeAim?: CinemaEyeAim
   viewMode?: 'seat' | 'overview'
   wheelchairSpots?: CinemaWheelchairSpot[]
@@ -61,7 +62,9 @@ function orientCamera() {
     target,
     yaw,
     pitch,
-    props.viewMode === 'overview' ? 'screen-centre' : (props.eyeAim ?? 'eye-level'),
+    props.viewMode === 'overview'
+      ? DEFAULT_CINEMA_EYE_AIM
+      : (props.eyeAim ?? DEFAULT_CINEMA_EYE_AIM),
   )
   camera.up.set(0, 1, 0)
   camera.lookAt(camera.position.clone().add(direction))

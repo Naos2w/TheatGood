@@ -20,6 +20,7 @@ import {
   type VieShowArchivedLayout,
 } from '../cinemas/vieshow-seat-archive'
 import { neighbouringSeat } from '../auditoriums/seat-navigation'
+import { DEFAULT_CINEMA_EYE_AIM, cinemaScreenCentreGazeAngles } from './cinema-camera'
 import {
   defaultVieShowPreviewParameters,
   deriveVieShowPreviewGeometry,
@@ -38,7 +39,8 @@ const seatId = ref('')
 const mapZoom = ref(1)
 const resetViewToken = ref(0)
 const immersiveViewMode = ref<'seat' | 'overview'>('seat')
-const eyeAim = ref<'eye-level' | 'screen-centre'>('eye-level')
+// Prefer the intended audience view: looking towards the film screen, not at a horizontal datum.
+const eyeAim = ref<'eye-level' | 'screen-centre'>(DEFAULT_CINEMA_EYE_AIM)
 const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
@@ -78,6 +80,11 @@ const geometry = computed(() =>
 )
 const selected = computed(
   () => geometry.value?.seats.find((seat) => seat.id === seatId.value) ?? null,
+)
+const screenGaze = computed(() =>
+  selected.value && geometry.value
+    ? cinemaScreenCentreGazeAngles(selected.value, geometry.value.auditorium.screen)
+    : null,
 )
 const previous = computed(() =>
   geometry.value && selected.value
@@ -259,6 +266,8 @@ function switchHall(id: string) {
 
 function selectSeat(id: string) {
   if (!geometry.value?.seats.some((seat) => seat.id === id)) return
+  // Each new seat must start with comparable screen-centred framing.
+  eyeAim.value = DEFAULT_CINEMA_EYE_AIM
   seatId.value = id
   void router.replace({ query: { ...route.query, seat: id } })
 }
@@ -267,6 +276,7 @@ function switchSeat(direction: -1 | 1) {
   if (item) selectSeat(item.id)
 }
 function setImmersive(value: boolean) {
+  if (value) eyeAim.value = DEFAULT_CINEMA_EYE_AIM
   void router.replace({
     query: { ...route.query, view: value ? '3d' : undefined, seat: seatId.value },
   })
@@ -276,6 +286,10 @@ function toggleImmersiveViewMode() {
 }
 function toggleEyeAim() {
   eyeAim.value = eyeAim.value === 'eye-level' ? 'screen-centre' : 'eye-level'
+}
+function resetSeatView() {
+  eyeAim.value = DEFAULT_CINEMA_EYE_AIM
+  resetViewToken.value++
 }
 function onPilotVideoElement(video: HTMLVideoElement | null) {
   pilotVideo.value = video
@@ -532,12 +546,14 @@ function recordSelectedSeat() {
           :can-next="!!next"
           :view-mode="immersiveViewMode"
           :eye-aim="eyeAim"
+          :vertical-gaze="screenGaze?.verticalDegrees"
+          :horizontal-gaze="screenGaze?.horizontalDegrees"
           @toggle-eye-aim="toggleEyeAim"
           @video-element="onPilotVideoElement"
           @previous-seat="switchSeat(-1)"
           @next-seat="switchSeat(1)"
           @toggle-view-mode="toggleImmersiveViewMode"
-          @reset-view="resetViewToken++"
+          @reset-view="resetSeatView"
           @record-seat="recordSelectedSeat"
         />
         <div v-if="!pilotEnabled" class="viewer-immersive__bottom">
@@ -565,7 +581,7 @@ function recordSelectedSeat() {
             </button>
           </div>
           <div class="viewer-immersive__utility">
-            <button type="button" class="viewer-reset" @click="resetViewToken++">
+            <button type="button" class="viewer-reset" @click="resetSeatView">
               <v-icon icon="mdi-restore" size="19" /> {{ t('viewer.reset') }}
             </button>
             <button type="button" class="viewer-reset" @click="toggleEyeAim">
