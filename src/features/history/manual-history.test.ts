@@ -103,9 +103,7 @@ describe('free-text manual viewing footprint', () => {
       path: '/cinemas/vieshow-hualien-paradiso/halls/vieshow-hualien-paradiso-b',
       query: { seat: 'E12', view: '3d' },
     })
-    expect(
-      await watchVieShowPreviewRoute(archived('vieshow-hsinchu-fe21', 'GC1', 'D06')),
-    ).toEqual({
+    expect(await watchVieShowPreviewRoute(archived('vieshow-hsinchu-fe21', 'GC1', 'D06'))).toEqual({
       path: '/cinemas/vieshow-hsinchu-fe21/halls/vieshow-hsinchu-fe21-gc1',
       query: { seat: 'D06', view: '3d' },
     })
