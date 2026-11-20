@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <title>TheatGood Synthetic Seat Test</title>
+  </head>
+  <body>
+    <header></header>
+    <main></main>
+    <script>
+      const header = document.querySelector('header')
+      const main = document.querySelector('main')
+      function renderMovieList() {
+        main.replaceChildren()
+        const card = document.createElement('div')
+        card.className = 'group cursor-pointer'
+        card.textContent = '合成測試電影　立即訂票'
+        card.addEventListener('click', () => {
+          history.pushState({}, '', '/ticketing/selectEvents/7/123')
+          renderEvents()
+        })
+        main.append(card)
+      }
+      function renderEvents() {
+        main.replaceChildren()
+        const event = document.createElement('div')
+        event.className = 'bg-card'
+        const hall = document.createElement('div')
+        hall.textContent = '台東秀泰影城 1廳'
+        const preview = document.createElement('button')
+        preview.textContent = '座位'
+        preview.addEventListener('click', showPreview)
+        event.append(hall, preview)
+        main.append(event)
+      }
+      function showPreview() {
+        const modal = document.createElement('div')
+        modal.setAttribute('role', 'dialog')
+        const title = document.createElement('span')
+        title.textContent = '座位預覽'
+        const close = document.createElement('button')
+        close.textContent = '關閉'
+        close.setAttribute('aria-label', '關閉')
+        close.addEventListener('click', () => modal.remove())
+        modal.append(title, close)
+        for (let row = 1; row <= 3; row++) {
+          for (let number = 1; number <= 10; number++) {
+            const seat = document.createElement('button')
+            seat.setAttribute('aria-label', '座位 ' + row + '排' + number + '號')
+            Object.assign(seat.style, {
+              position: 'absolute',
+              left: 100 + (number - 1) * 25 + 'px',
+              top: 90 + (row - 1) * 25 + 'px',
+              width: '22px',
+              height: '23px',
+            })
+            seat.addEventListener('click', () => {
+              throw new Error('Safety test failed: clicked a real seat')
+            })
+            modal.append(seat)
+          }
+        }
+        document.body.append(modal)
+      }
+      function init() {
+        header.replaceChildren()
+        const member = document.createElement('button')
+        member.textContent =
+          sessionStorage.getItem('syntheticSignIn') === 'yes' ? '會員中心' : '登入'
+        const quick = document.createElement('a')
+        quick.href = '#'
+        quick.textContent = '快速訂票'
+        quick.addEventListener('click', (event) => {
+          event.preventDefault()
+          main.replaceChildren()
+          const venue = document.createElement('button')
+          venue.textContent = '台東秀泰影城'
+          venue.addEventListener('click', renderMovieList)
+          main.append(venue)
+        })
+        header.append(member, quick)
+        renderMovieList()
+      }
+      window.addEventListener('popstate', renderMovieList)
+      init()
+    </script>
+  </body>
+</html>
