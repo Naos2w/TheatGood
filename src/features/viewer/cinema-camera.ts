@@ -7,6 +7,8 @@ export type CinemaViewMode = 'seat' | 'overview'
 
 /** A modelled head pose, not a measured viewer's head angle. */
 export type CinemaEyeAim = 'eye-level' | 'screen-centre'
+/** Default viewing pose used for judging a seat; level gaze is an opt-in reference. */
+export const DEFAULT_CINEMA_EYE_AIM: CinemaEyeAim = 'screen-centre'
 
 /** Shared POV / overview poses; no chain-specific seat number or geometry assumptions. */
 export function cinemaCameraPosition(
@@ -31,6 +33,28 @@ export function cinemaCameraTarget(
   const height =
     aspect < 0.7 ? Math.max(0.85, room.roomHeight * 0.12) : Math.max(1.4, room.roomHeight * 0.31)
   return new Vector3(screen.centerX, height, room.frontWallZ + room.roomDepth * 0.29)
+}
+
+/**
+ * The head movement a viewer would need to face the screen centre.
+ * Positive vertical = looking up; positive horizontal = turning right.
+ * These are estimates when the cinema layout/rake is not surveyed.
+ */
+export function cinemaScreenCentreGazeAngles(
+  seat: Pick<AuditoriumSeat, 'x' | 'z' | 'eyeY'>,
+  screen: Pick<ScreenDefinition, 'centerX' | 'bottomY' | 'height' | 'z'>,
+): { verticalDegrees: number; horizontalDegrees: number } {
+  const forward = seat.z - screen.z
+  if (!Number.isFinite(forward) || forward <= 0) {
+    throw new RangeError('Screen centre must be ahead of the selected seat')
+  }
+  const lateral = screen.centerX - seat.x
+  const vertical = screen.bottomY + screen.height / 2 - seat.eyeY
+  const toDegrees = 180 / Math.PI
+  return {
+    verticalDegrees: Math.atan2(vertical, Math.hypot(forward, lateral)) * toDegrees,
+    horizontalDegrees: Math.atan2(lateral, forward) * toDegrees,
+  }
 }
 
 /** Preserve world-up when rotating far behind the seat (no camera roll). */

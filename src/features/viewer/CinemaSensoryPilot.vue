@@ -15,6 +15,9 @@ defineProps<{
   canNext: boolean
   viewMode: 'seat' | 'overview'
   eyeAim: 'eye-level' | 'screen-centre'
+  /** Model-derived required look angles; they are NOT surveyed physical head angles. */
+  verticalGaze?: number
+  horizontalGaze?: number
 }>()
 const emit = defineEmits<{
   'video-element': [video: HTMLVideoElement | null]
@@ -49,6 +52,11 @@ const message = ref('播放電影後，可選擇是否開啟原聲；不同座�
 const progress = computed(() =>
   duration.value > 0 ? Math.min(100, (elapsed.value / duration.value) * 100) : 0,
 )
+function formatSignedAngle(degrees: number | undefined) {
+  if (degrees === undefined || !Number.isFinite(degrees)) return '—'
+  const rounded = Math.abs(degrees) < 0.05 ? 0 : degrees
+  return `${rounded > 0 ? '+' : ''}${rounded.toFixed(1)}°`
+}
 function formatTime(seconds: number) {
   const n = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0))
   return `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`
@@ -153,6 +161,14 @@ onUnmounted(() => {
         <v-icon icon="mdi-eye-outline" size="16" />
         {{ eyeAim === 'eye-level' ? t('vieshow3d.aimAtScreen') : t('vieshow3d.eyeLevel') }}
       </button>
+      <p v-if="verticalGaze !== undefined && horizontalGaze !== undefined" role="note">
+        {{
+          t('vieshow3d.screenCentreAngles', {
+            vertical: formatSignedAngle(verticalGaze),
+            horizontal: formatSignedAngle(horizontalGaze),
+          })
+        }}
+      </p>
       <p>《The Daily Dweebs》｜Blender Foundation</p>
       <p>{{ formatTime(elapsed) }} / {{ formatTime(duration) }} · 座位 {{ selectedSeatId }}</p>
       <div class="cinema-sensory-pilot__progress" aria-hidden="true">
