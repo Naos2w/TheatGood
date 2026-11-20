@@ -34,6 +34,7 @@
   "private": true,
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "@neondatabase/neon-js": "^0.9.0-beta",
     "@tresjs/cientos": "^5.11.0",
     "@tresjs/core": "^5.11.0",
     "drizzle-orm": "^0.45.4",
