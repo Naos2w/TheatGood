@@ -10,7 +10,12 @@ const router = useRouter()
 const { t } = useI18n()
 const { themePreference, appLocale } = usePreferences()
 const settingsOpen = ref(false)
-const isViewer = computed(() => route.name === 'viewer' || route.name === 'vieshow-3d-preview')
+const isViewer = computed(
+  () =>
+    route.name === 'viewer' ||
+    route.name === 'vieshow-3d-preview' ||
+    route.name === 'miranew-3d-pattern',
+)
 const isImmersiveViewer = computed(() => isViewer.value && route.query.view === '3d')
 const isHome = computed(() => route.name === 'home')
 const isCinemaRoute = computed(() => !['history', 'screenings'].includes(String(route.name)))
@@ -121,6 +126,14 @@ function returnFromHeader() {
     void router.push({
       path: '/cinemas/' + String(route.params.slug),
       hash: '#vieshow-seat-references',
+    })
+    return
+  }
+  if (route.name === 'miranew-3d-pattern') {
+    void router.push({
+      path: '/cinemas/' + String(route.params.slug),
+      query: { miranewPattern: String(route.params.patternId) },
+      hash: '#miranew-seat-references',
     })
     return
   }

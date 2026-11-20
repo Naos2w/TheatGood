@@ -180,7 +180,9 @@ function formatLabel(format: string): string {
               />
               {{
                 cinemaHasVerifiedSeatMap(cinema.slug)
-                  ? t('home.chainSeatMapReady')
+                  ? cinema.brand === 'miranew'
+                    ? t('home.chainPatternReady')
+                    : t('home.chainSeatMapReady')
                   : t('home.chainInfoOnly')
               }}
             </span>

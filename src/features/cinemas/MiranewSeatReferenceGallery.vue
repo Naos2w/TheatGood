@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import {
   isReferenceSpecialSeat,
   seatLayoutReferencesForCinema,
@@ -9,12 +10,15 @@ import {
 
 const props = defineProps<{ cinemaSlug: string }>()
 const { t } = useI18n()
+const route = useRoute()
 const candidates = computed(() => seatLayoutReferencesForCinema(props.cinemaSlug))
 const activeId = ref('')
 watch(
-  candidates,
-  (items) => {
-    if (!items.some((item) => item.id === activeId.value)) {
+  [candidates, () => route.query.miranewPattern],
+  ([items, requested]) => {
+    if (typeof requested === 'string' && items.some((item) => item.id === requested)) {
+      activeId.value = requested
+    } else if (!items.some((item) => item.id === activeId.value)) {
       activeId.value = items[0]?.id ?? ''
     }
   },
@@ -82,6 +86,16 @@ const sourceLabel = (item: OfficialSeatLayoutReference): string => {
         <span>{{ t('seatRefs.observed', { count: active.repeatedInSample }) }}</span>
       </div>
       <p class="seat-references__notice" role="note">{{ t('seatRefs.unknownHall') }}</p>
+      <RouterLink
+        class="seat-references__preview-3d"
+        :to="{
+          name: 'miranew-3d-pattern',
+          params: { slug: cinemaSlug, patternId: active.id },
+        }"
+      >
+        <v-icon icon="mdi-cube-scan" size="18" />
+        {{ t('miranew3d.previewPattern') }}
+      </RouterLink>
 
       <div class="seat-references__scroll" tabindex="0" :aria-label="t('seatRefs.scrollMap')">
         <svg
@@ -144,3 +158,24 @@ const sourceLabel = (item: OfficialSeatLayoutReference): string => {
     </template>
   </section>
 </template>
+
+<style scoped>
+.seat-references__preview-3d {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  margin: 8px 0 14px;
+  border: 1px solid color-mix(in srgb, currentColor 26%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  color: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.seat-references__preview-3d:focus-visible {
+  outline: 2px solid var(--tg-accent);
+  outline-offset: 3px;
+}
+</style>

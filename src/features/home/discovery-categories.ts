@@ -10,6 +10,7 @@ import {
   type ChainCinema,
 } from '../cinemas/chain-directory'
 import { vieShowCoverageForCinema } from '../cinemas/vieshow-seat-archive'
+import { seatLayoutReferencesForCinema } from '../cinemas/official-seat-layouts'
 import { cinemaPublishedFacts } from '../cinemas/other-chain-facts'
 import {
   cinemaHasFormat,
@@ -46,7 +47,12 @@ export function searchCulturalCinemaHalls(
 }
 
 export function cinemaHasVerifiedSeatMap(slug: string): boolean {
-  return (vieShowCoverageForCinema(slug)?.observedLabels ?? 0) > 0
+  // A public Miranew SeatView grid is sourced, but its permanent hall number is not.
+  // This is a filter for preview-able seat DATA, not a claim of measured hall geometry.
+  return (
+    (vieShowCoverageForCinema(slug)?.observedLabels ?? 0) > 0 ||
+    seatLayoutReferencesForCinema(slug).length > 0
+  )
 }
 
 function cinemaMatchesVerifiedFormat(slug: string, format: AuditoriumFormatFilter): boolean {

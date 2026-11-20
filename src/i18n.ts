@@ -100,7 +100,7 @@ export const messages = {
       specialFormatsLabel: '特色影廳',
       specialFormatNote: '特色影廳為分館資訊；實際廳號依選廳頁的資料標示。',
       chainsLead:
-        '先選影城分館，再選擇有來源的座位配置。威秀／MUVIE 已有 222 種可操作 2D／估算 3D 模型；其他院線按已確認資料顯示。',
+        '先選分館，再查看有來源的座位排列。威秀／MUVIE 有 222 種 2D／3D；美麗新有 13 種 2D／比例 3D（永久廳號未直接確認）；秀泰、美麗華仍缺完整來源座號。',
       chainsCount: '{count} / {total} 間分館',
       chainBrand: '影城品牌',
       chainAll: '全部連鎖品牌',
@@ -110,6 +110,7 @@ export const messages = {
       chainMiranew: '美麗新',
       chainNoModel: '已核對分館 · 影廳座位模型待查證',
       chainSeatMapReady: '可預覽 2D／3D',
+      chainPatternReady: '來源座位排列可預覽 2D／比例 3D · 廳號未確認',
       chainInfoOnly: '官方資訊已建檔 · 座位圖待確認',
       chainPublishedHallCounts: '已收錄 {count} 間影廳的官方席數 · 座位圖待確認',
       chainVenueFactsOnly: '已收錄官方影廳概況 · 個別座號仍待查證',
@@ -135,7 +136,7 @@ export const messages = {
       specialLabels: '{count} 個 W 特殊標籤',
       observed: '同排列已觀察 {count} 場',
       unknownHall:
-        '重要：官網座位表只標示廳型，沒有永久實體廳號。不同排列不保證是不同影廳，暫時不綁定個人座位紀錄或生成虛構 3D。',
+        '重要：官網座位表只標示廳型，沒有永久實體廳號。不同排列不保證是不同影廳；可預覽來源比例 3D，但不會推定正式廳號或綁定個人座位紀錄。',
       scrollMap: '可水平捲動的官方座位格線重繪圖',
       mapLabel: '包含 {count} 個座位標籤的參考座位圖',
       screenDirection: '銀幕方向（依官網座位圖）',
@@ -197,6 +198,20 @@ export const messages = {
       exactCount: '本場次的編號座位數與 2026 年官方公布席數相符。',
       wheelchairCountMatch: '計入輪椅標示後與官方席數相符，但其計數方式尚未確認。',
       notPublished: '此廳名稱／編號不在 2026 年 5 月官方逐廳席數表中，暫無可直接對應的容量。',
+    },
+    miranew3d: {
+      notFound: '找不到這份美麗新公開座位排列，或它不屬於目前的影城。',
+      backToReference: '返回影城座位參考圖',
+      switchPattern: '選擇來源座位排列',
+      description:
+        '依美麗新公開場次 SeatView 的原始座號與格線建立比例式 3D。這是來源排列示意，並非已確認的實體廳施工圖。',
+      hallUnconfirmed:
+        '此場次只標示廳型，尚未直接證實永久廳號。請勿把它當成已確認的實體影廳；暫不提供觀影足跡綁定。',
+      selectableSeats: '{count} 個可預覽的一般座位',
+      selectSeat: '選擇來源座位 {seat}',
+      previewPattern: '預覽這份排列的 3D 視角',
+      proportionalWarning:
+        '銀幕寬高、首排距離、排距與坡度皆按既有比例規則估算。輪椅／特殊位置只保留標記，不當作普通座位；不代表即時可售狀態。',
     },
     vieshow3d: {
       loading: '正在載入影廳座位與模擬場景…',
@@ -291,6 +306,8 @@ export const messages = {
       dazhiScopeNote: '此處僅涵蓋美麗新大直皇家影城的廳數及席數，不與美麗華大直影城混用。',
       operatorFacts: '查看影城官方規格來源',
       branchOverview: '影城與影廳資料',
+      miranewPatternNotice:
+        '已保存公開場次的真實座號與格線，可預覽 2D 與比例式 3D，但永久廳號和實體銀幕尺寸尚未核實。',
       noVerifiedSeatMap:
         '已收錄官方分館與部分廳型資訊，但尚無可確認的完整逐座號配置。此處不提供虛構的 2D 選座或 3D 視角。',
       reportedSeatCount: '官方公布席數（依來源涵蓋範圍）',
@@ -613,7 +630,7 @@ export const messages = {
       specialFormatNote:
         'Premium formats are venue-level features; check each auditorium for confirmed or inferred assignments.',
       chainsLead:
-        'Start by choosing a cinema branch, then an auditorium. Vie Show / MUVIE has 222 sourced 2D and estimated 3D seat layouts; other chains show only the references verified so far.',
+        'Choose a cinema branch and a sourced seat layout. Vie Show / MUVIE has 222 2D/3D layouts; Miranew has 13 proportional 3D patterns without confirmed permanent hall numbers. Other chains still need complete seat sources.',
       chainsCount: '{count} of {total} venues',
       chainBrand: 'Cinema brand',
       chainAll: 'All major chains',
@@ -623,6 +640,7 @@ export const messages = {
       chainMiranew: 'Miranew',
       chainNoModel: 'Verified venue · seating model not yet verified',
       chainSeatMapReady: '2D / 3D preview available',
+      chainPatternReady: 'Sourced 2D / proportional 3D patterns · permanent hall not verified',
       chainInfoOnly: 'Operator information only · seating chart unverified',
       chainPublishedHallCounts:
         '{count} halls with official seat counts · no verified seating plan',
@@ -649,7 +667,7 @@ export const messages = {
       specialLabels: '{count} special W labels',
       observed: 'Observed in {count} sessions',
       unknownHall:
-        'Important: public charts show auditorium types but not permanent hall numbers. Distinct patterns are not necessarily distinct physical screens. These references are not linked to watch-history seats or made into unverified 3D models.',
+        'Important: booking previews identify screen types, not permanent hall numbers. Different patterns are not necessarily different physical screens. Proportional 3D previews are available, but no numbered hall or viewing-history link is inferred.',
       scrollMap: 'Horizontally scrollable redraw of official booking seat grid',
       mapLabel: 'Reference seat map containing {count} labels',
       screenDirection: 'Screen direction (from official chart)',
@@ -716,6 +734,20 @@ export const messages = {
         'Including wheelchair markers would match the published count; inclusion rules remain unverified.',
       notPublished:
         'This hall designation does not match a numbered hall in the May 2026 capacity sheet. No permanent capacity mapping is claimed.',
+    },
+    miranew3d: {
+      notFound: 'This Miranew seating pattern is unavailable or belongs to another cinema.',
+      backToReference: 'Back to cinema seat references',
+      switchPattern: 'Choose a sourced seating pattern',
+      description:
+        'A proportional 3D preview based on seat labels and grid positions archived from a public Miranew SeatView. This is not a surveyed auditorium plan.',
+      hallUnconfirmed:
+        'The booking preview identifies a screen type, not a verified permanent hall number. Do not use this reference to claim a specific hall or record a viewing footprint.',
+      selectableSeats: '{count} selectable regular seats',
+      selectSeat: 'Select sourced seat {seat}',
+      previewPattern: 'Preview this seating pattern in 3D',
+      proportionalWarning:
+        'Screen size, front-row distance, row pitch and rake are illustrative estimates. Wheelchair and other special positions are markers, not selectable ordinary seats. No live availability is claimed.',
     },
     vieshow3d: {
       loading: 'Loading the auditorium seats and preview…',
@@ -818,6 +850,8 @@ export const messages = {
         'These figures cover Miranew Da-Zhi Royal Cinema only, not Miramar Da-Zhi Cinema.',
       operatorFacts: 'Official auditorium information',
       branchOverview: 'Cinema and auditorium facts',
+      miranewPatternNotice:
+        'Public booking seat labels and grid positions support 2D and proportional 3D previews. Permanent hall numbers and actual screen measurements remain unverified.',
       noVerifiedSeatMap:
         'Official venue and selected auditorium information is available, but complete numbered seating charts are not yet verified. No invented 2D seat selection or 3D views are provided.',
       reportedSeatCount: 'Published seats (within the stated source scope)',

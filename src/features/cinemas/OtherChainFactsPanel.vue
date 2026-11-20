@@ -30,7 +30,15 @@ function displayHallName(label: string): string {
       <v-icon icon="mdi-information-outline" size="22" />
       <div>
         <h2 id="chain-facts-heading">{{ t('chainDetail.branchOverview') }}</h2>
-        <p>{{ t('chainDetail.noVerifiedSeatMap') }}</p>
+        <p>
+          {{
+            t(
+              cinema.brand === 'miranew'
+                ? 'chainDetail.miranewPatternNotice'
+                : 'chainDetail.noVerifiedSeatMap',
+            )
+          }}
+        </p>
       </div>
     </div>
 
