@@ -32,6 +32,14 @@ export const manualWatchEntrySchema = manualWatchDraftSchema.extend({
 export type ManualWatchDraft = z.infer<typeof manualWatchDraftSchema>
 export type ManualWatchEntry = z.infer<typeof manualWatchEntrySchema>
 
+/** When editing an unversioned/text-only visit, never infer a legacy
+ * 3D catalogue model solely from a matching display name. */
+export function mustPreserveTextOnlyWatchEntry(
+  entry: Pick<ManualWatchDraft, 'modelId' | 'modelVersion'>,
+): boolean {
+  return entry.modelId === null || entry.modelVersion === null
+}
+
 export interface WatchCinemaOption {
   slug: string
   name: string
