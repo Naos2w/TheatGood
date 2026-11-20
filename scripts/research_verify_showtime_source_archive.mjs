@@ -11,6 +11,7 @@
  */
 import assert from 'node:assert/strict'
 import crypto from 'node:crypto'
+import console from 'node:console'
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -129,10 +130,13 @@ const report = {
   errors,
   verified,
 }
-console.log(
-  JSON.stringify(report, null, 2).replace(
-    /[^\x00-\x7f]/g,
-    (char) => '\\u' + char.charCodeAt(0).toString(16).padStart(4, '0'),
-  ),
-)
+// Emit ASCII-only JSON for Windows PowerShell pipes without changing the
+// underlying source bytes (including UTF-8 seat labels) being compared.
+const json = JSON.stringify(report, null, 2)
+let ascii = ''
+for (let index = 0; index < json.length; index++) {
+  const code = json.charCodeAt(index)
+  ascii += code > 127 ? '\\u' + code.toString(16).padStart(4, '0') : json[index]
+}
+console.log(ascii)
 if (errors.length || all !== files.length) process.exitCode = 1

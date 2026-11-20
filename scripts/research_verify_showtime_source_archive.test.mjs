@@ -5,7 +5,9 @@ import os from 'node:os'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, URL } from 'node:url'
+import { Buffer } from 'node:buffer'
+import process from 'node:process'
 
 const script = fileURLToPath(
   new URL('./research_verify_showtime_source_archive.mjs', import.meta.url),
@@ -108,7 +110,7 @@ test('rejects both altered original bytes and changed grid cells', () => {
     assert.equal(badOriginal.status, 1)
     assert.match(badOriginal.report.errors[0].reason, /SHA256 mismatch/)
     fs.writeFileSync(path.join(f.downloads, rawName), JSON.stringify(f.raw))
-    f.snap.seatPositions = structuredClone(rows)
+    f.snap.seatPositions = JSON.parse(JSON.stringify(rows))
     f.snap.seatPositions[0].gridColumn = 99
     f.write()
     const badGrid = f.run()
