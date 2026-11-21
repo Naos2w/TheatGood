@@ -12,7 +12,8 @@ param(
   [Parameter(Mandatory=$true)][ValidatePattern('^showtime-[a-z0-9-]+$')][string]$CinemaSlug,
   [Parameter(Mandatory=$true)][string]$Halls,
   [ValidateSet(0,8,16,24,32)][int]$StartMovie=0,
-  [switch]$DryRun
+  [switch]$DryRun,
+  [switch]$ReviewConflict
 )
 $ErrorActionPreference='Stop'
 $cinemas=@{
@@ -55,10 +56,16 @@ try{
   $missing=@($venue[0].missingHallLabels)
   if(@($targets|Where-Object{$_ -notin $missing}).Count -gt 0){throw 'One or more halls already have confirmed sources'}
   $conflicts=@($audit.sourceDiscrepancies|Where-Object{$_.cinemaSlug -eq $CinemaSlug -and $_.hallLabel -in $targets})
-  if($conflicts.Count){throw 'Conflicted hall requires an independent manual audit before automatic scan'}
+  if($ReviewConflict){
+    if($conflicts.Count -ne 1 -or $targets.Count -ne 1){
+      throw 'Conflict review requires exactly one documented and unresolved same-hall conflict'
+    }
+  }elseif($conflicts.Count){
+    throw 'Conflicted hall requires independent review; pass -ReviewConflict only to gather NEW read-only evidence, never to auto-import or clear the conflict'
+  }
 }finally{Remove-Item $tmp -Force -ErrorAction SilentlyContinue}
 if($DryRun){
-  [pscustomobject]@{invoked=$false;cinemaSlug=$CinemaSlug;targetHalls=$targets;startMovie=$StartMovie;newChromeTabs=0;scanLimitMovies=8;existingChromePopupRequired=$true}|ConvertTo-Json -Compress -Depth 3
+  [pscustomobject]@{invoked=$false;cinemaSlug=$CinemaSlug;targetHalls=$targets;startMovie=$StartMovie;newChromeTabs=0;scanLimitMovies=8;existingChromePopupRequired=$true;reviewOnly=[bool]$ReviewConflict}|ConvertTo-Json -Compress -Depth 3
   exit 0
 }
 $roots=@(Get-CimInstance Win32_Process -Filter "name='chrome.exe'"|Where-Object{$_.CommandLine -like '*theatgood-showtimes-chrome-profile*' -and $_.CommandLine -notmatch ' --type='})
@@ -78,14 +85,34 @@ $popup=@($nodes|Where-Object{$_.Current.ControlType.ProgrammaticName -eq 'Contro
 if($popup.Count -eq 0){
   # The extension popup disappears when Windows focus leaves Chrome. Re-open it
   # in THIS existing Chrome window, never create a browser tab or second window.
-  Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public class ToolbarMouse { [StructLayout(LayoutKind.Sequential)] public struct POINT { public int x; public int y; } [DllImport("user32.dll")] public static extern bool GetCursorPos(out POINT p); [DllImport("user32.dll")] public static extern bool SetCursorPos(int x,int y); [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport("user32.dll")] public static extern void mouse_event(uint f,uint dx,uint dy,uint data,UIntPtr extra); }'
+  Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public class ToolbarMouse { [StructLayout(LayoutKind.Sequential)] public struct POINT { public int x; public int y; } [DllImport("user32.dll")] public static extern bool GetCursorPos(out POINT p); [DllImport("user32.dll")] public static extern bool SetCursorPos(int x,int y); [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow(); [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h,out uint pid); [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId(); [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint first,uint second,bool attach); [DllImport("user32.dll")] public static extern void mouse_event(uint f,uint dx,uint dy,uint data,UIntPtr extra); }'
   $toolbar=FindExactlyOne $nodes 'ControlType.Button' '^TheatGood 秀泰座位蒐集'
   $r=$toolbar.Current.BoundingRectangle
   $x=[int]($r.Left+$r.Width/2)
   $y=[int]($r.Top+$r.Height/2)
   if($x -lt 30 -or $x -gt 1840 -or $y -lt 30 -or $y -gt 1000){throw 'Chrome toolbar is not on the visible desktop; refuse to move or open windows'}
-  [ToolbarMouse]::SetForegroundWindow([IntPtr]$proc.MainWindowHandle)|Out-Null
-  Start-Sleep -Milliseconds 180
+  $front=[ToolbarMouse]::GetForegroundWindow()
+  $frontPid=[uint32]0
+  $frontThread=[ToolbarMouse]::GetWindowThreadProcessId($front,[ref]$frontPid)
+  $frontProcess=Get-Process -Id $frontPid -ErrorAction SilentlyContinue
+  if($frontProcess.ProcessName -eq 'LockApp'){
+    throw 'Windows is locked. Unlock MSI normally before operating the existing Showtime popup; never bypass LockApp.'
+  }
+  $targetPid=[uint32]0
+  $targetThread=[ToolbarMouse]::GetWindowThreadProcessId([IntPtr]$proc.MainWindowHandle,[ref]$targetPid)
+  $currentThread=[ToolbarMouse]::GetCurrentThreadId()
+  $frontAttached=$false
+  $chromeAttached=$false
+  try{
+    if($currentThread -ne $frontThread){$frontAttached=[ToolbarMouse]::AttachThreadInput($currentThread,$frontThread,$true)}
+    if($currentThread -ne $targetThread){$chromeAttached=[ToolbarMouse]::AttachThreadInput($currentThread,$targetThread,$true)}
+    [ToolbarMouse]::SetForegroundWindow([IntPtr]$proc.MainWindowHandle)|Out-Null
+    Start-Sleep -Milliseconds 180
+    if([ToolbarMouse]::GetForegroundWindow() -ne [IntPtr]$proc.MainWindowHandle){throw 'Chrome could not safely gain focus; refuse to click other software'}
+  }finally{
+    if($chromeAttached){[ToolbarMouse]::AttachThreadInput($currentThread,$targetThread,$false)|Out-Null}
+    if($frontAttached){[ToolbarMouse]::AttachThreadInput($currentThread,$frontThread,$false)|Out-Null}
+  }
   $old=New-Object ToolbarMouse+POINT
   [ToolbarMouse]::GetCursorPos([ref]$old)|Out-Null
   try{

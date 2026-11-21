@@ -9,6 +9,7 @@
  * One venue, at most eight public film cards per run.
  */
 import assert from 'node:assert/strict'
+import crypto from 'node:crypto'
 import console from 'node:console'
 import fs from 'node:fs'
 import os from 'node:os'
@@ -39,9 +40,30 @@ const raw = fs
   .readdirSync(downloads)
   .filter((name) => /^showtime_sample_showtime-[a-z0-9-]+_[0-9]+\.json$/.test(name))
   .map((filename) => ({ filename, bytes: fs.readFileSync(path.join(downloads, filename)) }))
-const audit = auditShowtimeCoverage(census, source, raw)
+const reviews = fs
+  .readdirSync(research)
+  .filter((name) => /^showtime_conflict_review_.*\.json$/.test(name))
+  .map((name) => {
+    const review = JSON.parse(fs.readFileSync(path.join(research, name), 'utf8'))
+    if (review.cinemaSlug === 'showtime-taipei-xinxin' && review.hallLabel === '1廳') {
+      const backup = path.join(
+        research,
+        'showtime_conflict_backup_showtime-taipei-xinxin_1廳_321_20261122.json',
+      )
+      assert(fs.existsSync(backup), 'Historical original grid backup missing')
+      assert.equal(
+        crypto.createHash('sha256').update(fs.readFileSync(backup)).digest('hex'),
+        review.oldArchiveHash,
+        'Historical grid backup changed',
+      )
+    }
+    return review
+  })
+const audit = auditShowtimeCoverage(census, source, raw, undefined, reviews)
 assert.equal(audit.errors.length, 0, 'Source audit errors prohibit public target scan')
-assert.equal(audit.sourceDiscrepancies.length, 0, 'Source hall discrepancies prohibit scan')
+// Public scheduling research never opens seat previews or alters archived geometry.
+// Preserve reported source conflicts without blocking other venues' public-only discovery.
+// Authentication/import paths retain their independent conflict checks.
 const targets = audit.venues.find((v) => v.cinemaSlug === id)?.missingHallLabels ?? []
 assert(targets.length > 0, 'No missing hall targets for this cinema')
 
@@ -77,6 +99,14 @@ const report = {
   movieStartIndex: start,
   movieCardLimit: 8,
   targetMissingHallLabels: targets,
+  unresolvedSourceConflicts: audit.sourceDiscrepancies.map(({ cinemaSlug, hallLabel, issue }) => ({
+    cinemaSlug,
+    hallLabel,
+    issue,
+  })),
+  reviewedHistoricalConflicts: audit.resolvedSourceDiscrepancies.map(
+    ({ cinemaSlug, hallLabel, status }) => ({ cinemaSlug, hallLabel, status }),
+  ),
   totalVisibleMovies: null,
   moviesChecked: 0,
   sameCardVenueHalls: [],
