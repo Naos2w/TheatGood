@@ -216,7 +216,9 @@ export function auditShowtimeCoverage(census, archives, downloads) {
     v.verifiedHallLabels.map((hall) => v.cinemaSlug + '|' + hall),
   )
   const report = {
-    asOf: '2026-11-20',
+    // Report generation date in Taiwan, rather than the original UTC source batch date.
+    asOf: new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Taipei' }).format(new Date()),
+    sourceBatchUTCDate: '2026-11-20',
     researchOnly: true,
     approvedForPublicUI: false,
     seatGeometryMeasured: false,

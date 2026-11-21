@@ -95,6 +95,8 @@ test('counts same-card venue/hall identities without exposing individual seat la
   const x = inputs()
   const result = auditShowtimeCoverage(x.census, x.archived, x.downloads())
   assert.equal(result.numberOfVenues, 15)
+  assert.match(result.asOf, /^\d{4}-\d{2}-\d{2}$/)
+  assert.equal(result.sourceBatchUTCDate, '2026-11-20')
   assert.equal(result.sampledHallLabels, 30)
   assert.equal(result.confirmedDifferentVenueHallLabels, 2)
   assert.equal(result.missingFromSample, 28)
