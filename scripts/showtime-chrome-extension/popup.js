@@ -69,7 +69,40 @@ async function startReadOnlyResearch(selected, options = {}) {
 }
 run.addEventListener('click', async () => {
   const selected = venues.find(([slug]) => slug === select.value)
-  await startReadOnlyResearch(selected)
+  const raw = document.getElementById('target-halls').value.trim()
+  const startMovie = Number(document.getElementById('start-movie').value)
+  if (!raw) {
+    if (startMovie !== 0) {
+      status.textContent = '請先指定缺廳廳號；不能在一般掃描模式跳過前段電影。'
+      return
+    }
+    await startReadOnlyResearch(selected)
+    return
+  }
+  const targetHalls = raw.split(/[,，]/).map((name) => name.trim())
+  if (
+    !selected ||
+    targetHalls.length < 1 ||
+    targetHalls.length > 35 ||
+    targetHalls.some((name) => !name || name.length > 32) ||
+    new Set(targetHalls).size !== targetHalls.length ||
+    ![0, 8, 16, 24, 32].includes(startMovie)
+  ) {
+    status.textContent = '缺廳清單或電影卡片起始位置無效。'
+    return
+  }
+  const reply = await globalThis.fetch(chrome.runtime.getURL('operator-public-hall-census.json'))
+  if (!reply.ok) {
+    status.textContent = '公開廳號白名單無法載入，不進行掃描。'
+    return
+  }
+  const census = await reply.json()
+  const allowed = census.venues?.[selected[0]]
+  if (!Array.isArray(allowed) || targetHalls.some((name) => !allowed.includes(name))) {
+    status.textContent = '指定廳號不在該分館公開來源白名單內，已拒絕。'
+    return
+  }
+  await startReadOnlyResearch(selected, { targetOnly: true, targetHalls, startMovie })
 })
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.theatgoodScanStatus) void render()
