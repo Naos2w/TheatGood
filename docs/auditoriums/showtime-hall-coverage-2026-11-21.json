@@ -7,12 +7,12 @@
   "localOriginalDownloadsUnchanged": true,
   "numberOfVenues": 15,
   "sampledHallLabels": 159,
-  "confirmedDifferentVenueHallLabels": 75,
-  "missingFromSample": 84,
+  "confirmedDifferentVenueHallLabels": 85,
+  "missingFromSample": 74,
   "previousVerifiedVenueHallLabels": 23,
-  "newlyConfirmedVenueHallLabels": 52,
+  "newlyConfirmedVenueHallLabels": 62,
   "archivedLegacyResearchSnapshots": 46,
-  "qualifiedOriginalDownloads": 34,
+  "qualifiedOriginalDownloads": 41,
   "excludedUnverifiedDownloads": 1,
   "currentDayOriginalDownloads": 25,
   "currentDaySeatGridObservations": 60,
@@ -96,8 +96,16 @@
     {
       "cinemaSlug": "showtime-kaohsiung-dreammall",
       "sampledHallNames": 11,
-      "verifiedHallLabels": ["10\u5ef3", "12\u5ef3", "3\u5ef3", "5\u5ef3", "6\u5ef3", "7\u5ef3"],
-      "confirmedHallCount": 6,
+      "verifiedHallLabels": [
+        "10\u5ef3",
+        "12\u5ef3",
+        "2\u5ef3",
+        "3\u5ef3",
+        "5\u5ef3",
+        "6\u5ef3",
+        "7\u5ef3"
+      ],
+      "confirmedHallCount": 7,
       "confirmedHalls": [
         {
           "hallLabel": "10\u5ef3",
@@ -108,6 +116,11 @@
           "hallLabel": "12\u5ef3",
           "seatCount": 204,
           "sourceObservationCount": 2
+        },
+        {
+          "hallLabel": "2\u5ef3",
+          "seatCount": 36,
+          "sourceObservationCount": 1
         },
         {
           "hallLabel": "3\u5ef3",
@@ -131,7 +144,7 @@
         }
       ],
       "conflictingHallLabels": [],
-      "missingHallLabels": ["11\u5ef3", "2\u5ef3", "4\u5ef3", "8\u5ef3", "9\u5ef3"]
+      "missingHallLabels": ["11\u5ef3", "4\u5ef3", "8\u5ef3", "9\u5ef3"]
     },
     {
       "cinemaSlug": "showtime-kaohsiung-gangshan",
@@ -275,8 +288,8 @@
     {
       "cinemaSlug": "showtime-taichung-lipao",
       "sampledHallNames": 10,
-      "verifiedHallLabels": ["3\u5ef3", "5\u5ef3"],
-      "confirmedHallCount": 2,
+      "verifiedHallLabels": ["3\u5ef3", "4\u5ef3", "5\u5ef3", "8\u5ef3"],
+      "confirmedHallCount": 4,
       "confirmedHalls": [
         {
           "hallLabel": "3\u5ef3",
@@ -284,22 +297,23 @@
           "sourceObservationCount": 3
         },
         {
+          "hallLabel": "4\u5ef3",
+          "seatCount": 63,
+          "sourceObservationCount": 1
+        },
+        {
           "hallLabel": "5\u5ef3",
           "seatCount": 46,
           "sourceObservationCount": 2
+        },
+        {
+          "hallLabel": "8\u5ef3",
+          "seatCount": 22,
+          "sourceObservationCount": 1
         }
       ],
       "conflictingHallLabels": [],
-      "missingHallLabels": [
-        "10\u5ef3",
-        "1\u5ef3",
-        "2\u5ef3",
-        "4\u5ef3",
-        "6\u5ef3",
-        "7\u5ef3",
-        "8\u5ef3",
-        "9\u5ef3"
-      ]
+      "missingHallLabels": ["10\u5ef3", "1\u5ef3", "2\u5ef3", "6\u5ef3", "7\u5ef3", "9\u5ef3"]
     },
     {
       "cinemaSlug": "showtime-taichung-station",
@@ -382,8 +396,8 @@
     {
       "cinemaSlug": "showtime-taichung-wenxin",
       "sampledHallNames": 16,
-      "verifiedHallLabels": ["10\u5ef3", "12\u5ef3", "13\u5ef3", "\u5de8\u5e551\u5ef3"],
-      "confirmedHallCount": 4,
+      "verifiedHallLabels": ["10\u5ef3", "12\u5ef3", "13\u5ef3", "6\u5ef3", "\u5de8\u5e551\u5ef3"],
+      "confirmedHallCount": 5,
       "confirmedHalls": [
         {
           "hallLabel": "10\u5ef3",
@@ -398,6 +412,11 @@
         {
           "hallLabel": "13\u5ef3",
           "seatCount": 150,
+          "sourceObservationCount": 1
+        },
+        {
+          "hallLabel": "6\u5ef3",
+          "seatCount": 66,
           "sourceObservationCount": 1
         },
         {
@@ -416,7 +435,6 @@
         "3\u5ef3",
         "4\u5ef3",
         "5\u5ef3",
-        "6\u5ef3",
         "7\u5ef3",
         "9\u5ef3",
         "\u4e39\u666e\u5ef3"
@@ -515,9 +533,29 @@
     {
       "cinemaSlug": "showtime-taipei-xinxin",
       "sampledHallNames": 14,
-      "verifiedHallLabels": ["3\u5ef3", "4\u5ef3", "5\u5ef3", "6\u5ef3"],
-      "confirmedHallCount": 4,
+      "verifiedHallLabels": [
+        "10\u5ef3",
+        "13\u5ef3",
+        "3\u5ef3",
+        "4\u5ef3",
+        "5\u5ef3",
+        "6\u5ef3",
+        "7\u5ef3",
+        "8\u5ef3",
+        "9\u5ef3"
+      ],
+      "confirmedHallCount": 9,
       "confirmedHalls": [
+        {
+          "hallLabel": "10\u5ef3",
+          "seatCount": 66,
+          "sourceObservationCount": 1
+        },
+        {
+          "hallLabel": "13\u5ef3",
+          "seatCount": 61,
+          "sourceObservationCount": 1
+        },
         {
           "hallLabel": "3\u5ef3",
           "seatCount": 72,
@@ -537,21 +575,25 @@
           "hallLabel": "6\u5ef3",
           "seatCount": 72,
           "sourceObservationCount": 1
+        },
+        {
+          "hallLabel": "7\u5ef3",
+          "seatCount": 54,
+          "sourceObservationCount": 1
+        },
+        {
+          "hallLabel": "8\u5ef3",
+          "seatCount": 65,
+          "sourceObservationCount": 1
+        },
+        {
+          "hallLabel": "9\u5ef3",
+          "seatCount": 66,
+          "sourceObservationCount": 1
         }
       ],
       "conflictingHallLabels": [],
-      "missingHallLabels": [
-        "10\u5ef3",
-        "11\u5ef3",
-        "12\u5ef3",
-        "13\u5ef3",
-        "14\u5ef3",
-        "1\u5ef3",
-        "2\u5ef3",
-        "7\u5ef3",
-        "8\u5ef3",
-        "9\u5ef3"
-      ]
+      "missingHallLabels": ["11\u5ef3", "12\u5ef3", "14\u5ef3", "1\u5ef3", "2\u5ef3"]
     },
     {
       "cinemaSlug": "showtime-taitung",
@@ -586,12 +628,17 @@
     {
       "cinemaSlug": "showtime-tucheng",
       "sampledHallNames": 11,
-      "verifiedHallLabels": ["10\u5ef3", "5\u5ef3", "6\u5ef3"],
-      "confirmedHallCount": 3,
+      "verifiedHallLabels": ["10\u5ef3", "4\u5ef3", "5\u5ef3", "6\u5ef3"],
+      "confirmedHallCount": 4,
       "confirmedHalls": [
         {
           "hallLabel": "10\u5ef3",
           "seatCount": 96,
+          "sourceObservationCount": 1
+        },
+        {
+          "hallLabel": "4\u5ef3",
+          "seatCount": 71,
           "sourceObservationCount": 1
         },
         {
@@ -611,7 +658,6 @@
         "1\u5ef3",
         "2\u5ef3",
         "3\u5ef3",
-        "4\u5ef3",
         "7\u5ef3",
         "8\u5ef3",
         "9\u5ef3"
@@ -687,6 +733,13 @@
       "observedAt": "2026-11-20T12:29:38.924Z"
     },
     {
+      "cinemaSlug": "showtime-kaohsiung-dreammall",
+      "filename": "showtime_sample_showtime-kaohsiung-dreammall_1795244599821.json",
+      "sha256": "52aa4829f35ea34f0d07a778df8f00711cd5f55ffe6df2c1f4d3a674f6b326e6",
+      "sourcedHallCount": 1,
+      "observedAt": "2026-11-21T07:02:14.390Z"
+    },
+    {
       "cinemaSlug": "showtime-kaohsiung-gangshan",
       "filename": "showtime_sample_showtime-kaohsiung-gangshan_1795008512367.json",
       "sha256": "9266c1554873978af5fb17a0c0b10f8c3064bba65b06a4b7b60e7760ccb97da6",
@@ -743,6 +796,13 @@
       "observedAt": "2026-11-20T12:51:37.025Z"
     },
     {
+      "cinemaSlug": "showtime-taichung-lipao",
+      "filename": "showtime_sample_showtime-taichung-lipao_1795244483820.json",
+      "sha256": "9cda4806ef1a71521347d3a8d9eabb3562edb31a3e6566262f34b5d5b964088c",
+      "sourcedHallCount": 2,
+      "observedAt": "2026-11-21T07:00:54.512Z"
+    },
+    {
       "cinemaSlug": "showtime-taichung-station",
       "filename": "showtime_sample_showtime-taichung-station_1795015354333.json",
       "sha256": "31834be4b5c953f3c9b6111474f0ae90a919795e74b57dd47496abd555b2f5bc",
@@ -790,6 +850,13 @@
       "sha256": "d5ccdc3bf0422146cf5623c025b3e6ed0b5796c70daf8ba1576e965ebc2fe1a1",
       "sourcedHallCount": 1,
       "observedAt": "2026-11-20T15:48:55.301Z"
+    },
+    {
+      "cinemaSlug": "showtime-taichung-wenxin",
+      "filename": "showtime_sample_showtime-taichung-wenxin_1795244033827.json",
+      "sha256": "7ffc4e0e3149adb3ce156c5a3b00f85472dd9f7b22651b3e4dcd102b5668031b",
+      "sourcedHallCount": 1,
+      "observedAt": "2026-11-21T06:53:48.724Z"
     },
     {
       "cinemaSlug": "showtime-tainan-rende",
@@ -848,6 +915,27 @@
       "observedAt": "2026-11-20T12:20:15.941Z"
     },
     {
+      "cinemaSlug": "showtime-taipei-xinxin",
+      "filename": "showtime_sample_showtime-taipei-xinxin_1795243756826.json",
+      "sha256": "1b24833522dfc53dbbbfbde32545b69ce11e9fff998b63d864ed95b7d3838bdb",
+      "sourcedHallCount": 1,
+      "observedAt": "2026-11-21T06:46:52.668Z"
+    },
+    {
+      "cinemaSlug": "showtime-taipei-xinxin",
+      "filename": "showtime_sample_showtime-taipei-xinxin_1795243876815.json",
+      "sha256": "80c41672d21235d61a5a6f9bfb74690857c9aba2d5b63ead44ce23f54e9c9cff",
+      "sourcedHallCount": 3,
+      "observedAt": "2026-11-21T06:49:44.459Z"
+    },
+    {
+      "cinemaSlug": "showtime-taipei-xinxin",
+      "filename": "showtime_sample_showtime-taipei-xinxin_1795243910819.json",
+      "sha256": "607c8ecd540747577845414680c3d1167063cdf68300b08129d601d3edfac824",
+      "sourcedHallCount": 1,
+      "observedAt": "2026-11-21T06:51:46.351Z"
+    },
+    {
       "cinemaSlug": "showtime-taitung",
       "filename": "showtime_sample_showtime-taitung_1795006822370.json",
       "sha256": "8766d955fd9f1666a63c0e5cfdc170580bd71f64d68ddf5bc55b829d0c4d2c41",
@@ -867,6 +955,13 @@
       "sha256": "9a97734dffd8f80120bde3eaa710aadbeb34dc14d1578d2bd2788eabe269ebd2",
       "sourcedHallCount": 3,
       "observedAt": "2026-11-20T12:15:04.364Z"
+    },
+    {
+      "cinemaSlug": "showtime-tucheng",
+      "filename": "showtime_sample_showtime-tucheng_1795244416825.json",
+      "sha256": "4550158e532454e39bacb01f2fec96f5edcfba34fb4108900bbc975b4a299bfe",
+      "sourcedHallCount": 1,
+      "observedAt": "2026-11-21T06:58:46.460Z"
     },
     {
       "cinemaSlug": "showtime-yunlin-beigang",
