@@ -5,6 +5,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import { chainCinemas } from './chain-directory'
 import { cinemaMapUrl, currentMapPlatform, googleMapsUrl, type MapPlatform } from './map-links'
 import VieShowSeatReferenceGallery from './VieShowSeatReferenceGallery.vue'
+import ShowtimeResearchHallGallery from './ShowtimeResearchHallGallery.vue'
 import MiranewSeatReferenceGallery from './MiranewSeatReferenceGallery.vue'
 import OtherChainFactsPanel from './OtherChainFactsPanel.vue'
 
@@ -56,6 +57,7 @@ const slug = computed(() => cinema.value?.slug ?? '')
 
       <template v-else>
         <OtherChainFactsPanel :cinema="cinema" />
+        <ShowtimeResearchHallGallery v-if="cinema.brand === 'showtime'" :cinema-slug="slug" />
         <details v-if="cinema.brand === 'miranew'" class="chain-cinema-page__preview-details">
           <summary>{{ t('ux.exploreSeatReferences') }}</summary>
           <MiranewSeatReferenceGallery :cinema-slug="slug" />
