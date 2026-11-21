@@ -1,0 +1,37 @@
+{
+  "cinemaSlug": "showtime-hualien",
+  "cinemaName": "花蓮秀泰影城",
+  "observedAt": "2026-11-18T08:55:04.4916000Z",
+  "sourceUrl": "https://www.showtimes.com.tw/ticketing",
+  "method": "Windows_UIAutomation_public_schedule_movie_hall_label_review",
+  "sourceScope": "public_movie_information_only_not_authenticated_seat_grid",
+  "moviesSeen": 11,
+  "moviesWithHallLabels": 11,
+  "publicHallLabels": [
+    "1廳",
+    "2廳",
+    "3廳",
+    "4廳",
+    "5廳",
+    "6廳",
+    "7廳",
+    "8廳",
+    "9廳"
+  ],
+  "hallOccurrenceCounts": {
+    "4廳": 2,
+    "3廳": 2,
+    "7廳": 3,
+    "2廳": 2,
+    "1廳": 2,
+    "6廳": 2,
+    "8廳": 2,
+    "9廳": 3,
+    "5廳": 1
+  },
+  "errors": [],
+  "didNotOpenSeatPreview": true,
+  "didNotBook": true,
+  "hasCompleteSeatingGeometry": false,
+  "totalUniquePublicHalls": 9
+}

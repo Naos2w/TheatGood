@@ -1,0 +1,41 @@
+{
+  "cinemaSlug": "showtime-kaohsiung-dreammall",
+  "cinemaName": "高雄夢時代秀泰影城",
+  "observedAt": "2026-11-18T08:53:40.5648649Z",
+  "sourceUrl": "https://www.showtimes.com.tw/ticketing",
+  "method": "Windows_UIAutomation_public_schedule_movie_hall_label_review",
+  "sourceScope": "public_movie_information_only_not_authenticated_seat_grid",
+  "moviesSeen": 15,
+  "moviesWithHallLabels": 15,
+  "publicHallLabels": [
+    "10廳",
+    "11廳",
+    "12廳",
+    "2廳",
+    "3廳",
+    "4廳",
+    "5廳",
+    "6廳",
+    "7廳",
+    "8廳",
+    "9廳"
+  ],
+  "hallOccurrenceCounts": {
+    "5廳": 2,
+    "11廳": 2,
+    "4廳": 3,
+    "6廳": 2,
+    "3廳": 3,
+    "12廳": 3,
+    "2廳": 2,
+    "7廳": 2,
+    "10廳": 3,
+    "9廳": 3,
+    "8廳": 3
+  },
+  "errors": [],
+  "didNotOpenSeatPreview": true,
+  "didNotBook": true,
+  "hasCompleteSeatingGeometry": false,
+  "totalUniquePublicHalls": 11
+}

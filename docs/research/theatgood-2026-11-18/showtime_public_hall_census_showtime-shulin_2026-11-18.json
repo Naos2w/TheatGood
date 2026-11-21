@@ -1,0 +1,43 @@
+{
+  "cinemaSlug": "showtime-shulin",
+  "cinemaName": "樹林秀泰影城",
+  "observedAt": "2026-11-18T09:03:16.1189557Z",
+  "sourceUrl": "https://www.showtimes.com.tw/ticketing",
+  "method": "Windows_UIAutomation_public_schedule_movie_hall_label_review",
+  "sourceScope": "public_movie_information_only_not_authenticated_seat_grid",
+  "moviesSeen": 13,
+  "moviesWithHallLabels": 13,
+  "publicHallLabels": [
+    "10廳",
+    "11廳",
+    "12廳",
+    "2廳",
+    "3廳",
+    "4廳",
+    "5廳",
+    "6廳",
+    "7廳",
+    "8廳",
+    "9廳",
+    "巨幕1廳"
+  ],
+  "hallOccurrenceCounts": {
+    "2廳": 3,
+    "7廳": 2,
+    "3廳": 3,
+    "10廳": 3,
+    "巨幕1廳": 2,
+    "12廳": 3,
+    "9廳": 2,
+    "4廳": 3,
+    "5廳": 2,
+    "11廳": 2,
+    "8廳": 2,
+    "6廳": 1
+  },
+  "errors": [],
+  "didNotOpenSeatPreview": true,
+  "didNotBook": true,
+  "hasCompleteSeatingGeometry": false,
+  "totalUniquePublicHalls": 12
+}

@@ -1,0 +1,35 @@
+{
+  "cinemaSlug": "showtime-keelung",
+  "cinemaName": "基隆秀泰影城",
+  "observedAt": "2026-11-18T08:55:39.7636563Z",
+  "sourceUrl": "https://www.showtimes.com.tw/ticketing",
+  "method": "Windows_UIAutomation_public_schedule_movie_hall_label_review",
+  "sourceScope": "public_movie_information_only_not_authenticated_seat_grid",
+  "moviesSeen": 9,
+  "moviesWithHallLabels": 9,
+  "publicHallLabels": [
+    "1廳",
+    "2廳",
+    "3廳",
+    "4廳",
+    "5廳",
+    "6廳",
+    "7廳",
+    "8廳"
+  ],
+  "hallOccurrenceCounts": {
+    "7廳": 3,
+    "1廳": 2,
+    "8廳": 3,
+    "3廳": 2,
+    "5廳": 3,
+    "2廳": 2,
+    "6廳": 2,
+    "4廳": 3
+  },
+  "errors": [],
+  "didNotOpenSeatPreview": true,
+  "didNotBook": true,
+  "hasCompleteSeatingGeometry": false,
+  "totalUniquePublicHalls": 8
+}

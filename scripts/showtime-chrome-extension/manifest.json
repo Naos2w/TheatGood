@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "TheatGood｜秀泰座位研究（唯讀）",
+  "version": "0.1.6",
+  "description": "僅在使用者已登入秀泰時，從官方座位預覽整理座號與相對格線；不訂票、不取得會員資料。",
+  "permissions": ["scripting", "downloads", "storage"],
+  "host_permissions": ["https://www.showtimes.com.tw/*", "https://showtimes.com.tw/*"],
+  "action": {
+    "default_title": "TheatGood 秀泰座位蒐集",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
