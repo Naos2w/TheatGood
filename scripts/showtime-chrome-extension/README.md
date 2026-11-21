@@ -6,13 +6,20 @@
 
 2026-11-21 的 TheatGood 專用 Chrome 在 `https://showtimes.com.tw/ticketing/` 明確顯示「會員中心」，但 v0.1.5 只查 `https://www.showtimes.com.tw/*`，因而錯誤回報「找不到已顯示會員中心的分頁」。本版只允許**秀泰官網的兩個精確 HTTPS 主機**，並依實際頁面 `origin` 保存來源網址；研究下載、稽核與估算 Viewer 只接受這兩個官方來源。依然不讀 Cookie、Token、密碼、不開新會員分頁、不選座與不購票。更新安裝後要在專用 Chrome 重新載入未封裝擴充功能；重載前舊版仍會拒絕無 `www` 網域，不能把改檔當作已生效。
 
+### 單分頁模式（2026-11-22 實測）
+
+預設直接在已登入秀泰的專用 Chrome **唯一官網分頁**上，點 Chrome 工具列的 TheatGood 擴充功能圖示，使用其**小視窗**選擇分館後執行唯讀採集。普通工具列模式每輪最多檢查 **3 張電影卡**，不會增加 Chrome 分頁。2026-11-22 已在此模式成功蒐集並驗證數館格線；掃描後關閉小視窗並保留原官網分頁。不要每掃一館就執行 `chrome --new-tab`。
+
+下面舊版定向命令會開**新的分頁**，已在 PowerShell 腳本加上預設拒絕的保護。只有使用者**另行明確同意暫時增加一個分頁**時，才能以 `-AllowNewTab` 明確啟用；未同意時不得使用。未來若要不增分頁且支援 `StartMovie` 偏移，應改良現有工具列小視窗，而不是繞過限制。
+
 ### v0.1.5｜缺漏廳號定向掃描（研究用）
 
 在 MSI 擁有已登入秀泰的**獨立正常 Chrome**，且擴充功能已手動於 `chrome://extensions` 重新載入後，可從專案執行：
 
 ```powershell
 pwsh -NoProfile -File scripts/research_trigger_showtime_targeted_once.ps1 -CinemaSlug showtime-yunlin-beigang -StartMovie 0 -DryRun
-pwsh -NoProfile -File scripts/research_trigger_showtime_targeted_once.ps1 -CinemaSlug showtime-yunlin-beigang -StartMovie 0
+# 僅限使用者另行明確同意『額外開啟單一暫時分頁』的情況：
+pwsh -NoProfile -File scripts/research_trigger_showtime_targeted_once.ps1 -CinemaSlug showtime-yunlin-beigang -StartMovie 0 -AllowNewTab
 ```
 
 - 執行前先**從 MSI 已保存來源**重新核對 15 館廳號缺口；只把該館尚缺的廳號、來源清單容許的 ID 與本輪電影卡片起始索引送進本地 `chrome-extension://` 頁。
