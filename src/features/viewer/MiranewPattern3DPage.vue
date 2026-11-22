@@ -320,20 +320,22 @@ function zoomMap(delta: number) {
           :demo-video="screenVideo"
         />
         <div class="viewer-immersive__top">
-          <button class="viewer-glass-button" type="button" @click="setImmersive(false)">
+          <button
+            class="viewer-glass-button"
+            type="button"
+            @click="setImmersive(false)"
+            :aria-label="english ? 'Back to seat map' : '返回座位圖'"
+          >
             <v-icon icon="mdi-chevron-left" size="20" aria-hidden="true" />
-            {{ english ? 'Back to map' : '返回座位圖' }}
+            <span class="viewer-immersive__back-text">{{
+              english ? 'Back to map' : '返回座位圖'
+            }}</span>
           </button>
           <span class="viewer-glass-button viewer-immersive__seat"
             >{{ reference.publishedHallLabel }} · {{ selectedId }}</span
           >
         </div>
-        <div class="viewer-immersive__adjustments viewer-immersive__top-controls">
-          <CinemaScreenMediaControls
-            v-if="webglAvailable && !sceneFailed && sceneComponent"
-            :english="english"
-            @video-element="onScreenVideoElement"
-          />
+        <div class="viewer-immersive__adjustments">
           <Cinema3DSeatTools
             :horizontal-fov="horizontalFov"
             :can-move-front="!!frontRow"
@@ -384,7 +386,12 @@ function zoomMap(delta: number) {
               <v-icon icon="mdi-chevron-right" size="30" aria-hidden="true" />
             </button>
           </div>
-          <div class="viewer-immersive__utility">
+          <div class="viewer-immersive__utility viewer-immersive__utility--media">
+            <CinemaScreenMediaControls
+              v-if="webglAvailable && !sceneFailed && sceneComponent"
+              :english="english"
+              @video-element="onScreenVideoElement"
+            />
             <button class="viewer-reset" type="button" @click="resetViewToken++">
               <v-icon icon="mdi-restore" size="19" aria-hidden="true" />
               {{ english ? 'Reset' : '重設視角' }}

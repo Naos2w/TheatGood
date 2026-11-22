@@ -547,8 +547,15 @@ function recordSelectedSeat() {
           :demo-video="pilotEnabled ? pilotVideo : screenVideo"
         />
         <div class="viewer-immersive__top">
-          <button type="button" class="viewer-glass-button" @click="setImmersive(false)">
-            <v-icon icon="mdi-chevron-left" size="20" />{{ t('vieshow3d.backToMap') }}
+          <button
+            type="button"
+            class="viewer-glass-button"
+            :aria-label="t('vieshow3d.backToMap')"
+            @click="setImmersive(false)"
+          >
+            <v-icon icon="mdi-chevron-left" size="20" /><span class="viewer-immersive__back-text">{{
+              t('vieshow3d.backToMap')
+            }}</span>
           </button>
           <span v-if="!pilotEnabled" class="viewer-glass-button viewer-immersive__seat"
             >{{ layout.hallLabel }} · {{ seatId }}</span
@@ -578,15 +585,7 @@ function recordSelectedSeat() {
           @reset-view="resetViewToken++"
           @record-seat="recordSelectedSeat"
         />
-        <div
-          v-if="!pilotEnabled"
-          class="viewer-immersive__adjustments viewer-immersive__top-controls"
-        >
-          <CinemaScreenMediaControls
-            v-if="webglAvailable && !sceneError && sceneComponent"
-            :english="english"
-            @video-element="onScreenVideoElement"
-          />
+        <div v-if="!pilotEnabled" class="viewer-immersive__adjustments">
           <Cinema3DSeatTools
             :horizontal-fov="horizontalFov"
             :can-move-front="!!frontRow"
@@ -625,7 +624,12 @@ function recordSelectedSeat() {
               <v-icon icon="mdi-chevron-right" size="30" />
             </button>
           </div>
-          <div class="viewer-immersive__utility">
+          <div class="viewer-immersive__utility viewer-immersive__utility--media">
+            <CinemaScreenMediaControls
+              v-if="webglAvailable && !sceneError && sceneComponent"
+              :english="english"
+              @video-element="onScreenVideoElement"
+            />
             <button type="button" class="viewer-reset" @click="resetViewToken++">
               <v-icon icon="mdi-restore" size="19" /> {{ t('viewer.reset') }}
             </button>

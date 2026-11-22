@@ -1948,27 +1948,63 @@ a {
   flex-direction: column;
   gap: 11px;
 }
-/* One cinema-control layout for mobile, tablet and desktop. Keep playback
-   and the collapsed camera trigger together below the venue header; keep seat
-   navigation and overview at the bottom across every viewport. */
+/* The angle trigger is centred BETWEEN Back and the selected hall badge.
+   Playback belongs to the lower utility row. These positions are identical on
+   mobile, tablet and desktop, without resizing the 3D canvas. */
 .viewer-immersive__adjustments {
   position: absolute;
   z-index: 7;
-  top: calc(78px + env(safe-area-inset-top));
-  right: max(18px, env(safe-area-inset-right));
-  width: min(336px, calc(100vw - 28px));
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  gap: 8px;
+  top: calc(18px + env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  width: max-content;
+  max-width: min(200px, 32vw);
+  margin-inline: auto;
   pointer-events: none;
 }
 .viewer-immersive__adjustments > * {
   pointer-events: auto;
 }
+.viewer-immersive__top .viewer-glass-button.viewer-immersive__seat {
+  max-width: min(42vw, 225px);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-inline: 11px;
+}
 @media (max-width: 599px) {
-  .viewer-immersive__adjustments {
-    right: max(14px, env(safe-area-inset-right));
+  .viewer-immersive__top {
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+  }
+  .viewer-immersive__top .viewer-glass-button:not(.viewer-immersive__seat) {
+    min-height: 44px;
+    min-width: 44px;
+    width: 44px;
+    justify-content: center;
+    padding: 0;
+  }
+  .viewer-immersive__back-text {
+    display: none;
+  }
+  .viewer-immersive__bottom {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    gap: 7px;
+  }
+  .viewer-immersive__bottom .viewer-immersive__hint {
+    display: none;
+  }
+  .viewer-immersive__bottom .viewer-switcher {
+    padding: 7px;
+  }
+  .viewer-immersive__bottom .viewer-switcher button {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+  }
+  .viewer-immersive__bottom .viewer-switcher__seat strong {
+    font-size: 22px;
   }
 }
 .viewer-immersive__hint {
