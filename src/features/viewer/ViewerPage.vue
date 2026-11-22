@@ -7,7 +7,10 @@ import { appLocale } from '../../composables/usePreferences'
 import { findAuditorium } from '../auditoriums/catalog'
 import { cinemaDirectory, directoryHallName, directoryCinemaName } from '../auditoriums/directory'
 import { createSeats } from '../auditoriums/geometry'
-import { neighbouringSeat } from '../auditoriums/seat-navigation'
+import { neighbouringRowSeat, neighbouringSeat } from '../auditoriums/seat-navigation'
+import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
+import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
+import { swapObservedSeatComparison } from './seat-comparison'
 import { useViewerStore } from '../../stores/viewer'
 
 const route = useRoute()
@@ -27,6 +30,12 @@ const sourceHall = computed(() =>
 const isImmersive = computed(() => route.query.view === '3d')
 const previousSeat = computed(() => neighbouringSeat(seats.value, store.selectedSeatId, -1))
 const nextSeat = computed(() => neighbouringSeat(seats.value, store.selectedSeatId, 1))
+const frontRow = computed(() => neighbouringRowSeat(seats.value, store.selectedSeatId, -1))
+const backRow = computed(() => neighbouringRowSeat(seats.value, store.selectedSeatId, 1))
+const savedComparisonSeatId = ref('')
+const horizontalFov = ref(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
+const viewMode = ref<'seat' | 'overview'>('seat')
+const english = computed(() => appLocale.value.startsWith('en'))
 const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
@@ -46,6 +55,10 @@ function venueName() {
 watch(
   () => route.params.auditoriumId,
   (id, previousId) => {
+    if (id !== previousId) {
+      savedComparisonSeatId.value = ''
+      viewMode.value = 'seat'
+    }
     const next = findAuditorium(String(id))
     if (!next) {
       void router.replace('/')
@@ -102,7 +115,9 @@ onMounted(() => {
 })
 
 function selectSeat(id: string) {
-  if (seats.value.some((seat) => seat.id === id)) store.selectSeat(id)
+  if (!seats.value.some((seat) => seat.id === id)) return
+  store.selectSeat(id)
+  void router.replace({ query: { ...route.query, seat: id } })
 }
 
 function preview3d() {
@@ -124,7 +139,21 @@ function returnToSeats() {
 
 function navigate(direction: -1 | 1) {
   const next = direction === -1 ? previousSeat.value : nextSeat.value
-  if (next) store.selectSeat(next.id)
+  if (next) selectSeat(next.id)
+}
+function navigateRow(direction: -1 | 1) {
+  const next = direction === -1 ? frontRow.value : backRow.value
+  if (next) selectSeat(next.id)
+}
+function swapComparison() {
+  const swap = swapObservedSeatComparison(
+    seats.value,
+    store.selectedSeatId,
+    savedComparisonSeatId.value,
+  )
+  if (!swap) return
+  savedComparisonSeatId.value = swap.nextSaved
+  selectSeat(swap.nextSelected)
 }
 </script>
 
@@ -233,7 +262,8 @@ function navigate(direction: -1 | 1) {
         :seats="seats"
         :selected-seat-id="store.selectedSeatId"
         :reset-view-token="resetViewToken"
-        :horizontal-fov="80"
+        :horizontal-fov="horizontalFov"
+        :view-mode="viewMode"
       />
 
       <div class="viewer-immersive__top">
@@ -249,6 +279,19 @@ function navigate(direction: -1 | 1) {
       </div>
 
       <div class="viewer-immersive__bottom">
+        <Cinema3DSeatTools
+          :horizontal-fov="horizontalFov"
+          :can-move-front="!!frontRow"
+          :can-move-back="!!backRow"
+          :english="english"
+          :selected-seat-id="store.selectedSeatId"
+          :saved-comparison-seat-id="savedComparisonSeatId"
+          @update:horizontal-fov="horizontalFov = $event"
+          @move-row="navigateRow"
+          @save-comparison="savedComparisonSeatId = store.selectedSeatId"
+          @swap-comparison="swapComparison"
+          @clear-comparison="savedComparisonSeatId = ''"
+        />
         <p class="viewer-immersive__hint">{{ t('ux.dragHint') }}</p>
         <div class="viewer-switcher glass-panel">
           <button
@@ -273,6 +316,25 @@ function navigate(direction: -1 | 1) {
           </button>
         </div>
         <div class="viewer-immersive__utility">
+          <button
+            type="button"
+            class="viewer-reset"
+            @click="viewMode = viewMode === 'seat' ? 'overview' : 'seat'"
+          >
+            <v-icon
+              :icon="viewMode === 'seat' ? 'mdi-view-dashboard-outline' : 'mdi-seat-recline-normal'"
+              size="19"
+            />
+            {{
+              viewMode === 'seat'
+                ? english
+                  ? 'Overview'
+                  : '影廳概覽'
+                : english
+                  ? 'Seat view'
+                  : '座位視角'
+            }}
+          </button>
           <button type="button" class="viewer-reset" @click="resetViewToken++">
             <v-icon icon="mdi-restore" size="19" />
             {{ t('viewer.reset') }}

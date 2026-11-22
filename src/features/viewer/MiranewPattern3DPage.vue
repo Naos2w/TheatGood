@@ -12,6 +12,7 @@ import { chainCinemas } from '../cinemas/chain-directory'
 import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
 import { deriveMiranewPattern3D, initialMiranewPatternSeat } from './miranew-pattern-3d'
 import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
+import { swapObservedSeatComparison } from './seat-comparison'
 
 const route = useRoute()
 const router = useRouter()
@@ -47,6 +48,7 @@ const sceneFailed = ref(false)
 const webglAvailable = ref(true)
 const zoom = ref(1)
 const horizontalFov = ref(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
+const savedComparisonSeatId = ref('')
 const xs = computed(() => reference.value?.seatPositions.map((item) => item[2]) ?? [])
 const ys = computed(() => reference.value?.seatPositions.map((item) => item[1]) ?? [])
 const minX = computed(() => (xs.value.length ? Math.min(...xs.value) : 1))
@@ -76,8 +78,9 @@ watch(
   },
   { immediate: true },
 )
-watch(patternId, () => {
+watch([slug, patternId], () => {
   zoom.value = 1
+  savedComparisonSeatId.value = ''
 })
 async function loadScene() {
   if (sceneComponent.value || sceneFailed.value || !webglAvailable.value) return
@@ -122,6 +125,17 @@ function move(direction: -1 | 1) {
 function moveRow(direction: -1 | 1) {
   const target = direction < 0 ? frontRow.value : backRow.value
   if (target) selectSeat(target.id)
+}
+function swapComparison() {
+  if (!model.value) return
+  const swapped = swapObservedSeatComparison(
+    model.value.seats,
+    selectedId.value,
+    savedComparisonSeatId.value,
+  )
+  if (!swapped) return
+  savedComparisonSeatId.value = swapped.nextSaved
+  selectSeat(swapped.nextSelected)
 }
 function zoomMap(delta: number) {
   zoom.value = Math.min(1.75, Math.max(1, Math.round((zoom.value + delta) * 100) / 100))
@@ -314,8 +328,13 @@ function zoomMap(delta: number) {
             :can-move-front="!!frontRow"
             :can-move-back="!!backRow"
             :english="english"
+            :selected-seat-id="selectedId"
+            :saved-comparison-seat-id="savedComparisonSeatId"
             @update:horizontal-fov="horizontalFov = $event"
             @move-row="moveRow"
+            @save-comparison="savedComparisonSeatId = selectedId"
+            @swap-comparison="swapComparison"
+            @clear-comparison="savedComparisonSeatId = ''"
           />
           <p class="viewer-immersive__hint">
             {{

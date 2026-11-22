@@ -13,6 +13,10 @@ defineProps<{
   seatCountWarning?: string
   canPrevious: boolean
   canNext: boolean
+  canMoveFront: boolean
+  canMoveBack: boolean
+  savedComparisonSeatId: string
+  horizontalFov: number
   viewMode: 'seat' | 'overview'
 }>()
 const emit = defineEmits<{
@@ -22,6 +26,11 @@ const emit = defineEmits<{
   'toggle-view-mode': []
   'reset-view': []
   'record-seat': []
+  'move-row': [direction: -1 | 1]
+  'save-comparison': []
+  'swap-comparison': []
+  'clear-comparison': []
+  'update:horizontalFov': [value: number]
 }>()
 const { t } = useI18n()
 
@@ -86,6 +95,13 @@ function toggleAudio() {
   message.value = audioEnabled.value
     ? '電影原聲已開啟；這是原始音軌，不會依座位改變。'
     : '電影原聲已靜音，影片仍可繼續播放。'
+}
+function updateLens(event: Event) {
+  const target = event.target
+  if (!(target instanceof HTMLInputElement)) return
+  const value = Number(target.value)
+  if (!Number.isInteger(value) || value < 45 || value > 95 || value % 5 !== 0) return
+  emit('update:horizontalFov', value)
 }
 function resetViewAndClose() {
   emit('reset-view')
@@ -167,6 +183,72 @@ onUnmounted(() => {
           >CC BY 4.0</a
         >
       </p>
+      <div class="cinema-sensory-pilot__compare" role="group" aria-label="座位比較與鏡頭">
+        <strong>座位 A／B 比較</strong>
+        <p>
+          {{
+            savedComparisonSeatId
+              ? '已存比較席：' + savedComparisonSeatId + ' · 目前：' + selectedSeatId
+              : '儲存目前座位，換到另一席後來回比較。'
+          }}
+        </p>
+        <div class="cinema-sensory-pilot__compare-buttons">
+          <button
+            type="button"
+            :disabled="!canMoveFront"
+            aria-label="往銀幕方向前一排"
+            @click="emit('move-row', -1)"
+          >
+            前一排
+          </button>
+          <button
+            type="button"
+            :disabled="!canMoveBack"
+            aria-label="往後一排"
+            @click="emit('move-row', 1)"
+          >
+            後一排
+          </button>
+        </div>
+        <div class="cinema-sensory-pilot__compare-buttons">
+          <button
+            type="button"
+            aria-label="儲存目前座位作為比較基準"
+            @click="emit('save-comparison')"
+          >
+            儲存此座
+          </button>
+          <button
+            type="button"
+            :disabled="!savedComparisonSeatId || savedComparisonSeatId === selectedSeatId"
+            aria-label="切換兩個比較座位"
+            @click="emit('swap-comparison')"
+          >
+            切換 A/B
+          </button>
+          <button
+            type="button"
+            :disabled="!savedComparisonSeatId"
+            aria-label="清除比較座位"
+            @click="emit('clear-comparison')"
+          >
+            清除
+          </button>
+        </div>
+        <label>
+          鏡頭水平視角 {{ horizontalFov }}°
+          <input
+            type="range"
+            min="45"
+            max="95"
+            step="5"
+            :value="horizontalFov"
+            aria-label="攝影機水平視野角度"
+            @input="updateLens"
+          />
+        </label>
+        <p>比較僅切換來源座位及估算鏡頭，並非實測銀幕或座距。</p>
+      </div>
       <button type="button" class="cinema-sensory-pilot__reset" @click="resetViewAndClose">
         <v-icon icon="mdi-restore" size="16" /> 重設視角
       </button>
@@ -376,6 +458,40 @@ onUnmounted(() => {
   font-size: 11px;
   line-height: 1.55;
   color: #cdd8e9;
+}
+.cinema-sensory-pilot__compare {
+  margin: 10px 0;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 255, 255, 0.17);
+  font-size: 12px;
+}
+.cinema-sensory-pilot__compare-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.cinema-sensory-pilot__compare-buttons button {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 5px;
+  border-radius: 9px;
+  color: #f8f9fc;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 11px;
+}
+.cinema-sensory-pilot__compare-buttons button:disabled {
+  opacity: 0.35;
+}
+.cinema-sensory-pilot__compare label {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.cinema-sensory-pilot__compare input {
+  width: 100%;
+  accent-color: #d0a879;
 }
 .cinema-sensory-pilot__info a {
   color: #ffdbb0;

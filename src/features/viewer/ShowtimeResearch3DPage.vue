@@ -12,6 +12,7 @@ import {
 } from './showtime-local-research'
 import { deriveShowtimeEstimatedScene, type ShowtimeSeatSnapshot } from './showtime-estimated-scene'
 import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
+import { swapObservedSeatComparison } from './seat-comparison'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,6 +29,7 @@ const unavailable = ref(false)
 const seatId = ref('')
 const mapZoom = ref(1)
 const horizontalFov = ref(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
+const savedComparisonSeatId = ref('')
 const mapScroller = ref<HTMLElement | null>(null)
 const immersive = computed(() => route.query.view === '3d')
 const viewMode = ref<'seat' | 'overview'>('seat')
@@ -116,6 +118,7 @@ watch(
     source.value = null
     halls.value = []
     seatId.value = ''
+    savedComparisonSeatId.value = ''
     mapZoom.value = 1
     viewMode.value = 'seat'
     try {
@@ -181,6 +184,17 @@ function adjacent(direction: -1 | 1) {
 function adjacentRow(direction: -1 | 1) {
   const item = direction < 0 ? frontRow.value : backRow.value
   if (item) selectSeat(item.id)
+}
+function swapComparison() {
+  if (!scene.value) return
+  const swapped = swapObservedSeatComparison(
+    scene.value.seats,
+    seatId.value,
+    savedComparisonSeatId.value,
+  )
+  if (!swapped) return
+  savedComparisonSeatId.value = swapped.nextSaved
+  selectSeat(swapped.nextSelected)
 }
 function switchHall(label: string) {
   if (!halls.value.some((item) => item.hallLabel === label)) return
@@ -415,8 +429,13 @@ function selectedMapSeatLabel(): string {
             :can-move-front="!!frontRow"
             :can-move-back="!!backRow"
             :english="english"
+            :selected-seat-id="seatId"
+            :saved-comparison-seat-id="savedComparisonSeatId"
             @update:horizontal-fov="horizontalFov = $event"
             @move-row="adjacentRow"
+            @save-comparison="savedComparisonSeatId = seatId"
+            @swap-comparison="swapComparison"
+            @clear-comparison="savedComparisonSeatId = ''"
           />
           <p class="viewer-immersive__hint">
             {{

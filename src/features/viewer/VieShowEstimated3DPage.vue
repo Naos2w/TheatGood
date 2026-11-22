@@ -28,6 +28,7 @@ import {
 } from './vieshow-approximate-scene'
 import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
 import { usesCinemaSensoryPilot } from './cinema-sensory-scope'
+import { swapObservedSeatComparison } from './seat-comparison'
 
 const route = useRoute()
 const router = useRouter()
@@ -40,6 +41,7 @@ const failed = ref(false)
 const seatId = ref('')
 const mapZoom = ref(1)
 const horizontalFov = ref(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
+const savedComparisonSeatId = ref('')
 const english = computed(() => appLocale.value.startsWith('en'))
 const resetViewToken = ref(0)
 const immersiveViewMode = ref<'seat' | 'overview'>('seat')
@@ -197,6 +199,7 @@ watch(
       cancelled = true
     })
     mapZoom.value = 1
+    savedComparisonSeatId.value = ''
     loading.value = true
     failed.value = false
     layout.value = null
@@ -281,6 +284,17 @@ function switchSeat(direction: -1 | 1) {
 function switchRow(direction: -1 | 1) {
   const item = direction === -1 ? frontRow.value : backRow.value
   if (item) selectSeat(item.id)
+}
+function swapComparison() {
+  if (!geometry.value) return
+  const swapped = swapObservedSeatComparison(
+    geometry.value.seats,
+    seatId.value,
+    savedComparisonSeatId.value,
+  )
+  if (!swapped) return
+  savedComparisonSeatId.value = swapped.nextSaved
+  selectSeat(swapped.nextSelected)
 }
 function setImmersive(value: boolean) {
   void router.replace({
@@ -542,7 +556,16 @@ function recordSelectedSeat() {
           :seat-count-warning="seatCountWarning"
           :can-previous="!!previous"
           :can-next="!!next"
+          :can-move-front="!!frontRow"
+          :can-move-back="!!backRow"
+          :saved-comparison-seat-id="savedComparisonSeatId"
+          :horizontal-fov="horizontalFov"
           :view-mode="immersiveViewMode"
+          @move-row="switchRow"
+          @save-comparison="savedComparisonSeatId = seatId"
+          @swap-comparison="swapComparison"
+          @clear-comparison="savedComparisonSeatId = ''"
+          @update:horizontal-fov="horizontalFov = $event"
           @video-element="onPilotVideoElement"
           @previous-seat="switchSeat(-1)"
           @next-seat="switchSeat(1)"
@@ -556,8 +579,13 @@ function recordSelectedSeat() {
             :can-move-front="!!frontRow"
             :can-move-back="!!backRow"
             :english="english"
+            :selected-seat-id="seatId"
+            :saved-comparison-seat-id="savedComparisonSeatId"
             @update:horizontal-fov="horizontalFov = $event"
             @move-row="switchRow"
+            @save-comparison="savedComparisonSeatId = seatId"
+            @swap-comparison="swapComparison"
+            @clear-comparison="savedComparisonSeatId = ''"
           />
           <p class="viewer-immersive__hint">
             {{ immersiveViewMode === 'overview' ? t('ux.overviewHint') : t('ux.dragHint') }}

@@ -7,10 +7,15 @@ const props = defineProps<{
   canMoveFront: boolean
   canMoveBack: boolean
   english: boolean
+  selectedSeatId: string
+  savedComparisonSeatId: string
 }>()
 const emit = defineEmits<{
   'update:horizontalFov': [value: number]
   'move-row': [direction: -1 | 1]
+  'save-comparison': []
+  'swap-comparison': []
+  'clear-comparison': []
 }>()
 
 const isDefault = computed(() => props.horizontalFov === DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
@@ -78,6 +83,50 @@ function updateLens(event: Event) {
           {{ english ? 'Default' : '還原' }} {{ DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV }}°
         </button>
         <span>{{ english ? 'Wider' : '廣視野' }}</span>
+      </div>
+      <div class="cinema-3d-adjustments__compare">
+        <div class="cinema-3d-adjustments__compare-heading">
+          <v-icon icon="mdi-compare-horizontal" size="17" aria-hidden="true" />
+          <strong>{{ english ? 'Compare two seats' : '比較兩個座位' }}</strong>
+        </div>
+        <p class="cinema-3d-adjustments__compare-status" aria-live="polite">
+          {{
+            savedComparisonSeatId
+              ? (english ? 'Other seat: ' : '已存比較席：') +
+                savedComparisonSeatId +
+                (english ? ' · Current: ' : ' · 目前：') +
+                selectedSeatId
+              : english
+                ? 'Save this seat, select another and switch between them.'
+                : '先儲存目前座位，換到另一席後即可來回比較。'
+          }}
+        </p>
+        <div class="cinema-3d-adjustments__compare-buttons">
+          <button
+            type="button"
+            :disabled="!selectedSeatId"
+            :aria-label="english ? 'Save current seat for comparison' : '儲存目前座位作為比較基準'"
+            @click="emit('save-comparison')"
+          >
+            {{ english ? 'Save seat' : '儲存此座位' }}
+          </button>
+          <button
+            type="button"
+            :disabled="!savedComparisonSeatId || savedComparisonSeatId === selectedSeatId"
+            :aria-label="english ? 'Switch between compared seats' : '切換兩個比較座位'"
+            @click="emit('swap-comparison')"
+          >
+            {{ english ? 'Switch seats' : '切換比較席' }}
+          </button>
+          <button
+            type="button"
+            :disabled="!savedComparisonSeatId"
+            :aria-label="english ? 'Clear compared seat' : '清除比較座位'"
+            @click="emit('clear-comparison')"
+          >
+            {{ english ? 'Clear' : '清除' }}
+          </button>
+        </div>
       </div>
       <p>
         {{
@@ -174,6 +223,37 @@ function updateLens(event: Event) {
   color: #fbf1e5;
   border-radius: 999px;
   border: 1px solid rgba(220, 230, 244, 0.19);
+}
+.cinema-3d-adjustments__compare {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.17);
+}
+.cinema-3d-adjustments__compare-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+.cinema-3d-adjustments__compare-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 6px;
+  margin-top: 8px;
+}
+.cinema-3d-adjustments__compare-buttons button {
+  min-width: 0;
+  min-height: 40px;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  color: #f4f6fa;
+  background: rgba(255, 255, 255, 0.09);
+  font-size: 11px;
+}
+.cinema-3d-adjustments__compare-buttons button:focus-visible {
+  outline: 2px solid #d0a879;
+  outline-offset: 2px;
 }
 .cinema-3d-adjustments__panel p {
   margin: 8px 0 0;
