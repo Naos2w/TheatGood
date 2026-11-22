@@ -1,0 +1,55 @@
+# TheatGood｜連鎖影廳座位圖蒐集：2026-11-23 接續稽核
+
+> 此文件是來源取得進度，不是新增 3D 影廳的驗收報告。**本輪沒有新取得足以建立 3D 的完整座位格線，也沒有修改來源座號、UAT 或正式網站。** 研究日期為 2026-11-23（台灣）；官方選位入口能使用，不代表取得了現行的整張座位圖。
+
+## 既有可用資料基線
+
+- 連鎖分館目錄：**9 院線、66 分館**，參見 [原始新增院線稽核](chain-source-gap-onboarding-2026-11-22.md)。
+- 來源支持的 3D 預覽：**393 份**＝威秀／MUVIE 公開座圖 222、秀泰私人來源座圖 158、美麗新來源座型 13（永久廳號未直接確認）。
+- 秀泰：**15 分館、159 個抽樣廳號中有 158 個已核實**；台南仁德第 **3 廳**仍缺可核對來源。159 是抽樣廳號數而非全台實體影廳總數。
+- 除上述已有座型的院線外，**27 間連鎖分館／6 個院線體系**缺完整座號格線：國賓 9、in89 6、百老匯 2、喜樂時代 4、新光 5、美麗華 1。
+- 已保存的官方「席數」與少量照片或輪椅席資訊仍是研究線索，**不可轉為虛構座位格線**。銀幕寬高、排距、階高和房間縱深也不得由總席數推算為實測值。
+
+## 1. 秀泰：單廳定向補件尚未啟動
+
+2026-11-23 在 MSI 以現有工具重新稽核：`readPrivateShowtimeCatalogue` 回報 `sampled=159, verified=158, missing=1`。用既有單分頁工具：
+
+```powershell
+pwsh -NoProfile -File scripts/research_trigger_showtime_existing_popup_once.ps1 -CinemaSlug showtime-tainan-rende -Halls '3廳' -StartMovie 0 -DryRun
+```
+
+目標白名單、缺廳稽核與唯讀範圍檢查通過；實際啟動（不加 `-DryRun`）**在點擊前停止**：`Chrome toolbar is not on the visible desktop; refuse to move or open windows`。
+
+- 專用登入 Chrome 根程序恰有 **1 個**；未新增分頁、未讀取憑證、未執行票種或結帳操作。
+- 視窗程序「存在／可見」不等於工具列位於可操作畫面內；**不得繞過現有 UI 可視範圍保護**。
+- 下一步：所有者把**原本專用 Chrome 視窗**帶回 MSI 目前可視桌面，再使用同一工具針對 **仁德第 3 廳**單次最多檢查 8 張電影卡；若無該廳場次，可在原工具允許的 `StartMovie` 值 8／16／24／32 接續分批。每次先做來源稽核；**沒有顯示可信完整格線就不增加 3D 數量**。
+- 成功後仍須核對座號唯一性、排號、走道空缺、官方分館及同一場次來源，再轉為 MSI 私人 3D；會員座圖不加入公開 Git、UAT 資產或公共 API。
+
+## 2. 國賓：已確定官方現行的取圖途徑，尚缺座圖
+
+| 來源 | 2026-11-23 核查結果 | 使用決策 |
+|---|---|---|
+| [國賓看電影官方 Android App](https://play.google.com/store/apps/details?id=tw.com.langshin.moviefirst.droid) | 官方 App 說明會員可使用互動式選位；Google Play 頁面顯示 2026-10-27 更新 | 可作為現行會員選位**入口線索**，不是現行座圖 |
+| [國賓影城網路劃位頁](https://booking.ambassador.com.tw/frontend/booking-selectseats.html) | 網頁可讀，但其展示的是 **2015-06-19 林口場次**及舊影片範例 | **歷史／示意頁**；不得誤標為 2026 年現行格線 |
+| [國賓大戲院官方廳別資料](https://www.ambassador.com.tw/home/theater_intro_b1) | 各廳公布席數與特殊座位描述 | 只可核對席數／特殊座位，不可還原走道 |
+| [新莊晶冠國賓官方廳別資料](https://www.ambassador.com.tw/home/theater_intro_a10) | 已有廳號及席數（含無障礙席資訊） | 可作為將來取得會員座圖後的逐廳交叉驗證 |
+
+目前國賓 9 間分館已有 **81 筆逐廳席數**，**完整座號格線 0**。要補 3D，需透過業者允許的、可核對來源的現行選位畫面取得每一排與每一座的完整位置，維持唯讀，不建立未授權訂單、也不透過猜測內部 API 取得私有資訊。
+
+## 3. in89：現有靜態圖片仍只是席數來源
+
+- [in89 官方購票說明](https://www.in89cinemax.com/boomboom/question.aspx)介紹選廳、選場次及會員進入訂票程序的流程；目前**未由公開頁面驗證完整座位格線**。
+- 本地 [2026-11-18 官方圖片索引](../research/theatgood-2026-11-18/in89_seat_count_image_sources.json)共有 **6 間分館**的照片／席數圖片，檔名為 **2022 年**序列，尚未證實目前排號、座號、走道是否相同。
+- 已有 **54 筆逐廳官方席數**，完整座號格線仍為 **0**。不要用圖片中總席數產生 3D。
+
+## 4. 後續處理順序與資料驗收規則
+
+1. **秀泰仁德第 3 廳**：恢復專用 Chrome 可視狀態後再做單次唯讀掃描，成功來源需符合現有私有研究稽核；沒有資料時繼續列為待補。
+2. **國賓，再 in89**：優先找可合法查看的現行逐廳選位圖；將完整格線的版本、分館、廳號、時間與來源分開保存；對應既有 81／54 席數來源查錯。
+3. **其他 4 體系**：百老匯、喜樂時代、新光、美麗華；先核對現行分館／廳別，必要時向業者取得正式座圖或獲授權使用。
+4. **美麗新 13 種座型**：保留已核對格線。台茂有 8 個與現行官方席數及特殊座位唯一吻合的高信心廳別**候選**；大直皇家還有部分同席數廳別歧義。無直接場次證據時不要宣稱永久實體廳號已確定（見 [2026-11-18 交叉查核](other-chains-screen-seat-research-2026-11-18.md)）。
+5. **完成可靠格線後才補 3D**：檢查完整座號、走道、輪椅位來源；物理尺寸需獨立來源。私人會員取得的座圖仍受 MSI/Tailscale 授權邊界保護。已確認的 3D UI 無須重設計。
+
+**發版規則：** 研究文件不能自動算入 3D 完成數，也不觸發 UAT／正式版部署；新增座圖通過來源稽核、Vitest、型別檢查與 WebGL 實測後才安排獨立 PR。
+
+English: The current source-backed total remains **393 3D previews**. Showtime Rende Hall 3 and 27 other chain branches still need trustworthy seat-position grids. This audit confirms the current official booking routes for Ambassador and in89, but no new hall layout has been verified or published.
