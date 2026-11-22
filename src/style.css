@@ -1961,21 +1961,6 @@ a {
 .viewer-immersive__adjustments > * {
   pointer-events: auto;
 }
-/* A compact film/sound strip shares the folded-control rail without covering
-   the screen. Expanding settings stacks both controls vertically instead. */
-.viewer-immersive__adjustments--media {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 8px;
-}
-.viewer-immersive__adjustments--media:has(.cinema-3d-adjustments[open]) {
-  flex-direction: column;
-  align-items: stretch;
-}
-.viewer-immersive__adjustments--media:has(.cinema-3d-adjustments[open]) .cinema-media-controls {
-  order: 2;
-}
 @media (min-width: 1024px) {
   /* Reserve an actual right-hand rail while the desktop panel is expanded. */
   .viewer-immersive:has(.viewer-immersive__adjustments details[open]) .cinema-canvas {
@@ -2058,11 +2043,30 @@ a {
 }
 .viewer-immersive__utility {
   display: flex;
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
   pointer-events: auto;
 }
+/* Playback belongs with the bottom seat actions, not the camera settings rail. */
+.viewer-immersive__utility--media {
+  gap: 6px;
+  width: 100%;
+}
+.viewer-immersive__utility--media .viewer-reset {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 6px;
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .viewer-immersive__utility--media:has(.viewer-immersive__record) .viewer-reset {
+    flex: 1 1 0;
+    gap: 0;
+    font-size: 0;
+  }
+}
+
 .viewer-reset,
 .viewer-details summary {
   border: 1px solid #ffffff2c;

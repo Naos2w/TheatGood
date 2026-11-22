@@ -235,7 +235,8 @@ onUnmounted(() => {
 .cinema-media-controls__info {
   position: absolute;
   left: 0;
-  top: calc(100% + 9px);
+  top: auto;
+  bottom: calc(100% + 126px);
   z-index: 15;
   width: min(286px, calc(100vw - 32px));
   padding: 12px;
@@ -252,12 +253,6 @@ onUnmounted(() => {
 }
 .cinema-media-controls__info a {
   color: #f4cda2;
-}
-@media (max-width: 1023px) {
-  .cinema-media-controls__info {
-    top: auto;
-    bottom: calc(100% + 9px);
-  }
 }
 @media (prefers-reduced-transparency: reduce) {
   .cinema-media-controls__bar {
