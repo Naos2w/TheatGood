@@ -276,20 +276,16 @@ function swapComparison() {
         <button
           type="button"
           class="viewer-glass-button viewer-immersive__back"
+          :aria-label="t('viewer.backToSeats')"
           @click="returnToSeats"
         >
           <v-icon icon="mdi-chevron-left" size="24" />
-          <span>{{ t('viewer.backToSeats') }}</span>
+          <span class="viewer-immersive__back-text">{{ t('viewer.backToSeats') }}</span>
         </button>
         <span class="viewer-glass-button viewer-immersive__seat">{{ selectedSeat.id }}</span>
       </div>
 
-      <div class="viewer-immersive__adjustments viewer-immersive__top-controls">
-        <CinemaScreenMediaControls
-          v-if="webglAvailable && !sceneError && sceneComponent"
-          :english="english"
-          @video-element="onScreenVideoElement"
-        />
+      <div class="viewer-immersive__adjustments">
         <Cinema3DSeatTools
           :horizontal-fov="horizontalFov"
           :can-move-front="!!frontRow"
@@ -328,10 +324,24 @@ function swapComparison() {
             <v-icon icon="mdi-chevron-right" size="31" />
           </button>
         </div>
-        <div class="viewer-immersive__utility">
+        <div class="viewer-immersive__utility viewer-immersive__utility--media">
+          <CinemaScreenMediaControls
+            v-if="webglAvailable && !sceneError && sceneComponent"
+            :english="english"
+            @video-element="onScreenVideoElement"
+          />
           <button
             type="button"
             class="viewer-reset"
+            :aria-label="
+              viewMode === 'seat'
+                ? english
+                  ? 'Overview'
+                  : '影廳概覽'
+                : english
+                  ? 'Seat view'
+                  : '座位視角'
+            "
             @click="viewMode = viewMode === 'seat' ? 'overview' : 'seat'"
           >
             <v-icon
@@ -348,7 +358,12 @@ function swapComparison() {
                   : '座位視角'
             }}
           </button>
-          <button type="button" class="viewer-reset" @click="resetViewToken++">
+          <button
+            type="button"
+            class="viewer-reset"
+            :aria-label="t('viewer.reset')"
+            @click="resetViewToken++"
+          >
             <v-icon icon="mdi-restore" size="19" />
             {{ t('viewer.reset') }}
           </button>
@@ -356,6 +371,7 @@ function swapComparison() {
             v-if="sourceHall?.modelId"
             type="button"
             class="viewer-reset viewer-immersive__record"
+            :aria-label="t('history.recordSeat')"
             @click="recordSelectedSeat"
           >
             <v-icon icon="mdi-bookmark-plus-outline" size="18" />

@@ -51,9 +51,11 @@ function updateLens(event: Event) {
 
 <template>
   <details ref="settingsDetails" class="cinema-3d-adjustments" @keydown.esc.stop="closeSettings">
-    <summary>
+    <summary :aria-label="english ? 'Seat and camera settings' : '座位與鏡頭設定'">
       <v-icon icon="mdi-tune-variant" size="17" aria-hidden="true" />
-      {{ english ? 'Seat & camera' : '座位／鏡頭' }}
+      <span class="cinema-3d-adjustments__title">{{
+        english ? 'Seat & camera' : '座位／鏡頭'
+      }}</span>
       <span>{{ horizontalFov }}°</span>
       <v-icon
         class="cinema-3d-adjustments__chevron"
@@ -234,8 +236,10 @@ function updateLens(event: Event) {
 .cinema-3d-adjustments__panel {
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
+  left: 50%;
+  right: auto;
   width: min(336px, calc(100vw - 28px));
+  transform: translateX(-50%);
   max-height: min(40dvh, 260px);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -363,6 +367,26 @@ function updateLens(event: Event) {
 @media (max-width: 1023px) {
   .cinema-3d-adjustments__panel {
     max-height: min(30dvh, 220px);
+  }
+}
+@media (max-width: 599px) {
+  .cinema-3d-adjustments summary {
+    min-height: 44px;
+    padding-inline: 7px;
+    gap: 4px;
+  }
+  .cinema-3d-adjustments__title {
+    display: none;
+  }
+  .cinema-3d-adjustments__panel {
+    /* Keep the overlay anchored to the small centre trigger. backdrop-filter
+       creates a fixed containing block, so a fixed-width inset would collapse. */
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    right: auto;
+    width: calc(100vw - 28px);
+    transform: translateX(-50%);
   }
 }
 @media (max-height: 600px) {
