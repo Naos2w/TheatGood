@@ -10,6 +10,7 @@ import { createSeats } from '../auditoriums/geometry'
 import { neighbouringRowSeat, neighbouringSeat } from '../auditoriums/seat-navigation'
 import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
 import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
+import CinemaScreenMediaControls from './CinemaScreenMediaControls.vue'
 import { swapObservedSeatComparison } from './seat-comparison'
 import { useViewerStore } from '../../stores/viewer'
 
@@ -39,6 +40,10 @@ const english = computed(() => appLocale.value.startsWith('en'))
 const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
+const screenVideo = shallowRef<HTMLVideoElement | null>(null)
+function onScreenVideoElement(video: HTMLVideoElement | null) {
+  screenVideo.value = video
+}
 const resetViewToken = ref(0)
 
 function seatName() {
@@ -264,6 +269,7 @@ function swapComparison() {
         :reset-view-token="resetViewToken"
         :horizontal-fov="horizontalFov"
         :view-mode="viewMode"
+        :demo-video="screenVideo"
       />
 
       <div class="viewer-immersive__top">
@@ -278,7 +284,12 @@ function swapComparison() {
         <span class="viewer-glass-button viewer-immersive__seat">{{ selectedSeat.id }}</span>
       </div>
 
-      <div class="viewer-immersive__adjustments">
+      <div class="viewer-immersive__adjustments viewer-immersive__adjustments--media">
+        <CinemaScreenMediaControls
+          v-if="webglAvailable && !sceneError && sceneComponent"
+          :english="english"
+          @video-element="onScreenVideoElement"
+        />
         <Cinema3DSeatTools
           :horizontal-fov="horizontalFov"
           :can-move-front="!!frontRow"
