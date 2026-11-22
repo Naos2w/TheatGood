@@ -181,9 +181,11 @@ function updateLens(event: Event) {
 
 <style scoped>
 .cinema-3d-adjustments {
-  width: 100%;
-  max-width: 340px;
-  margin-left: auto;
+  position: relative;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: 100%;
+  margin-left: 0;
   border: 1px solid rgba(220, 230, 244, 0.19);
   border-radius: 15px;
   background: rgba(22, 33, 48, 0.75);
@@ -198,9 +200,8 @@ function updateLens(event: Event) {
   max-width: 100%;
 }
 .cinema-3d-adjustments[open] {
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100dvh - 145px);
+  display: block;
+  max-height: none;
 }
 .cinema-3d-adjustments summary {
   flex-shrink: 0;
@@ -228,13 +229,21 @@ function updateLens(event: Event) {
   transform: rotate(180deg);
 }
 .cinema-3d-adjustments[open] summary {
-  border-bottom: 1px solid rgba(220, 230, 244, 0.16);
+  border-bottom: none;
 }
 .cinema-3d-adjustments__panel {
-  min-height: 0;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(336px, calc(100vw - 28px));
+  max-height: min(40dvh, 260px);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  border: 1px solid rgba(220, 230, 244, 0.22);
+  border-radius: 15px;
+  background: rgba(22, 33, 48, 0.96);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
   padding: 10px 12px 12px;
 }
 .cinema-3d-adjustments__tabs {
@@ -352,16 +361,13 @@ function updateLens(event: Event) {
   line-height: 1.5;
 }
 @media (max-width: 1023px) {
-  .cinema-3d-adjustments {
-    margin-right: auto;
-  }
-  .cinema-3d-adjustments[open] {
-    max-height: min(40dvh, 250px);
+  .cinema-3d-adjustments__panel {
+    max-height: min(30dvh, 220px);
   }
 }
-@media (max-height: 540px) {
-  .cinema-3d-adjustments[open] {
-    max-height: min(66dvh, 315px);
+@media (max-height: 600px) {
+  .cinema-3d-adjustments__panel {
+    max-height: min(29dvh, 160px);
   }
 }
 @media (prefers-reduced-motion: reduce) {

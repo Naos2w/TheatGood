@@ -284,7 +284,12 @@ function swapComparison() {
         <span class="viewer-glass-button viewer-immersive__seat">{{ selectedSeat.id }}</span>
       </div>
 
-      <div class="viewer-immersive__adjustments">
+      <div class="viewer-immersive__adjustments viewer-immersive__top-controls">
+        <CinemaScreenMediaControls
+          v-if="webglAvailable && !sceneError && sceneComponent"
+          :english="english"
+          @video-element="onScreenVideoElement"
+        />
         <Cinema3DSeatTools
           :horizontal-fov="horizontalFov"
           :can-move-front="!!frontRow"
@@ -323,12 +328,7 @@ function swapComparison() {
             <v-icon icon="mdi-chevron-right" size="31" />
           </button>
         </div>
-        <div class="viewer-immersive__utility viewer-immersive__utility--media">
-          <CinemaScreenMediaControls
-            v-if="webglAvailable && !sceneError && sceneComponent"
-            :english="english"
-            @video-element="onScreenVideoElement"
-          />
+        <div class="viewer-immersive__utility">
           <button
             type="button"
             class="viewer-reset"

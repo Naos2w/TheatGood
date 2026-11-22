@@ -235,10 +235,12 @@ onUnmounted(() => {
 .cinema-media-controls__info {
   position: absolute;
   left: 0;
-  top: auto;
-  bottom: calc(100% + 126px);
+  top: calc(100% + 9px);
+  bottom: auto;
   z-index: 15;
-  width: min(286px, calc(100vw - 32px));
+  width: min(286px, calc(100vw - 28px));
+  max-height: min(42dvh, 240px);
+  overflow-y: auto;
   padding: 12px;
   border-radius: 15px;
   border: 1px solid rgba(232, 239, 249, 0.3);
