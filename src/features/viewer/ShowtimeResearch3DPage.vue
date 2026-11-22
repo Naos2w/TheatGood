@@ -423,7 +423,7 @@ function selectedMapSeatLabel(): string {
             {{ source.observedHallLabel }} · {{ selectedMapSeatLabel() }}
           </span>
         </div>
-        <div class="viewer-immersive__bottom">
+        <div class="viewer-immersive__adjustments">
           <Cinema3DSeatTools
             :horizontal-fov="horizontalFov"
             :can-move-front="!!frontRow"
@@ -437,6 +437,8 @@ function selectedMapSeatLabel(): string {
             @swap-comparison="swapComparison"
             @clear-comparison="savedComparisonSeatId = ''"
           />
+        </div>
+        <div class="viewer-immersive__bottom">
           <p class="viewer-immersive__hint">
             {{
               english ? 'Estimated geometry · drag to look around' : '概念空間估算 · 拖曳可轉動視角'
