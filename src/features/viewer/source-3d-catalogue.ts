@@ -1,5 +1,4 @@
 import { chainCinemas } from '../cinemas/chain-directory'
-import { cinemaDirectory } from '../auditoriums/directory'
 import { miranewSeatReferences } from '../cinemas/official-seat-layouts'
 import {
   vieShowCoverageForCinema,
@@ -11,18 +10,14 @@ import type { ShowtimeLocalResearchIndex } from './showtime-local-research'
  * Catalogue counts SOURCED seat-layout entries, not permanent physical halls.
  * Never infer missing seat positions from a published capacity.
  */
-export type Source3DBrand = 'vieshow' | 'showtime' | 'miranew' | 'independent'
+export type Source3DBrand = 'vieshow' | 'showtime' | 'miranew'
 export interface Source3DVenue {
   key: string
   slug: string
   brand: Source3DBrand
   name: string
   sourceCount: number | null
-  evidence:
-    | 'public-operator-grid'
-    | 'private-verified-grid'
-    | 'unnumbered-public-pattern'
-    | 'curated-auditorium'
+  evidence: 'public-operator-grid' | 'private-verified-grid' | 'unnumbered-public-pattern'
 }
 export interface Source3DEntry {
   id: string
@@ -30,14 +25,9 @@ export interface Source3DEntry {
   detail: string
   count: number
   path: string
-  type: 'source-hall' | 'observed-pattern' | 'curated-hall'
+  type: 'source-hall' | 'observed-pattern'
   alert?: 'capacity-different' | 'capacity-unpublished'
 }
-
-const independentModelIds = new Set(['tfai-small', 'spot-taipei'])
-export const independentSourced3DHalls = cinemaDirectory.filter(
-  (hall) => hall.modelId && independentModelIds.has(hall.modelId),
-)
 
 export function source3DVenues(showtime?: ShowtimeLocalResearchIndex | null): Source3DVenue[] {
   const listed: Source3DVenue[] = []
@@ -75,17 +65,13 @@ export function source3DVenues(showtime?: ShowtimeLocalResearchIndex | null): So
       })
     }
   }
-  for (const hall of independentSourced3DHalls) {
-    listed.push({
-      key: 'independent|' + hall.slug,
-      slug: hall.slug,
-      brand: 'independent',
-      name: hall.cinemaName,
-      sourceCount: 1,
-      evidence: 'curated-auditorium',
-    })
-  }
   return listed
+}
+
+/** Chain venues without a complete source-backed 3D preview remain explicitly pending. */
+export function pendingChain3DVenues(): (typeof chainCinemas)[number][] {
+  const supported = new Set(source3DVenues().map((venue) => venue.slug))
+  return chainCinemas.filter((venue) => !supported.has(venue.slug))
 }
 
 export function source3DTotalByBrand(
@@ -144,17 +130,4 @@ export function showtimeSource3DEntries(
     path: '/cinemas/' + cinemaSlug + '/halls/' + encodeURIComponent(hall.hallLabel),
     type: 'source-hall',
   }))
-}
-
-export function independentSource3DEntries(slug: string): Source3DEntry[] {
-  return independentSourced3DHalls
-    .filter((item) => item.slug === slug && item.modelId)
-    .map((item) => ({
-      id: item.modelId!,
-      label: item.hallName,
-      detail: '已建立來源座位模型；室內排距仍為估算',
-      count: item.seatCount,
-      path: '/auditoriums/' + item.modelId,
-      type: 'curated-hall',
-    }))
 }

@@ -8,8 +8,8 @@ import {
   type ShowtimeLocalResearchIndex,
 } from './showtime-local-research'
 import {
-  independentSource3DEntries,
   miranewSource3DEntries,
+  pendingChain3DVenues,
   showtimeSource3DEntries,
   source3DTotalByBrand,
   source3DVenues,
@@ -27,7 +27,6 @@ const brands: { id: FilterBrand; name: string; english: string }[] = [
   { id: 'vieshow', name: '威秀／MUVIE', english: 'Vie Show / MUVIE' },
   { id: 'showtime', name: '秀泰', english: 'Showtime' },
   { id: 'miranew', name: '美麗新', english: 'Miranew' },
-  { id: 'independent', name: '獨立影廳', english: 'Independent' },
 ]
 const allowed = new Set(brands.map((item) => item.id))
 const initialBrand = String(route.query.brand ?? 'all')
@@ -44,6 +43,7 @@ const loadingEntries = ref(false)
 const entriesError = ref(false)
 const items = shallowRef<Source3DEntry[]>([])
 const venues = computed(() => source3DVenues(showtimeIndex.value))
+const pendingChains = pendingChain3DVenues()
 const filteredVenues = computed(() => {
   const q = venueQuery.value.trim().toLocaleLowerCase()
   return venues.value.filter(
@@ -63,7 +63,7 @@ const displayedEntries = computed(() => {
   )
 })
 const sourcedCount = computed(() =>
-  (['vieshow', 'showtime', 'miranew', 'independent'] as const).reduce((n, b) => {
+  (['vieshow', 'showtime', 'miranew'] as const).reduce((n, b) => {
     const value = source3DTotalByBrand(venues.value, b)
     return n + (value ?? 0)
   }, 0),
@@ -129,10 +129,8 @@ watch(
         nextItems = vieShowSource3DEntries(venue.slug, layout)
       } else if (venue.brand === 'showtime') {
         nextItems = showtimeSource3DEntries(venue.slug, showtimeIndex.value)
-      } else if (venue.brand === 'miranew') {
-        nextItems = miranewSource3DEntries(venue.slug)
       } else {
-        nextItems = independentSource3DEntries(venue.slug)
+        nextItems = miranewSource3DEntries(venue.slug)
       }
       if (active) items.value = nextItems
     } catch {
@@ -143,15 +141,18 @@ watch(
   },
   { immediate: true },
 )
-watch([brand, selectedKey], ([nextBrand, nextKey]) => {
-  // Share a category/venue, but never share selected-seat IDs in this index.
-  void router.replace({
-    query: {
-      brand: nextBrand === 'all' ? undefined : nextBrand,
-      cinema: nextKey || undefined,
-    },
-  })
-})
+watch(
+  [brand, selectedKey],
+  ([nextBrand, nextKey]) => {
+    // Normalise old deep links (including retired independent venue filters).
+    // Keep the URL scoped to an actual chain venue, never a legacy hall model.
+    const nextBrandQuery = nextBrand === 'all' ? undefined : nextBrand
+    const nextCinemaQuery = nextKey || undefined
+    if (route.query.brand === nextBrandQuery && route.query.cinema === nextCinemaQuery) return
+    void router.replace({ query: { brand: nextBrandQuery, cinema: nextCinemaQuery } })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -163,12 +164,12 @@ watch([brand, selectedKey], ([nextBrand, nextKey]) => {
 
     <header class="source-3d-explorer__hero">
       <span class="source-3d-explorer__eyebrow">THEATGOOD · 3D SEAT VIEWS</span>
-      <h1>{{ english ? 'Explore sourced cinema seats' : '探索已有座圖的 3D 影廳' }}</h1>
+      <h1>{{ english ? 'Explore chain cinema 3D seats' : '連鎖影城 3D 座位圖鑑' }}</h1>
       <p>
         {{
           english
-            ? 'Choose a cinema and an observed seat plan. All 3D room dimensions are estimates; only source-observed seats and their relative positions are preserved.'
-            : '直接挑院線、分館、座位排列，從指定座位查看 3D 視角。只有來源座號與相對排列可核對，實體銀幕、座距與坡度仍為估算。'
+            ? 'Showing chain cinemas only. Choose a chain, venue and source-verified seating plan to see an estimated 3D view; non-chain theatres are outside this phase.'
+            : '現階段僅完成連鎖影城。選擇院線、分館和已核實的座位排列，查看估算 3D 視角；非連鎖影廳暫不納入圖鑑。'
         }}
       </p>
     </header>
@@ -186,10 +187,35 @@ watch([brand, selectedKey], ([nextBrand, nextKey]) => {
       <v-icon icon="mdi-shield-check-outline" size="18" aria-hidden="true" />
       {{
         english
-          ? 'Counts are source-layout previews, not the number of independently surveyed physical auditoriums. Miranew patterns lack verified permanent hall numbers. Showtime data is restricted to an authorised local/Tailscale preview.'
-          : '數字是「有來源的座圖／座型」，不是實測實體影廳總數。美麗新部分座型未確定永久廳號；秀泰私有座圖限授權 MSI／Tailscale 預覽。'
+          ? 'Only chain-cinema seating previews are counted, not surveyed physical auditoriums. Miranew patterns lack confirmed permanent hall numbers; Showtime grids require authorised local/Tailscale access.'
+          : '僅計算連鎖影城已取得來源的座圖／座型，不代表實測實體廳數。美麗新部分座型尚無永久廳號；秀泰座圖僅限授權 MSI／Tailscale 預覽。'
       }}
     </p>
+    <aside v-if="pendingChains.length" class="source-3d-explorer__pending" role="note">
+      <v-icon icon="mdi-progress-clock" size="19" aria-hidden="true" />
+      <div>
+        <strong>{{
+          english ? 'Chain cinemas awaiting complete seating plans' : '其他連鎖影城待補完整座圖'
+        }}</strong>
+        <p>
+          {{
+            english
+              ? 'These venues are in the cinema directory but do not have verified individual seat positions yet; capacities alone cannot produce a real 3D seat view.'
+              : '以下影城已有場館資料，但還沒有可驗證的逐座號與走道排列；只知道席數無法產生可信的 3D 座位視角。'
+          }}
+        </p>
+        <div class="source-3d-explorer__pending-links">
+          <RouterLink
+            v-for="venue in pendingChains"
+            :key="venue.slug"
+            :to="'/cinemas/' + venue.slug"
+          >
+            {{ venue.name }}
+            <v-icon icon="mdi-chevron-right" size="15" aria-hidden="true" />
+          </RouterLink>
+        </div>
+      </div>
+    </aside>
 
     <section
       class="source-3d-explorer__browser"
@@ -363,7 +389,7 @@ watch([brand, selectedKey], ([nextBrand, nextKey]) => {
 }
 .source-3d-explorer__summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin: 22px 0 10px;
 }
@@ -400,6 +426,45 @@ watch([brand, selectedKey], ([nextBrand, nextKey]) => {
 .source-3d-explorer__caveat .v-icon {
   flex: 0 0 auto;
   margin-top: 2px;
+}
+.source-3d-explorer__pending {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 13px 15px;
+  margin: -4px 0 19px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.13);
+  border-radius: 13px;
+  background: rgba(var(--v-theme-on-surface), 0.03);
+  font-size: 13px;
+}
+.source-3d-explorer__pending > .v-icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+.source-3d-explorer__pending p {
+  margin: 4px 0 7px;
+  opacity: 0.7;
+  line-height: 1.55;
+}
+.source-3d-explorer__pending-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.source-3d-explorer__pending-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  text-decoration: none;
+  color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.08);
+  font-weight: 650;
+}
+.source-3d-explorer__pending-links a:focus-visible {
+  outline: 2px solid currentColor;
 }
 .source-3d-explorer__browser {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.13);

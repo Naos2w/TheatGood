@@ -2,6 +2,8 @@
 
 Checkpoint: 22 November 2026 (Taiwan time).
 
+**Later scope change:** The `/3d` catalogue now focuses on chain cinemas (**393** entries); the two existing independent models are still available on their legacy URLs but no longer appear in chain browsing. See `chain-only-3d-scope-2026-11-22.md`. The seat comparison functionality below remains available in the retained models.
+
 ## Functionality
 
 All source-backed 3D preview routes now share the same collapsible Seat/camera settings panel, which includes A/B comparison. The user can save the currently selected source seat, use existing left/right and front/back controls or the 2D seat map to choose a different seat, then switch back and forth between the two without recreating the 3D renderer. The selected real source label updates the URL query. Moving to a new hall or observed seat pattern clears the old comparison.

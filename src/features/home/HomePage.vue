@@ -93,7 +93,9 @@ function locate() {
         <RouterLink to="/3d" class="home-3d-entry">
           <v-icon icon="mdi-cube-scan" size="21" aria-hidden="true" />
           <span>{{
-            locale.startsWith('en') ? 'Explore sourced 3D seat views' : '探索有座圖的 3D 影廳'
+            locale.startsWith('en')
+              ? 'Explore chain cinema 3D seat views'
+              : '探索連鎖影城 3D 座位圖'
           }}</span>
           <v-icon icon="mdi-chevron-right" size="20" aria-hidden="true" />
         </RouterLink>

@@ -2,6 +2,8 @@
 
 Checkpoint: 2026-11-22 (Taiwan). Local Git feature branch and private Tailscale owner preview.
 
+**Later scope change:** The chain-only `/3d` catalogue now lists **393** source-backed entries, excluding the two independent models from its filters while retaining their existing standalone views. See `chain-only-3d-scope-2026-11-22.md`.
+
 ## Implemented in the shared Three.js viewer
 
 Ordinary VieShow, Showtime and Miranew 3D routes now share one compact, collapsible camera/seat adjustment panel. There is no second renderer and the sourced seat coordinates have not changed.

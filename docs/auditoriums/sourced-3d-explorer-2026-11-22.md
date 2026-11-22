@@ -2,6 +2,8 @@
 
 Checkpoint: 2026-11-22 (Taiwan time).
 
+**Updated scope (later 2026-11-22):** The 3D explorer now includes **chain cinemas only** (222 Vie Show/MUVIE + 158 Showtime + 13 Miranew = **393** entries). The historical 395-entry snapshot below included two independent models, which are no longer listed in `/3d`; their original routes remain intact. See `chain-only-3d-scope-2026-11-22.md` for the active acceptance criteria.
+
 ## Scope and what complete means
 
 The source-backed 3D entry page at /3d groups only already collected, verified seat grids, never capacity-only references. It is accessible from the normal homepage and supports cinema-chain filtering, venue selection, seat-layout search, and direct 2D / first-person 3D links.

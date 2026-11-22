@@ -4,8 +4,8 @@ import { miranewSeatReferences } from '../cinemas/official-seat-layouts'
 import { loadVieShowArchiveForCinema } from '../cinemas/vieshow-seat-archive'
 import type { ShowtimeLocalResearchIndex } from './showtime-local-research'
 import {
-  independentSource3DEntries,
   miranewSource3DEntries,
+  pendingChain3DVenues,
   showtimeSource3DEntries,
   source3DTotalByBrand,
   source3DVenues,
@@ -13,25 +13,23 @@ import {
 } from './source-3d-catalogue'
 
 describe('source-verified 3D catalogue', () => {
-  it('lists every sourced brand, excludes capacities without seat grid and avoids duplicate curated halls', () => {
+  it('lists chain cinema seating only, without adding non-chain or capacity-only venues', () => {
     const venues = source3DVenues()
     expect(venues.filter((v) => v.brand === 'vieshow')).toHaveLength(22)
     expect(venues.filter((v) => v.brand === 'showtime')).toHaveLength(15)
     expect(venues.filter((v) => v.brand === 'miranew')).toHaveLength(2)
-    expect(venues.filter((v) => v.brand === 'independent')).toHaveLength(2)
+    expect(venues).toHaveLength(39)
     expect(source3DTotalByBrand(venues, 'vieshow')).toBe(222)
     expect(source3DTotalByBrand(venues, 'miranew')).toBe(13)
-    expect(source3DTotalByBrand(venues, 'independent')).toBe(2)
     expect(source3DTotalByBrand(venues, 'showtime')).toBeNull()
-    expect(venues.every((v) => v.brand !== ('miramar' as never))).toBe(true)
+    expect(venues.every((v) => chainCinemas.some((cinema) => cinema.slug === v.slug))).toBe(true)
     expect(
-      venues
-        .filter((v) => v.brand === 'independent')
-        .map((v) => v.slug)
-        .sort(),
-    ).toEqual(['spot-taipei', 'tfai-small'])
-    expect(independentSource3DEntries('vieshow-hsinyi-12')).toEqual([])
-    expect(independentSource3DEntries('tfai-small')).toHaveLength(1)
+      venues.some((v) => ['spot-taipei', 'tfai-small', 'miramar-dazhi'].includes(v.slug)),
+    ).toBe(false)
+    expect(venues.every((v) => v.evidence !== ('curated-auditorium' as never))).toBe(true)
+    expect(venues.every((v) => !v.key.startsWith('independent|'))).toBe(true)
+    expect(pendingChain3DVenues().map((venue) => venue.slug)).toEqual(['miramar-dazhi'])
+    expect(venues.some((venue) => venue.slug === 'miramar-dazhi')).toBe(false)
   })
 
   it('makes 222 real VieShow source-layout links for the exact archived diagrams', async () => {
