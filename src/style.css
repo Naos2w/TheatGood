@@ -1948,52 +1948,27 @@ a {
   flex-direction: column;
   gap: 11px;
 }
-/* The screen stays unobstructed by default. Advanced 3D controls live outside
-   the seat switcher: a right-hand dock on desktop, a bottom drawer on touch. */
+/* One cinema-control layout for mobile, tablet and desktop. Keep playback
+   and the collapsed camera trigger together below the venue header; keep seat
+   navigation and overview at the bottom across every viewport. */
 .viewer-immersive__adjustments {
   position: absolute;
   z-index: 7;
-  top: calc(88px + env(safe-area-inset-top));
+  top: calc(78px + env(safe-area-inset-top));
   right: max(18px, env(safe-area-inset-right));
-  width: min(336px, calc(100vw - 36px));
+  width: min(336px, calc(100vw - 28px));
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 8px;
   pointer-events: none;
 }
 .viewer-immersive__adjustments > * {
   pointer-events: auto;
 }
-@media (min-width: 1024px) {
-  /* Reserve an actual right-hand rail while the desktop panel is expanded. */
-  .viewer-immersive:has(.viewer-immersive__adjustments details[open]) .cinema-canvas {
-    right: 354px;
-    width: calc(100% - 354px);
-  }
-}
-@media (max-width: 1023px) {
+@media (max-width: 599px) {
   .viewer-immersive__adjustments {
-    top: auto;
-    right: auto;
-    bottom: calc(172px + env(safe-area-inset-bottom));
-    left: 50%;
-    width: min(440px, calc(100vw - 28px));
-    transform: translateX(-50%);
-  }
-}
-@media (max-width: 1023px) and (max-height: 540px) {
-  /* Landscape phones have insufficient height for an upwards-opening sheet. */
-  .viewer-immersive__adjustments {
-    top: calc(72px + env(safe-area-inset-top));
-    bottom: auto;
     right: max(14px, env(safe-area-inset-right));
-    left: auto;
-    width: min(290px, calc(100vw - 28px));
-    transform: none;
-  }
-}
-@media (min-width: 640px) and (max-width: 1023px) and (max-height: 540px) {
-  .viewer-immersive:has(.viewer-immersive__adjustments) .viewer-immersive__bottom {
-    left: max(12px, env(safe-area-inset-left));
-    width: min(420px, calc(100% - 332px));
-    transform: none;
   }
 }
 .viewer-immersive__hint {

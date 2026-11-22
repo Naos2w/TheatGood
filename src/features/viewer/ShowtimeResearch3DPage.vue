@@ -429,7 +429,12 @@ function selectedMapSeatLabel(): string {
             {{ source.observedHallLabel }} · {{ selectedMapSeatLabel() }}
           </span>
         </div>
-        <div class="viewer-immersive__adjustments">
+        <div class="viewer-immersive__adjustments viewer-immersive__top-controls">
+          <CinemaScreenMediaControls
+            v-if="webglAvailable && !sceneFailed && sceneComponent"
+            :english="english"
+            @video-element="onScreenVideoElement"
+          />
           <Cinema3DSeatTools
             :horizontal-fov="horizontalFov"
             :can-move-front="!!frontRow"
@@ -478,12 +483,7 @@ function selectedMapSeatLabel(): string {
               <v-icon icon="mdi-chevron-right" size="30" aria-hidden="true" />
             </button>
           </div>
-          <div class="viewer-immersive__utility viewer-immersive__utility--media">
-            <CinemaScreenMediaControls
-              v-if="webglAvailable && !sceneFailed && sceneComponent"
-              :english="english"
-              @video-element="onScreenVideoElement"
-            />
+          <div class="viewer-immersive__utility">
             <button type="button" class="viewer-reset" @click="resetViewToken++">
               <v-icon icon="mdi-restore" size="19" aria-hidden="true" />
               {{ english ? 'Reset view' : '重設視角' }}
