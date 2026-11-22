@@ -27,12 +27,12 @@ pwsh -NoProfile -File scripts/research_trigger_showtime_existing_popup_once.ps1 
 
 ## 2. 國賓：已確定官方現行的取圖途徑，尚缺座圖
 
-| 來源 | 2026-11-23 核查結果 | 使用決策 |
-|---|---|---|
+| 來源                                                                                                         | 2026-11-23 核查結果                                                     | 使用決策                                     |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | -------------------------------------------- |
 | [國賓看電影官方 Android App](https://play.google.com/store/apps/details?id=tw.com.langshin.moviefirst.droid) | 官方 App 說明會員可使用互動式選位；Google Play 頁面顯示 2026-10-27 更新 | 可作為現行會員選位**入口線索**，不是現行座圖 |
-| [國賓影城網路劃位頁](https://booking.ambassador.com.tw/frontend/booking-selectseats.html) | 網頁可讀，但其展示的是 **2015-06-19 林口場次**及舊影片範例 | **歷史／示意頁**；不得誤標為 2026 年現行格線 |
-| [國賓大戲院官方廳別資料](https://www.ambassador.com.tw/home/theater_intro_b1) | 各廳公布席數與特殊座位描述 | 只可核對席數／特殊座位，不可還原走道 |
-| [新莊晶冠國賓官方廳別資料](https://www.ambassador.com.tw/home/theater_intro_a10) | 已有廳號及席數（含無障礙席資訊） | 可作為將來取得會員座圖後的逐廳交叉驗證 |
+| [國賓影城網路劃位頁](https://booking.ambassador.com.tw/frontend/booking-selectseats.html)                    | 網頁可讀，但其展示的是 **2015-06-19 林口場次**及舊影片範例              | **歷史／示意頁**；不得誤標為 2026 年現行格線 |
+| [國賓大戲院官方廳別資料](https://www.ambassador.com.tw/home/theater_intro_b1)                                | 各廳公布席數與特殊座位描述                                              | 只可核對席數／特殊座位，不可還原走道         |
+| [新莊晶冠國賓官方廳別資料](https://www.ambassador.com.tw/home/theater_intro_a10)                             | 已有廳號及席數（含無障礙席資訊）                                        | 可作為將來取得會員座圖後的逐廳交叉驗證       |
 
 目前國賓 9 間分館已有 **81 筆逐廳席數**，**完整座號格線 0**。要補 3D，需透過業者允許的、可核對來源的現行選位畫面取得每一排與每一座的完整位置，維持唯讀，不建立未授權訂單、也不透過猜測內部 API 取得私有資訊。
 
