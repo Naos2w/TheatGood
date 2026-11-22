@@ -28,7 +28,7 @@ const router = createRouter({
     {
       // Pattern identity is source-linked. It does NOT assert a permanent numbered auditorium.
       path: '/cinemas/:slug/patterns/:patternId',
-      name: 'miranew-3d-pattern',
+      name: 'miranew-sourced-3d-pattern',
       component: () => import('../features/viewer/MiranewSourced3DPage.vue'),
     },
     {

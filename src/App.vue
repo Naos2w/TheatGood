@@ -11,7 +11,9 @@ const { t } = useI18n()
 const { themePreference, appLocale } = usePreferences()
 const settingsOpen = ref(false)
 const isViewer = computed(() =>
-  ['viewer', 'vieshow-3d-preview', 'miranew-3d-pattern'].includes(String(route.name)),
+  ['viewer', 'vieshow-3d-preview', 'miranew-3d-pattern', 'miranew-sourced-3d-pattern'].includes(
+    String(route.name),
+  ),
 )
 const isImmersiveViewer = computed(() => isViewer.value && route.query.view === '3d')
 const isHome = computed(() => route.name === 'home')
@@ -121,7 +123,7 @@ function returnFromHeader() {
     router.back()
     return
   }
-  if (route.name === 'miranew-3d-pattern') {
+  if (route.name === 'miranew-3d-pattern' || route.name === 'miranew-sourced-3d-pattern') {
     void router.push('/cinemas/' + String(route.params.slug))
     return
   }
