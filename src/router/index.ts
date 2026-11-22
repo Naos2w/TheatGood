@@ -6,6 +6,11 @@ const router = createRouter({
     { path: '/', name: 'home', component: () => import('../features/home/HomePage.vue') },
     { path: '/cinemas', redirect: '/' },
     {
+      path: '/3d',
+      name: 'source-3d-explorer',
+      component: () => import('../features/viewer/Source3DExplorerPage.vue'),
+    },
+    {
       path: '/cinemas/:slug',
       name: 'chain-cinema',
       component: () => import('../features/cinemas/ChainCinemaPage.vue'),

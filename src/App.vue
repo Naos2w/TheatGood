@@ -10,7 +10,9 @@ const router = useRouter()
 const { t } = useI18n()
 const { themePreference, appLocale } = usePreferences()
 const settingsOpen = ref(false)
-const isViewer = computed(() => route.name === 'viewer' || route.name === 'vieshow-3d-preview')
+const isViewer = computed(() =>
+  ['viewer', 'vieshow-3d-preview', 'miranew-3d-pattern'].includes(String(route.name)),
+)
 const isImmersiveViewer = computed(() => isViewer.value && route.query.view === '3d')
 const isHome = computed(() => route.name === 'home')
 const isCinemaRoute = computed(() => !['history', 'screenings'].includes(String(route.name)))
@@ -82,6 +84,8 @@ const mobileHeaderTitle = computed(() => {
   if (isHome.value) return 'TheatGood'
   if (route.name === 'history') return t('app.history')
   if (route.name === 'screenings') return t('app.screenings')
+  if (route.name === 'source-3d-explorer')
+    return appLocale.value.startsWith('en') ? '3D auditorium explorer' : '3D 影廳圖鑑'
   if (route.name === 'chain-cinema') {
     return (
       chainCinemas.find((cinema) => cinema.slug === route.params.slug)?.name ?? t('home.viewCinema')
@@ -115,6 +119,10 @@ function returnFromHeader() {
   const back = window.history.state?.back
   if (typeof back === 'string' && back.startsWith('/')) {
     router.back()
+    return
+  }
+  if (route.name === 'miranew-3d-pattern') {
+    void router.push('/cinemas/' + String(route.params.slug))
     return
   }
   if (route.name === 'vieshow-3d-preview') {
