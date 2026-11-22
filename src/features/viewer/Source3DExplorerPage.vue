@@ -206,6 +206,18 @@ watch(
           : '僅計算連鎖影城已取得來源的座圖／座型，不代表實測實體廳數。美麗新部分座型尚無永久廳號；秀泰座圖僅限授權 MSI／Tailscale 預覽。'
       }}
     </p>
+    <p
+      v-if="!showtimeLoading && showtimeIndex && showtimeIndex.missingHallLabels > 0"
+      class="source-3d-explorer__caveat"
+      role="note"
+    >
+      <v-icon icon="mdi-progress-clock" size="18" aria-hidden="true" />
+      {{
+        english
+          ? `Showtime: ${showtimeIndex.verifiedHallLabels} of ${showtimeIndex.sampledHallLabels} sampled hall labels have verified seat grids; ${showtimeIndex.missingHallLabels} still await a source before a 3D preview can be offered.`
+          : `秀泰：${showtimeIndex.verifiedHallLabels}／${showtimeIndex.sampledHallLabels} 個抽樣廳號已有來源座圖，尚有 ${showtimeIndex.missingHallLabels} 廳缺少可核對座位排列，暫不提供 3D，亦不以席數推估。`
+      }}
+    </p>
     <aside v-if="pendingChains.length" class="source-3d-explorer__pending" role="note">
       <v-icon icon="mdi-progress-clock" size="19" aria-hidden="true" />
       <div>
