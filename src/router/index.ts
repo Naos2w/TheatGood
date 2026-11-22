@@ -16,6 +16,11 @@ const router = createRouter({
       component: () => import('../features/viewer/CinemaHall3DPage.vue'),
     },
     {
+      path: '/cinemas/:slug/seat-patterns/:patternId',
+      name: 'miranew-3d-pattern',
+      component: () => import('../features/viewer/MiranewPattern3DPage.vue'),
+    },
+    {
       path: '/screenings',
       name: 'screenings',
       component: () => import('../features/screenings/ScreeningsPage.vue'),

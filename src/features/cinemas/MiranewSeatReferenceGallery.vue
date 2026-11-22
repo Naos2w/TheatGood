@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import {
   isReferenceSpecialSeat,
   seatLayoutReferencesForCinema,
@@ -82,6 +83,18 @@ const sourceLabel = (item: OfficialSeatLayoutReference): string => {
         <span>{{ t('seatRefs.observed', { count: active.repeatedInSample }) }}</span>
       </div>
       <p class="seat-references__notice" role="note">{{ t('seatRefs.unknownHall') }}</p>
+      <RouterLink
+        class="miranew-pattern-preview-link"
+        :to="'/cinemas/' + cinemaSlug + '/seat-patterns/' + active.id"
+      >
+        <v-icon icon="mdi-cube-scan" size="19" />
+        {{
+          $i18n.locale.startsWith('en')
+            ? 'Explore observed pattern in estimated 3D'
+            : '以估算 3D 預覽這份來源座型'
+        }}
+        <v-icon icon="mdi-chevron-right" size="16" />
+      </RouterLink>
 
       <div class="seat-references__scroll" tabindex="0" :aria-label="t('seatRefs.scrollMap')">
         <svg
@@ -144,3 +157,25 @@ const sourceLabel = (item: OfficialSeatLayoutReference): string => {
     </template>
   </section>
 </template>
+
+<style scoped>
+.miranew-pattern-preview-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 10px 0 16px;
+  padding: 10px 15px;
+  border-radius: 12px;
+  text-decoration: none;
+  background: rgba(var(--v-theme-primary), 0.13);
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+}
+.miranew-pattern-preview-link:hover,
+.miranew-pattern-preview-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+</style>
