@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, shallowRef, watch, type Component } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { appLocale } from '../../composables/usePreferences'
-import { neighbouringSeat } from '../auditoriums/seat-navigation'
+import { neighbouringRowSeat, neighbouringSeat } from '../auditoriums/seat-navigation'
 import { chainCinemas } from '../cinemas/chain-directory'
 import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
 import {
@@ -11,6 +11,7 @@ import {
   type ShowtimeResearchHall,
 } from './showtime-local-research'
 import { deriveShowtimeEstimatedScene, type ShowtimeSeatSnapshot } from './showtime-estimated-scene'
+import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,6 +27,7 @@ const loading = ref(true)
 const unavailable = ref(false)
 const seatId = ref('')
 const mapZoom = ref(1)
+const horizontalFov = ref(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
 const mapScroller = ref<HTMLElement | null>(null)
 const immersive = computed(() => route.query.view === '3d')
 const viewMode = ref<'seat' | 'overview'>('seat')
@@ -43,6 +45,12 @@ const previous = computed(() =>
 )
 const next = computed(() =>
   scene.value && selected.value ? neighbouringSeat(scene.value.seats, seatId.value, 1) : null,
+)
+const frontRow = computed(() =>
+  scene.value ? neighbouringRowSeat(scene.value.seats, seatId.value, -1) : null,
+)
+const backRow = computed(() =>
+  scene.value ? neighbouringRowSeat(scene.value.seats, seatId.value, 1) : null,
 )
 const sourceColumns = computed(
   () => source.value?.seatPositions.map((seat) => seat.gridColumn) ?? [],
@@ -168,6 +176,10 @@ function selectSeat(id: string) {
 }
 function adjacent(direction: -1 | 1) {
   const item = direction < 0 ? previous.value : next.value
+  if (item) selectSeat(item.id)
+}
+function adjacentRow(direction: -1 | 1) {
+  const item = direction < 0 ? frontRow.value : backRow.value
   if (item) selectSeat(item.id)
 }
 function switchHall(label: string) {
@@ -385,7 +397,7 @@ function selectedMapSeatLabel(): string {
           :wheelchair-spots="scene.wheelchairSpots"
           :selected-seat-id="seatId"
           :reset-view-token="resetViewToken"
-          :horizontal-fov="DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV"
+          :horizontal-fov="horizontalFov"
           :view-mode="viewMode"
         />
         <div class="viewer-immersive__top">
@@ -398,6 +410,14 @@ function selectedMapSeatLabel(): string {
           </span>
         </div>
         <div class="viewer-immersive__bottom">
+          <Cinema3DSeatTools
+            :horizontal-fov="horizontalFov"
+            :can-move-front="!!frontRow"
+            :can-move-back="!!backRow"
+            :english="english"
+            @update:horizontal-fov="horizontalFov = $event"
+            @move-row="adjacentRow"
+          />
           <p class="viewer-immersive__hint">
             {{
               english ? 'Estimated geometry · drag to look around' : '概念空間估算 · 拖曳可轉動視角'

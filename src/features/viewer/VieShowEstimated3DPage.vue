@@ -12,6 +12,7 @@ import {
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { appLocale } from '../../composables/usePreferences'
 import { chainCinemas } from '../cinemas/chain-directory'
 import { centreSeatGrid } from '../cinemas/centred-seat-grid'
 import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
@@ -19,12 +20,14 @@ import {
   loadVieShowArchiveForCinema,
   type VieShowArchivedLayout,
 } from '../cinemas/vieshow-seat-archive'
-import { neighbouringSeat } from '../auditoriums/seat-navigation'
+import { neighbouringRowSeat, neighbouringSeat } from '../auditoriums/seat-navigation'
 import {
   defaultVieShowPreviewParameters,
   deriveVieShowPreviewGeometry,
   initialVieShowPreviewSeat,
 } from './vieshow-approximate-scene'
+import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
+import { usesCinemaSensoryPilot } from './cinema-sensory-scope'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,6 +39,8 @@ const loading = ref(false)
 const failed = ref(false)
 const seatId = ref('')
 const mapZoom = ref(1)
+const horizontalFov = ref(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
+const english = computed(() => appLocale.value.startsWith('en'))
 const resetViewToken = ref(0)
 const immersiveViewMode = ref<'seat' | 'overview'>('seat')
 const webglAvailable = ref(true)
@@ -51,7 +56,9 @@ const immersive = computed(() => route.query.view === '3d')
 // The archive loader validates each hall's source, unique seats and provenance.
 // Capacity discrepancies do not invalidate the sourced seat diagram: disclose
 // them rather than falsely claiming the 3D preview is a measured floor plan.
-const pilotEnabled = computed(() => layout.value?.id === hallId.value)
+// Film/audio sensory pilot is restricted to the explicitly approved MUVIE A13 Hall 1.
+// A loaded hall always matches the route ID, which must NOT enable the pilot in all halls.
+const pilotEnabled = computed(() => usesCinemaSensoryPilot(layout.value?.id, hallId.value))
 const seatCountWarning = computed(() => {
   const hall = layout.value
   if (!hall) return ''
@@ -85,6 +92,12 @@ const previous = computed(() =>
 )
 const next = computed(() =>
   geometry.value && selected.value ? neighbouringSeat(geometry.value.seats, seatId.value, 1) : null,
+)
+const frontRow = computed(() =>
+  geometry.value ? neighbouringRowSeat(geometry.value.seats, seatId.value, -1) : null,
+)
+const backRow = computed(() =>
+  geometry.value ? neighbouringRowSeat(geometry.value.seats, seatId.value, 1) : null,
 )
 const cellWidth = 31
 const cellHeight = 31
@@ -263,6 +276,10 @@ function selectSeat(id: string) {
 }
 function switchSeat(direction: -1 | 1) {
   const item = direction === -1 ? previous.value : next.value
+  if (item) selectSeat(item.id)
+}
+function switchRow(direction: -1 | 1) {
+  const item = direction === -1 ? frontRow.value : backRow.value
   if (item) selectSeat(item.id)
 }
 function setImmersive(value: boolean) {
@@ -506,7 +523,7 @@ function recordSelectedSeat() {
           :wheelchair-spots="geometry.wheelchairSpots"
           :selected-seat-id="seatId"
           :reset-view-token="resetViewToken"
-          :horizontal-fov="DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV"
+          :horizontal-fov="horizontalFov"
           :view-mode="immersiveViewMode"
           :demo-video="pilotEnabled ? pilotVideo : null"
         />
@@ -534,6 +551,14 @@ function recordSelectedSeat() {
           @record-seat="recordSelectedSeat"
         />
         <div v-if="!pilotEnabled" class="viewer-immersive__bottom">
+          <Cinema3DSeatTools
+            :horizontal-fov="horizontalFov"
+            :can-move-front="!!frontRow"
+            :can-move-back="!!backRow"
+            :english="english"
+            @update:horizontal-fov="horizontalFov = $event"
+            @move-row="switchRow"
+          />
           <p class="viewer-immersive__hint">
             {{ immersiveViewMode === 'overview' ? t('ux.overviewHint') : t('ux.dragHint') }}
           </p>

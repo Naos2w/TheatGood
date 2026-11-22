@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, shallowRef, watch, type Component } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { appLocale } from '../../composables/usePreferences'
-import { neighbouringSeat } from '../auditoriums/seat-navigation'
+import { neighbouringRowSeat, neighbouringSeat } from '../auditoriums/seat-navigation'
 import {
   isReferenceSpecialSeat,
   seatLayoutReferenceById,
@@ -11,6 +11,7 @@ import {
 import { chainCinemas } from '../cinemas/chain-directory'
 import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
 import { deriveMiranewPattern3D, initialMiranewPatternSeat } from './miranew-pattern-3d'
+import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,6 +33,12 @@ const previous = computed(() =>
 const next = computed(() =>
   model.value && selected.value ? neighbouringSeat(model.value.seats, selectedId.value, 1) : null,
 )
+const frontRow = computed(() =>
+  model.value ? neighbouringRowSeat(model.value.seats, selectedId.value, -1) : null,
+)
+const backRow = computed(() =>
+  model.value ? neighbouringRowSeat(model.value.seats, selectedId.value, 1) : null,
+)
 const immersive = computed(() => route.query.view === '3d')
 const viewMode = ref<'seat' | 'overview'>('seat')
 const resetViewToken = ref(0)
@@ -39,6 +46,7 @@ const sceneComponent = shallowRef<Component | null>(null)
 const sceneFailed = ref(false)
 const webglAvailable = ref(true)
 const zoom = ref(1)
+const horizontalFov = ref(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
 const xs = computed(() => reference.value?.seatPositions.map((item) => item[2]) ?? [])
 const ys = computed(() => reference.value?.seatPositions.map((item) => item[1]) ?? [])
 const minX = computed(() => (xs.value.length ? Math.min(...xs.value) : 1))
@@ -65,10 +73,12 @@ watch(
     const selectedSeatExists =
       typeof seat === 'string' && model.value.seats.some((item) => item.id === seat)
     selectedId.value = selectedSeatExists ? seat : initialMiranewPatternSeat(model.value)
-    zoom.value = 1
   },
   { immediate: true },
 )
+watch(patternId, () => {
+  zoom.value = 1
+})
 async function loadScene() {
   if (sceneComponent.value || sceneFailed.value || !webglAvailable.value) return
   try {
@@ -107,6 +117,10 @@ function setImmersive(value: boolean) {
 }
 function move(direction: -1 | 1) {
   const target = direction < 0 ? previous.value : next.value
+  if (target) selectSeat(target.id)
+}
+function moveRow(direction: -1 | 1) {
+  const target = direction < 0 ? frontRow.value : backRow.value
   if (target) selectSeat(target.id)
 }
 function zoomMap(delta: number) {
@@ -282,7 +296,7 @@ function zoomMap(delta: number) {
           :wheelchair-spots="model.wheelchairSpots"
           :selected-seat-id="selectedId"
           :reset-view-token="resetViewToken"
-          :horizontal-fov="DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV"
+          :horizontal-fov="horizontalFov"
           :view-mode="viewMode"
         />
         <div class="viewer-immersive__top">
@@ -295,6 +309,14 @@ function zoomMap(delta: number) {
           >
         </div>
         <div class="viewer-immersive__bottom">
+          <Cinema3DSeatTools
+            :horizontal-fov="horizontalFov"
+            :can-move-front="!!frontRow"
+            :can-move-back="!!backRow"
+            :english="english"
+            @update:horizontal-fov="horizontalFov = $event"
+            @move-row="moveRow"
+          />
           <p class="viewer-immersive__hint">
             {{
               english
