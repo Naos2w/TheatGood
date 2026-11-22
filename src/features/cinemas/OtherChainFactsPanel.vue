@@ -12,7 +12,9 @@ const props = defineProps<{ cinema: ChainCinema }>()
 const { t } = useI18n()
 const facts = computed(() => cinemaPublishedFacts[props.cinema.slug])
 const namedHalls = computed(() => publishedNamedHallsForCinema(props.cinema.slug))
-const sourceUrl = computed(() => facts.value?.sourceUrl ?? props.cinema.sourceUrl)
+const sourceUrl = computed(
+  () => facts.value?.sourceUrl ?? namedHalls.value[0]?.sourceUrl ?? props.cinema.sourceUrl,
+)
 
 function countLabel(scope: HallCountScope | undefined): string {
   if (scope === 'digital-halls') return t('chainDetail.digitalHalls')

@@ -2,6 +2,8 @@
 import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { appLocale } from '../../composables/usePreferences'
+import { venueBrandLabel } from '../cinemas/cinema-discovery-metadata'
+import { publishedNamedHallsForCinema } from '../cinemas/other-chain-facts'
 import { loadVieShowArchiveForCinema } from '../cinemas/vieshow-seat-archive'
 import {
   loadLocalShowtimeResearchIndex,
@@ -44,6 +46,19 @@ const entriesError = ref(false)
 const items = shallowRef<Source3DEntry[]>([])
 const venues = computed(() => source3DVenues(showtimeIndex.value))
 const pendingChains = pendingChain3DVenues()
+const pendingGroups = [...new Set(pendingChains.map((item) => item.brand))].map((chain) => {
+  const group = pendingChains.filter((item) => item.brand === chain)
+  return {
+    brand: chain,
+    label: venueBrandLabel(group[0]!),
+    venues: group,
+    hasHistoricalListings: group.some((item) => item.operatingNowVerified === false),
+    publishedHallCapacityRecords: group.reduce(
+      (sum, item) => sum + publishedNamedHallsForCinema(item.slug).length,
+      0,
+    ),
+  }
+})
 const filteredVenues = computed(() => {
   const q = venueQuery.value.trim().toLocaleLowerCase()
   return venues.value.filter(
@@ -204,15 +219,49 @@ watch(
               : '以下影城已有場館資料，但還沒有可驗證的逐座號與走道排列；只知道席數無法產生可信的 3D 座位視角。'
           }}
         </p>
-        <div class="source-3d-explorer__pending-links">
-          <RouterLink
-            v-for="venue in pendingChains"
-            :key="venue.slug"
-            :to="'/cinemas/' + venue.slug"
+        <div class="source-3d-explorer__pending-groups">
+          <details
+            v-for="group in pendingGroups"
+            :key="group.brand"
+            class="source-3d-explorer__pending-group"
           >
-            {{ venue.name }}
-            <v-icon icon="mdi-chevron-right" size="15" aria-hidden="true" />
-          </RouterLink>
+            <summary>
+              <strong>{{ group.label }}</strong>
+              <span
+                >{{ group.venues.length }}
+                {{ english ? 'venues · source pending' : '間分館 · 3D 待補' }}</span
+              >
+            </summary>
+            <div class="source-3d-explorer__pending-group-content">
+              <p class="source-3d-explorer__historical-note">
+                {{
+                  english
+                    ? group.publishedHallCapacityRecords +
+                      ' published hall-capacity records (not seat grids); 3D positions still require verification.'
+                    : '已有 ' +
+                      group.publishedHallCapacityRecords +
+                      ' 筆公開影廳席數（不是座位格線）；仍需完整座號與排／列來源才能建立 3D。'
+                }}
+              </p>
+              <p v-if="group.hasHistoricalListings" class="source-3d-explorer__historical-note">
+                {{
+                  english
+                    ? 'Historical operator listing (18 November 2026). Current opening status is not confirmed.'
+                    : '來源為 2026／11／18 公開影城資料，尚未重新確認目前營業狀態。'
+                }}
+              </p>
+              <div class="source-3d-explorer__pending-links">
+                <RouterLink
+                  v-for="venue in group.venues"
+                  :key="venue.slug"
+                  :to="'/cinemas/' + venue.slug"
+                >
+                  {{ venue.name }}
+                  <v-icon icon="mdi-chevron-right" size="15" aria-hidden="true" />
+                </RouterLink>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
     </aside>
@@ -447,6 +496,38 @@ watch(
   opacity: 0.7;
   line-height: 1.55;
 }
+.source-3d-explorer__pending-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.source-3d-explorer__pending-group {
+  min-width: 0;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.source-3d-explorer__pending-group summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  cursor: pointer;
+  padding: 12px;
+  min-height: 44px;
+}
+.source-3d-explorer__pending-group summary span {
+  font-size: 12px;
+  opacity: 0.7;
+}
+.source-3d-explorer__pending-group-content {
+  padding: 0 12px 12px;
+}
+.source-3d-explorer__pending-group .source-3d-explorer__historical-note {
+  font-size: 12px;
+  line-height: 1.55;
+}
 .source-3d-explorer__pending-links {
   display: flex;
   flex-wrap: wrap;
@@ -639,6 +720,9 @@ watch(
 @media (max-width: 600px) {
   .source-3d-explorer {
     padding-top: 10px;
+  }
+  .source-3d-explorer__pending-groups {
+    grid-template-columns: 1fr;
   }
   .source-3d-explorer__summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));

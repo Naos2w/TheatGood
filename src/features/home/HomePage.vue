@@ -38,6 +38,19 @@ const chainBrands: { value: ChainBrand | 'all'; key: string; count: number }[] =
     key: 'home.chainMiranew',
     count: chainCinemas.filter((cinema) => cinema.brand === 'miranew').length,
   },
+  ...(
+    [
+      ['ambassador', 'home.chainAmbassador'],
+      ['in89', 'home.chainIn89'],
+      ['broadway', 'home.chainBroadway'],
+      ['centuryasia', 'home.chainCenturyAsia'],
+      ['skcinemas', 'home.chainSkcinemas'],
+    ] as const
+  ).map(([value, key]) => ({
+    value,
+    key,
+    count: chainCinemas.filter((cinema) => cinema.brand === value).length,
+  })),
 ]
 const currentPosition = ref<GeoPoint | null>(null)
 const locationStatus = ref<LocationStatus>('idle')

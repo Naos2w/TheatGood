@@ -53,6 +53,15 @@ const slug = computed(() => cinema.value?.slug ?? '')
         </div>
       </header>
 
+      <p
+        v-if="cinema.operatingNowVerified === false"
+        class="chain-cinema-page__historical-warning"
+        role="note"
+      >
+        <v-icon icon="mdi-calendar-clock-outline" size="20" aria-hidden="true" />
+        {{ t('home.chainHistoricalListingNote', { date: cinema.checkedAt }) }}
+      </p>
+
       <VieShowSeatReferenceGallery v-if="cinema.brand === 'vieshow'" :cinema-slug="slug" />
 
       <template v-else>

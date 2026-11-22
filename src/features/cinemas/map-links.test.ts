@@ -43,8 +43,8 @@ describe("open cinema maps in the user's device app when supported", () => {
     expect(href.searchParams.get('q')).toContain(hsinyi.name)
   })
 
-  it('creates named, address-qualified links for all 40 cinema venues', () => {
-    expect(chainCinemas).toHaveLength(40)
+  it('creates named, address-qualified map links for all 66 researched chain venues', () => {
+    expect(chainCinemas).toHaveLength(66)
     for (const cinema of chainCinemas) {
       const desktop = new URL(cinemaMapUrl(cinema, 'desktop'))
       expect(desktop.searchParams.get('query')).toContain(cinema.name)

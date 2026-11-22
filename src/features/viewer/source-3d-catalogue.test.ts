@@ -28,7 +28,12 @@ describe('source-verified 3D catalogue', () => {
     ).toBe(false)
     expect(venues.every((v) => v.evidence !== ('curated-auditorium' as never))).toBe(true)
     expect(venues.every((v) => !v.key.startsWith('independent|'))).toBe(true)
-    expect(pendingChain3DVenues().map((venue) => venue.slug)).toEqual(['miramar-dazhi'])
+    expect(pendingChain3DVenues()).toHaveLength(27)
+    expect(pendingChain3DVenues().filter((v) => v.checkedAt === '2026-11-18')).toHaveLength(26)
+    expect(pendingChain3DVenues().some((v) => v.slug === 'miramar-dazhi')).toBe(true)
+    expect(
+      pendingChain3DVenues().every((v) => !venues.some((ready) => ready.slug === v.slug)),
+    ).toBe(true)
     expect(venues.some((venue) => venue.slug === 'miramar-dazhi')).toBe(false)
   })
 

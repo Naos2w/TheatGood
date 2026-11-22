@@ -10,6 +10,7 @@
  * never pretend it is a complete list or numbered hall inventory.
  */
 import { chainCinemas } from './chain-directory'
+import historicalChainHallCounts from './data/additional-chain-published-seats-2026-11-18.json'
 import {
   publishedHallsForCinema,
   VIESHOW_HALL_SOURCE,
@@ -217,6 +218,22 @@ export const cinemaPublishedFacts: Readonly<Record<string, CinemaPublishedFacts>
 
 export function publishedNamedHallsForCinema(cinemaSlug: string): PublishedNamedHall[] {
   if (cinemaSlug === 'miramar-dazhi') return [...miramarPublishedHalls]
+  const historicalCounts = historicalChainHallCounts.records.filter(
+    (record) => record.cinemaSlug === cinemaSlug,
+  )
+  if (historicalCounts.length) {
+    if (historicalCounts.some((record) => record.seatGridVerified !== false)) {
+      throw new Error('A historical operator capacity cannot be upgraded to a seat grid')
+    }
+    return historicalCounts.map((record) => ({
+      cinemaSlug,
+      label: record.hallLabel,
+      publishedSeatCount: record.publishedSeatCount,
+      sourceUrl: record.sourceUrl,
+      sourceDate: record.publishedAt,
+      dataLevel: 'published-count-only' as const,
+    }))
+  }
   return publishedHallsForCinema(cinemaSlug).map((hall) => ({
     cinemaSlug,
     label: String(hall.hallNumber),
