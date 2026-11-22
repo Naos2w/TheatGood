@@ -2,7 +2,7 @@
  * Operator-sourced cinema-level auditorium facts only. These are NOT floor plans.
  *
  * Showtime https://www.showtimes.com.tw/cinemas/{id}/ (2026-11-16)
- * Miramar https://www.miramarcinemas.tw/Home/groupticket2 (2026-11-16)
+ * Miramar https://www.miramarcinemas.tw/Home/groupticket2 (capacities rechecked 2026-11-23)
  * Miranew https://www.miranewcinemas.com/Special/Index?type=royal (2026-11-16)
  *
  * Important: some Showtime descriptions mention a number of 'digital halls'
@@ -61,13 +61,14 @@ export const miramarPublishedHalls: readonly PublishedNamedHall[] = [
   ['9', 330],
   ['10', 330],
   ['Dolby Cinema', 303],
-  ['IMAX', 404],
+  // Live operator table on 2026-11-23 lists 373 (older official/cached pages showed 404).
+  ['IMAX', 373],
 ].map(([label, publishedSeatCount]) => ({
   cinemaSlug: 'miramar-dazhi',
   label: String(label),
   publishedSeatCount: Number(publishedSeatCount),
   sourceUrl: MIRAMAR_HALL_SOURCE,
-  sourceDate: checkedAt,
+  sourceDate: '2026-11-23',
   dataLevel: 'published-count-only' as const,
   ...(String(label) === 'IMAX'
     ? {
