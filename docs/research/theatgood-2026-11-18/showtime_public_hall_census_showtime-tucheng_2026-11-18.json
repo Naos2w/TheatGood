@@ -1,0 +1,41 @@
+{
+  "cinemaSlug": "showtime-tucheng",
+  "cinemaName": "土城秀泰影城",
+  "observedAt": "2026-11-18T09:03:42.6417945Z",
+  "sourceUrl": "https://www.showtimes.com.tw/ticketing",
+  "method": "Windows_UIAutomation_public_schedule_movie_hall_label_review",
+  "sourceScope": "public_movie_information_only_not_authenticated_seat_grid",
+  "moviesSeen": 13,
+  "moviesWithHallLabels": 13,
+  "publicHallLabels": [
+    "10廳",
+    "11廳",
+    "1廳",
+    "2廳",
+    "3廳",
+    "4廳",
+    "5廳",
+    "6廳",
+    "7廳",
+    "8廳",
+    "9廳"
+  ],
+  "hallOccurrenceCounts": {
+    "6廳": 2,
+    "8廳": 2,
+    "3廳": 2,
+    "5廳": 2,
+    "4廳": 3,
+    "2廳": 2,
+    "7廳": 2,
+    "1廳": 2,
+    "11廳": 2,
+    "9廳": 2,
+    "10廳": 2
+  },
+  "errors": [],
+  "didNotOpenSeatPreview": true,
+  "didNotBook": true,
+  "hasCompleteSeatingGeometry": false,
+  "totalUniquePublicHalls": 11
+}

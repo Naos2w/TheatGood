@@ -53,7 +53,10 @@ describe('free-text manual viewing footprint', () => {
   })
 
   it('offers operator or verified directory halls without inventing seat maps', () => {
-    expect(watchCinemaOptions).toHaveLength(45)
+    expect(watchCinemaOptions).toHaveLength(71)
+    expect(watchHallOptions('in89-chiayi')).toHaveLength(9)
+    expect(watchHallOptions('in89-chiayi').every((hall) => hall.modelId === null)).toBe(true)
+    expect(watchHallOptions('skcinemas-taoyuan-qingpu')).toEqual([])
     expect(watchHallOptions('vieshow-taipei-hsinyi')).toHaveLength(15)
     expect(watchHallOptions('vieshow-taipei-hsinyi').find((hall) => hall.name === '12 廳')).toEqual(
       {

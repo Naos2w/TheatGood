@@ -5,6 +5,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import { chainCinemas } from './chain-directory'
 import { cinemaMapUrl, currentMapPlatform, googleMapsUrl, type MapPlatform } from './map-links'
 import VieShowSeatReferenceGallery from './VieShowSeatReferenceGallery.vue'
+import ShowtimeResearchHallGallery from './ShowtimeResearchHallGallery.vue'
 import MiranewSeatReferenceGallery from './MiranewSeatReferenceGallery.vue'
 import OtherChainFactsPanel from './OtherChainFactsPanel.vue'
 
@@ -52,16 +53,21 @@ const slug = computed(() => cinema.value?.slug ?? '')
         </div>
       </header>
 
+      <p
+        v-if="cinema.operatingNowVerified === false"
+        class="chain-cinema-page__historical-warning"
+        role="note"
+      >
+        <v-icon icon="mdi-calendar-clock-outline" size="20" aria-hidden="true" />
+        {{ t('home.chainHistoricalListingNote', { date: cinema.checkedAt }) }}
+      </p>
+
       <VieShowSeatReferenceGallery v-if="cinema.brand === 'vieshow'" :cinema-slug="slug" />
 
       <template v-else>
         <OtherChainFactsPanel :cinema="cinema" />
-        <details
-          v-if="cinema.brand === 'miranew'"
-          id="miranew-seat-references"
-          class="chain-cinema-page__preview-details"
-          :open="typeof route.query.miranewPattern === 'string'"
-        >
+        <ShowtimeResearchHallGallery v-if="cinema.brand === 'showtime'" :cinema-slug="slug" />
+        <details v-if="cinema.brand === 'miranew'" class="chain-cinema-page__preview-details">
           <summary>{{ t('ux.exploreSeatReferences') }}</summary>
           <MiranewSeatReferenceGallery :cinema-slug="slug" />
         </details>

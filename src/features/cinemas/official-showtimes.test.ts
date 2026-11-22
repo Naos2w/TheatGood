@@ -3,11 +3,17 @@ import { chainCinemas } from './chain-directory'
 import { officialShowtimeLink, officialShowtimeLinks } from './official-showtimes'
 
 describe('source-verified chain cinema timetable links', () => {
-  it('covers all 40 commercial cinema branches with only operator-owned HTTPS domains', () => {
-    expect(chainCinemas).toHaveLength(40)
+  it('preserves only 40 separately verified timetable pages; do not invent links for 26 newly catalogued branches', () => {
+    expect(chainCinemas).toHaveLength(66)
     expect(Object.keys(officialShowtimeLinks)).toHaveLength(40)
     expect(new Set(Object.keys(officialShowtimeLinks)).size).toBe(40)
-    for (const cinema of chainCinemas) {
+    expect(chainCinemas.filter((cinema) => cinema.checkedAt === '2026-11-18')).toHaveLength(26)
+    expect(
+      chainCinemas
+        .filter((cinema) => cinema.checkedAt === '2026-11-18')
+        .every((cinema) => !officialShowtimeLink(cinema.slug)),
+    ).toBe(true)
+    for (const cinema of chainCinemas.filter((item) => item.checkedAt === '2026-11-16')) {
       const item = officialShowtimeLink(cinema.slug)
       expect(item?.checkedAt).toBe('2026-11-16')
       expect(item?.cinemaSlug).toBe(cinema.slug)

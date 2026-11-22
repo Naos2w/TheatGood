@@ -1,0 +1,28 @@
+{
+  "cinemaSlug": "showtime-taichung-lipao",
+  "cinemaName": "台中麗寶秀泰影城",
+  "observedAt": "2026-11-18T08:55:54.9380937Z",
+  "sourceUrl": "https://www.showtimes.com.tw/ticketing",
+  "method": "Windows_UIAutomation_public_schedule_movie_hall_label_review",
+  "sourceScope": "public_movie_information_only_not_authenticated_seat_grid",
+  "moviesSeen": 11,
+  "moviesWithHallLabels": 11,
+  "publicHallLabels": ["10廳", "1廳", "2廳", "3廳", "4廳", "5廳", "6廳", "7廳", "8廳", "9廳"],
+  "hallOccurrenceCounts": {
+    "6廳": 2,
+    "10廳": 2,
+    "9廳": 2,
+    "1廳": 1,
+    "8廳": 2,
+    "3廳": 2,
+    "5廳": 2,
+    "2廳": 2,
+    "7廳": 3,
+    "4廳": 2
+  },
+  "errors": [],
+  "didNotOpenSeatPreview": true,
+  "didNotBook": true,
+  "hasCompleteSeatingGeometry": false,
+  "totalUniquePublicHalls": 10
+}

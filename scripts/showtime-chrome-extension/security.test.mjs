@@ -14,8 +14,11 @@ const popupSource = read('popup.js')
 
 test('extension is restricted to Showtime without cookie, debugger, or unrelated-site access', () => {
   assert.equal(manifest.manifest_version, 3)
-  assert.equal(manifest.version, '0.1.5')
-  assert.deepEqual(manifest.host_permissions, ['https://www.showtimes.com.tw/*'])
+  assert.equal(manifest.version, '0.1.6')
+  assert.deepEqual(manifest.host_permissions, [
+    'https://www.showtimes.com.tw/*',
+    'https://showtimes.com.tw/*',
+  ])
   assert.deepEqual([...manifest.permissions].sort(), ['downloads', 'scripting', 'storage'])
   assert.equal(manifest.background.service_worker, 'background.js')
   assert.equal(manifest.action.default_popup, 'popup.html')

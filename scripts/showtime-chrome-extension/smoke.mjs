@@ -37,8 +37,12 @@ try {
   const options = await page.locator('#venue option').count()
   const button = await page.locator('#run').innerText()
   assert.equal(options, 15)
-  assert.equal(await page.locator('#version').innerText(), 'v0.1.5')
+  assert.equal(await page.locator('#version').innerText(), 'v0.1.6')
   assert.match(button, /座位預覽/)
+  assert.equal(await page.locator('#target-halls').count(), 1)
+  assert.equal(await page.locator('#start-movie option').count(), 5)
+  assert.equal(await page.locator('#start-movie').inputValue(), '0')
+  assert.equal(await page.locator('#target-halls').inputValue(), '')
   console.log(
     JSON.stringify({
       isolatedProfile: true,

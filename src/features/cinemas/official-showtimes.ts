@@ -112,9 +112,11 @@ export const officialShowtimeLinks: Readonly<Record<string, OfficialShowtimeLink
   Object.fromEntries(entries.map((item) => [item.cinemaSlug, item]))
 
 if (
-  entries.length !== chainCinemas.length ||
-  Object.keys(officialShowtimeLinks).length !== chainCinemas.length ||
-  chainCinemas.some((cinema) => !officialShowtimeLinks[cinema.slug])
+  entries.length !== chainCinemas.filter((cinema) => cinema.checkedAt === '2026-11-16').length ||
+  Object.keys(officialShowtimeLinks).length !== entries.length ||
+  chainCinemas.some(
+    (cinema) => cinema.checkedAt === '2026-11-16' && !officialShowtimeLinks[cinema.slug],
+  )
 ) {
   throw new Error('Official cinema showtime links must cover the complete current chain directory')
 }

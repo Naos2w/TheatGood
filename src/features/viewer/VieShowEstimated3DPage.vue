@@ -12,6 +12,7 @@ import {
 } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { appLocale } from '../../composables/usePreferences'
 import { chainCinemas } from '../cinemas/chain-directory'
 import { centreSeatGrid } from '../cinemas/centred-seat-grid'
 import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
@@ -19,13 +20,15 @@ import {
   loadVieShowArchiveForCinema,
   type VieShowArchivedLayout,
 } from '../cinemas/vieshow-seat-archive'
-import { neighbouringSeat } from '../auditoriums/seat-navigation'
-import { DEFAULT_CINEMA_EYE_AIM, cinemaScreenCentreGazeAngles } from './cinema-camera'
+import { neighbouringRowSeat, neighbouringSeat } from '../auditoriums/seat-navigation'
 import {
   defaultVieShowPreviewParameters,
   deriveVieShowPreviewGeometry,
   initialVieShowPreviewSeat,
 } from './vieshow-approximate-scene'
+import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
+import { usesCinemaSensoryPilot } from './cinema-sensory-scope'
+import { swapObservedSeatComparison } from './seat-comparison'
 
 const route = useRoute()
 const router = useRouter()
@@ -37,10 +40,11 @@ const loading = ref(false)
 const failed = ref(false)
 const seatId = ref('')
 const mapZoom = ref(1)
+const horizontalFov = ref(DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
+const savedComparisonSeatId = ref('')
+const english = computed(() => appLocale.value.startsWith('en'))
 const resetViewToken = ref(0)
 const immersiveViewMode = ref<'seat' | 'overview'>('seat')
-// Prefer the intended audience view: looking towards the film screen, not at a horizontal datum.
-const eyeAim = ref<'eye-level' | 'screen-centre'>(DEFAULT_CINEMA_EYE_AIM)
 const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
@@ -54,7 +58,9 @@ const immersive = computed(() => route.query.view === '3d')
 // The archive loader validates each hall's source, unique seats and provenance.
 // Capacity discrepancies do not invalidate the sourced seat diagram: disclose
 // them rather than falsely claiming the 3D preview is a measured floor plan.
-const pilotEnabled = computed(() => layout.value?.id === hallId.value)
+// Film/audio sensory pilot is restricted to the explicitly approved MUVIE A13 Hall 1.
+// A loaded hall always matches the route ID, which must NOT enable the pilot in all halls.
+const pilotEnabled = computed(() => usesCinemaSensoryPilot(layout.value?.id, hallId.value))
 const seatCountWarning = computed(() => {
   const hall = layout.value
   if (!hall) return ''
@@ -81,11 +87,6 @@ const geometry = computed(() =>
 const selected = computed(
   () => geometry.value?.seats.find((seat) => seat.id === seatId.value) ?? null,
 )
-const screenGaze = computed(() =>
-  selected.value && geometry.value
-    ? cinemaScreenCentreGazeAngles(selected.value, geometry.value.auditorium.screen)
-    : null,
-)
 const previous = computed(() =>
   geometry.value && selected.value
     ? neighbouringSeat(geometry.value.seats, seatId.value, -1)
@@ -93,6 +94,12 @@ const previous = computed(() =>
 )
 const next = computed(() =>
   geometry.value && selected.value ? neighbouringSeat(geometry.value.seats, seatId.value, 1) : null,
+)
+const frontRow = computed(() =>
+  geometry.value ? neighbouringRowSeat(geometry.value.seats, seatId.value, -1) : null,
+)
+const backRow = computed(() =>
+  geometry.value ? neighbouringRowSeat(geometry.value.seats, seatId.value, 1) : null,
 )
 const cellWidth = 31
 const cellHeight = 31
@@ -192,6 +199,7 @@ watch(
       cancelled = true
     })
     mapZoom.value = 1
+    savedComparisonSeatId.value = ''
     loading.value = true
     failed.value = false
     layout.value = null
@@ -266,8 +274,6 @@ function switchHall(id: string) {
 
 function selectSeat(id: string) {
   if (!geometry.value?.seats.some((seat) => seat.id === id)) return
-  // Each new seat must start with comparable screen-centred framing.
-  eyeAim.value = DEFAULT_CINEMA_EYE_AIM
   seatId.value = id
   void router.replace({ query: { ...route.query, seat: id } })
 }
@@ -275,21 +281,28 @@ function switchSeat(direction: -1 | 1) {
   const item = direction === -1 ? previous.value : next.value
   if (item) selectSeat(item.id)
 }
+function switchRow(direction: -1 | 1) {
+  const item = direction === -1 ? frontRow.value : backRow.value
+  if (item) selectSeat(item.id)
+}
+function swapComparison() {
+  if (!geometry.value) return
+  const swapped = swapObservedSeatComparison(
+    geometry.value.seats,
+    seatId.value,
+    savedComparisonSeatId.value,
+  )
+  if (!swapped) return
+  savedComparisonSeatId.value = swapped.nextSaved
+  selectSeat(swapped.nextSelected)
+}
 function setImmersive(value: boolean) {
-  if (value) eyeAim.value = DEFAULT_CINEMA_EYE_AIM
   void router.replace({
     query: { ...route.query, view: value ? '3d' : undefined, seat: seatId.value },
   })
 }
 function toggleImmersiveViewMode() {
   immersiveViewMode.value = immersiveViewMode.value === 'seat' ? 'overview' : 'seat'
-}
-function toggleEyeAim() {
-  eyeAim.value = eyeAim.value === 'eye-level' ? 'screen-centre' : 'eye-level'
-}
-function resetSeatView() {
-  eyeAim.value = DEFAULT_CINEMA_EYE_AIM
-  resetViewToken.value++
 }
 function onPilotVideoElement(video: HTMLVideoElement | null) {
   pilotVideo.value = video
@@ -524,8 +537,7 @@ function recordSelectedSeat() {
           :wheelchair-spots="geometry.wheelchairSpots"
           :selected-seat-id="seatId"
           :reset-view-token="resetViewToken"
-          :horizontal-fov="DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV"
-          :eye-aim="eyeAim"
+          :horizontal-fov="horizontalFov"
           :view-mode="immersiveViewMode"
           :demo-video="pilotEnabled ? pilotVideo : null"
         />
@@ -544,19 +556,37 @@ function recordSelectedSeat() {
           :seat-count-warning="seatCountWarning"
           :can-previous="!!previous"
           :can-next="!!next"
+          :can-move-front="!!frontRow"
+          :can-move-back="!!backRow"
+          :saved-comparison-seat-id="savedComparisonSeatId"
+          :horizontal-fov="horizontalFov"
           :view-mode="immersiveViewMode"
-          :eye-aim="eyeAim"
-          :vertical-gaze="screenGaze?.verticalDegrees"
-          :horizontal-gaze="screenGaze?.horizontalDegrees"
-          @toggle-eye-aim="toggleEyeAim"
+          @move-row="switchRow"
+          @save-comparison="savedComparisonSeatId = seatId"
+          @swap-comparison="swapComparison"
+          @clear-comparison="savedComparisonSeatId = ''"
+          @update:horizontal-fov="horizontalFov = $event"
           @video-element="onPilotVideoElement"
           @previous-seat="switchSeat(-1)"
           @next-seat="switchSeat(1)"
           @toggle-view-mode="toggleImmersiveViewMode"
-          @reset-view="resetSeatView"
+          @reset-view="resetViewToken++"
           @record-seat="recordSelectedSeat"
         />
         <div v-if="!pilotEnabled" class="viewer-immersive__bottom">
+          <Cinema3DSeatTools
+            :horizontal-fov="horizontalFov"
+            :can-move-front="!!frontRow"
+            :can-move-back="!!backRow"
+            :english="english"
+            :selected-seat-id="seatId"
+            :saved-comparison-seat-id="savedComparisonSeatId"
+            @update:horizontal-fov="horizontalFov = $event"
+            @move-row="switchRow"
+            @save-comparison="savedComparisonSeatId = seatId"
+            @swap-comparison="swapComparison"
+            @clear-comparison="savedComparisonSeatId = ''"
+          />
           <p class="viewer-immersive__hint">
             {{ immersiveViewMode === 'overview' ? t('ux.overviewHint') : t('ux.dragHint') }}
           </p>
@@ -581,12 +611,8 @@ function recordSelectedSeat() {
             </button>
           </div>
           <div class="viewer-immersive__utility">
-            <button type="button" class="viewer-reset" @click="resetSeatView">
+            <button type="button" class="viewer-reset" @click="resetViewToken++">
               <v-icon icon="mdi-restore" size="19" /> {{ t('viewer.reset') }}
-            </button>
-            <button type="button" class="viewer-reset" @click="toggleEyeAim">
-              <v-icon icon="mdi-eye-outline" size="19" />
-              {{ eyeAim === 'eye-level' ? t('vieshow3d.aimAtScreen') : t('vieshow3d.eyeLevel') }}
             </button>
             <button type="button" class="viewer-reset" @click="toggleImmersiveViewMode">
               <v-icon

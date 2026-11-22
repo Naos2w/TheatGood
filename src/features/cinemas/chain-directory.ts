@@ -5,7 +5,18 @@
  * screening API. No seat counts, showtimes, coordinates or current opening hours
  * are invented here.
  */
-export type ChainBrand = 'vieshow' | 'showtime' | 'miramar' | 'miranew'
+import addedChainBranchResearch from './data/additional-chain-branches-2026-11-18.json'
+
+export type ChainBrand =
+  | 'vieshow'
+  | 'showtime'
+  | 'miramar'
+  | 'miranew'
+  | 'ambassador'
+  | 'in89'
+  | 'broadway'
+  | 'centuryasia'
+  | 'skcinemas'
 
 export interface ChainCinema {
   slug: string
@@ -14,7 +25,10 @@ export interface ChainCinema {
   city: string
   address: string
   sourceUrl: string
-  checkedAt: '2026-11-16'
+  checkedAt: '2026-11-16' | '2026-11-18'
+  /** Archived operator listing, not a confirmation the venue is open now. */
+  listingEvidence?: 'official_direct' | 'official_rendered_branch_page' | 'operator_owned_line'
+  operatingNowVerified?: false
 }
 
 const checkedAt = '2026-11-16' as const
@@ -109,11 +123,42 @@ const miranew = fromOfficialDirectory('miranew', 'https://www.miranewcinemas.com
   ['dazhi-royal', '美麗新大直皇家影城', '臺北市', '臺北市中山區北安路780號B2'],
 ])
 
+const addedBrandSet: ReadonlySet<ChainBrand> = new Set([
+  'ambassador',
+  'in89',
+  'broadway',
+  'centuryasia',
+  'skcinemas',
+])
+const additionalChains: ChainCinema[] = addedChainBranchResearch.records.map((record) => {
+  if (
+    !addedBrandSet.has(record.brand as ChainBrand) ||
+    record.operatingNowVerified !== false ||
+    record.observedSeatGridVerified !== false ||
+    !record.slug.startsWith(record.brand + '-') ||
+    record.checkedAt !== '2026-11-18'
+  ) {
+    throw new Error('Invalid historical operator branch source; do not publish as a live cinema')
+  }
+  return {
+    brand: record.brand as ChainBrand,
+    slug: record.slug,
+    name: record.name,
+    city: record.city,
+    address: record.address,
+    sourceUrl: record.sourceUrl,
+    checkedAt: '2026-11-18',
+    listingEvidence: record.listingEvidence as ChainCinema['listingEvidence'],
+    operatingNowVerified: false,
+  }
+})
+
 export const chainCinemas: readonly ChainCinema[] = [
   ...vieshow,
   ...showtime,
   ...miramar,
   ...miranew,
+  ...additionalChains,
 ]
 
 const normalise = (value: string): string =>

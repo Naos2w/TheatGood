@@ -15,7 +15,7 @@ import assert from 'node:assert/strict'
 import crypto from 'node:crypto'
 import console from 'node:console'
 import { Buffer } from 'node:buffer'
-import { fileURLToPath } from 'node:url'
+import { URL, fileURLToPath } from 'node:url'
 import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -24,6 +24,17 @@ const SOURCE = 'showtime_authenticated_chrome_extension_read_only'
 const EVIDENCE = 'signed_in_operator_preview_with_same_screening_card_venue_verified'
 const METHOD = 'exact_venue_plus_hall_on_same_screening_card'
 const IDENTITY = 'operator_screening_card_venue_and_hall_verified_not_surveyed'
+
+function taipeiCalendarDate(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date)
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]))
+  return `${values.year}-${values.month}-${values.day}`
+}
 
 function signature(seats) {
   return crypto
@@ -62,7 +73,13 @@ function validateSeats(layout) {
 }
 
 /** Pure provenance-preserving index: does not mutate any input object. */
-export function auditShowtimeCoverage(census, archives, downloads) {
+export function auditShowtimeCoverage(
+  census,
+  archives,
+  downloads,
+  asOf = taipeiCalendarDate(),
+  sourceReviews = [],
+) {
   assert(census && typeof census.venues === 'object')
   const names = Object.keys(census.venues).sort()
   assert.equal(names.length, 15, 'Known chain inventory must contain all 15 venue samples')
@@ -74,6 +91,7 @@ export function auditShowtimeCoverage(census, archives, downloads) {
   const stored = new Map(names.map((slug) => [slug, new Map()]))
   const reference = new Set()
   const notes = []
+  const observations = new Map()
   let legacySnapshots = 0
   for (const archive of archives) {
     if (archive.sourceType !== SOURCE) {
@@ -131,10 +149,15 @@ export function auditShowtimeCoverage(census, archives, downloads) {
       assert.equal(raw.checkoutNotOpened, true)
       assert.equal(raw.credentialsRead, false)
       assert.equal(raw.seatAvailabilityRetained, false)
-      assert.equal(raw.sourceUrl, 'https://www.showtimes.com.tw/')
+      assert(
+        ['https://www.showtimes.com.tw/', 'https://showtimes.com.tw/'].includes(raw.sourceUrl),
+        'Showtime source must match one of two exact official HTTPS hosts',
+      )
       assert(Array.isArray(raw.layouts) && raw.layouts.length)
       const sha256 = crypto.createHash('sha256').update(bytes).digest('hex')
-      const current = raw.sampledAt?.startsWith('2026-11-20')
+      const sampledAtTime = Date.parse(raw.sampledAt)
+      assert(Number.isFinite(sampledAtTime), 'Invalid source observation timestamp')
+      const current = taipeiCalendarDate(new Date(sampledAtTime)) === asOf
       if (current) currentDayDownloads++
       fileDigests.push({
         cinemaSlug: raw.cinemaSlug,
@@ -153,6 +176,16 @@ export function auditShowtimeCoverage(census, archives, downloads) {
         assert.equal(layout.wheelchairLayoutVerified, false)
         const byHall = stored.get(raw.cinemaSlug)
         const sign = signature(layout.seatPositions)
+        const observationKey = raw.cinemaSlug + '|' + layout.hallLabel
+        const hallObservations = observations.get(observationKey) ?? []
+        hallObservations.push({
+          sourceSha256: sha256,
+          signature: sign,
+          seatCount: layout.ordinarySeatCount,
+          rowsCount: layout.rowsCount,
+          labels: new Set(layout.seatPositions.map((seat) => seat.label)),
+        })
+        observations.set(observationKey, hallObservations)
         const prior = byHall.get(layout.hallLabel)
         if (prior) {
           if (prior.seatCount !== layout.ordinarySeatCount || !prior.signatures.has(sign)) {
@@ -187,12 +220,97 @@ export function auditShowtimeCoverage(census, archives, downloads) {
     }
   }
 
+  // A historical discrepancy is never cleared by seat count alone. Only a
+  // review with exact independently repeated operator geometry, explicit
+  // archival provenance and independently published venue capacity may prefer
+  // one old layout. Any NEW conflicting signature re-opens review.
+  const acceptedReviews = new Map()
+  assert(Array.isArray(sourceReviews), 'Source reviews must be an array')
+  for (const review of sourceReviews) {
+    try {
+      assert(review && review.version === 1 && review.researchOnly === true)
+      assert.equal(review.approvedForProduction, false)
+      assert.equal(review.cinemaSlug, 'showtime-taipei-xinxin')
+      assert.equal(review.hallLabel, '1廳')
+      assert.equal(review.preferredSeatCount, 382)
+      assert.equal(review.preferredRowsCount, 17)
+      assert.equal(review.oldSeatCount, 321)
+      assert.equal(review.oldRowsCount, 16)
+      assert(/^[0-9a-f]{64}$/.test(review.preferredGeometrySignature))
+      assert(/^[0-9a-f]{64}$/.test(review.oldGeometrySignature))
+      assert(/^[0-9a-f]{64}$/.test(review.oldSourceHash))
+      assert(Array.isArray(review.preferredSourceHashes))
+      assert.equal(review.preferredSourceHashes.length, 2)
+      assert.equal(new Set(review.preferredSourceHashes).size, 2)
+      assert(review.preferredSourceHashes.every((sha) => /^[0-9a-f]{64}$/.test(sha)))
+      const government = review.governmentReference
+      assert.equal(government.agency, '文化部影視及流行音樂產業局')
+      assert.equal(government.publishedOn, '2021-11-30')
+      assert.equal(government.cinemaName, '欣欣秀泰影城(欣欣晶華戲院)')
+      assert.equal(government.hallLabel, review.hallLabel)
+      assert.equal(government.recordedSeatCount, review.preferredSeatCount)
+      const sourceURL = new URL(government.url)
+      assert.equal(sourceURL.origin, 'https://file.moc.gov.tw')
+      assert.equal(sourceURL.pathname, '/Download.ashx')
+      assert(review.reviewBasis?.includes('same-screening-card'))
+      const key = review.cinemaSlug + '|' + review.hallLabel
+      assert(!acceptedReviews.has(key), 'Duplicate review')
+      const entries = observations.get(key) ?? []
+      const preferred = review.preferredSourceHashes.map((sha) =>
+        entries.find((entry) => entry.sourceSha256 === sha),
+      )
+      assert(preferred.every(Boolean), 'Accepted source SHA missing')
+      assert(
+        preferred.every(
+          (entry) =>
+            entry.signature === review.preferredGeometrySignature &&
+            entry.seatCount === review.preferredSeatCount &&
+            entry.rowsCount === review.preferredRowsCount,
+        ),
+        'Two preferred raw captures do not have identical verified geometry',
+      )
+      const old = entries.find((entry) => entry.sourceSha256 === review.oldSourceHash)
+      assert(old, 'Original conflicting source SHA missing')
+      assert.equal(old.signature, review.oldGeometrySignature)
+      assert.equal(old.seatCount, review.oldSeatCount)
+      assert.equal(old.rowsCount, review.oldRowsCount)
+      assert(
+        [...old.labels].every((label) => preferred[0].labels.has(label)),
+        'Old labels are not a subset of independently verified preferred source',
+      )
+      const archived = archives.find(
+        (entry) =>
+          entry.sourceType === SOURCE &&
+          entry.cinemaSlug === review.cinemaSlug &&
+          entry.observedHallLabel === review.hallLabel,
+      )
+      assert(archived, 'Preferred normalized archive not yet reviewed and installed')
+      assert(review.preferredSourceHashes.includes(archived.sourceRawSha256))
+      assert.equal(archived.ordinarySeatCount, review.preferredSeatCount)
+      assert.equal(signature(archived.seatPositions), review.preferredGeometrySignature)
+      const selected = stored.get(review.cinemaSlug)?.get(review.hallLabel)
+      assert(selected, 'Conflicted hall missing in source audit')
+      assert.equal(selected.signatures.size, 2, 'New geometry signature requires fresh review')
+      assert(selected.signatures.has(review.oldGeometrySignature))
+      assert(selected.signatures.has(review.preferredGeometrySignature))
+      acceptedReviews.set(key, review)
+    } catch (error) {
+      errors.push({
+        cinemaSlug: String(review?.cinemaSlug ?? 'unknown'),
+        filename: 'showtime_conflict_review',
+        reason: error instanceof Error ? error.message : 'Invalid source review',
+      })
+    }
+  }
+
   // For an unresolved same-hall geometry conflict, keep source evidence but
   // withhold "verified grid" status; never silently pick one version.
   const venueReports = names.map((slug) => {
     const byHall = stored.get(slug)
-    const confirmed = [...byHall.values()].filter((hall) => hall.signatures.size === 1)
-    const conflicting = [...byHall.values()].filter((hall) => hall.signatures.size > 1)
+    const trusted = (hall) =>
+      hall.signatures.size === 1 || acceptedReviews.has(slug + '|' + hall.hallLabel)
+    const confirmed = [...byHall.values()].filter(trusted)
+    const conflicting = [...byHall.values()].filter((hall) => !trusted(hall))
     const verifiedHallLabels = confirmed.map((x) => x.hallLabel).sort()
     return {
       cinemaSlug: slug,
@@ -202,8 +320,10 @@ export function auditShowtimeCoverage(census, archives, downloads) {
       confirmedHalls: confirmed
         .map((x) => ({
           hallLabel: x.hallLabel,
-          seatCount: x.seatCount,
+          seatCount:
+            acceptedReviews.get(slug + '|' + x.hallLabel)?.preferredSeatCount ?? x.seatCount,
           sourceObservationCount: x.sourceObservationCount,
+          historicalConflictReviewed: acceptedReviews.has(slug + '|' + x.hallLabel),
         }))
         .sort((a, b) => a.hallLabel.localeCompare(b.hallLabel, 'zh-TW')),
       conflictingHallLabels: conflicting.map((x) => x.hallLabel),
@@ -216,9 +336,7 @@ export function auditShowtimeCoverage(census, archives, downloads) {
     v.verifiedHallLabels.map((hall) => v.cinemaSlug + '|' + hall),
   )
   const report = {
-    // Report generation date in Taiwan, rather than the original UTC source batch date.
-    asOf: new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Taipei' }).format(new Date()),
-    sourceBatchUTCDate: '2026-11-20',
+    asOf,
     researchOnly: true,
     approvedForPublicUI: false,
     seatGeometryMeasured: false,
@@ -236,7 +354,20 @@ export function auditShowtimeCoverage(census, archives, downloads) {
     currentDaySeatGridObservations: currentDayObservations,
     currentDayDistinctVenueHallLabels: currentDayKeys.size,
     errors,
-    sourceDiscrepancies: notes,
+    sourceDiscrepancies: notes.filter(
+      (entry) => !acceptedReviews.has(entry.cinemaSlug + '|' + entry.hallLabel),
+    ),
+    resolvedSourceDiscrepancies: notes
+      .filter((entry) => acceptedReviews.has(entry.cinemaSlug + '|' + entry.hallLabel))
+      .map((entry) => ({
+        ...entry,
+        status: 'independently-reviewed-historical-geometry-conflict',
+        preferredSeatCount: acceptedReviews.get(entry.cinemaSlug + '|' + entry.hallLabel)
+          .preferredSeatCount,
+        governmentPublishedOn: acceptedReviews.get(entry.cinemaSlug + '|' + entry.hallLabel)
+          .governmentReference.publishedOn,
+        oldAndNewSourcesRetained: true,
+      })),
     venues: venueReports,
     downloadedSourceDigests: fileDigests,
   }
@@ -271,7 +402,36 @@ function runCLI() {
       filename,
       bytes: fs.readFileSync(path.join(path.resolve(downloadsDir), filename)),
     }))
-  const report = auditShowtimeCoverage(census, archived, downloads)
+  const sourceReviews = fs
+    .readdirSync(path.resolve(researchDir))
+    .filter((name) => /^showtime_conflict_review_.*\.json$/.test(name))
+    .map((name) => {
+      const review = JSON.parse(fs.readFileSync(path.join(path.resolve(researchDir), name), 'utf8'))
+      if (review.cinemaSlug === 'showtime-taipei-xinxin' && review.hallLabel === '1廳') {
+        const backup = path.join(
+          path.resolve(researchDir),
+          'showtime_conflict_backup_showtime-taipei-xinxin_1廳_321_20261122.json',
+        )
+        assert(fs.existsSync(backup), 'Historical 321-seat source backup must remain present')
+        assert(
+          /^[0-9a-f]{64}$/.test(review.oldArchiveHash),
+          'Historical source backup hash missing',
+        )
+        assert.equal(
+          crypto.createHash('sha256').update(fs.readFileSync(backup)).digest('hex'),
+          review.oldArchiveHash,
+          'Historical source backup hash changed',
+        )
+      }
+      return review
+    })
+  const report = auditShowtimeCoverage(
+    census,
+    archived,
+    downloads,
+    taipeiCalendarDate(),
+    sourceReviews,
+  )
   const output = args.find((arg) => arg.startsWith('--output='))
   if (output) {
     const outputPath = path.resolve(output.slice('--output='.length))
@@ -297,6 +457,7 @@ function runCLI() {
       currentDayOriginalDownloads: report.currentDayOriginalDownloads,
       errors: report.errors,
       sourceDiscrepancies: report.sourceDiscrepancies,
+      resolvedSourceDiscrepancies: report.resolvedSourceDiscrepancies,
     }),
   )
   if (report.errors.length || report.sourceDiscrepancies.length) process.exitCode = 1

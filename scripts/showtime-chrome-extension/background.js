@@ -61,6 +61,10 @@ async function scanTheatrePage(
     // Bound the cooperative DOM scan itself. Network and site UI errors may
     // still terminate the tab injection; never interpret a stalled status as
     // proof of a saved seat grid.
+    const operatorOrigin = location.origin ?? 'https://www.showtimes.com.tw'
+    if (!['https://www.showtimes.com.tw', 'https://showtimes.com.tw'].includes(operatorOrigin)) {
+      throw new Error('秀泰頁面來源網域不在允許清單')
+    }
     const stopAt = Date.now() + 75000
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
     const timeout = async (find, limit = 12000) => {
@@ -230,7 +234,7 @@ async function scanTheatrePage(
       sourceType: 'showtime_authenticated_chrome_extension_read_only',
       sampledAt: new Date().toISOString(),
       cinemaName,
-      sourceUrl: 'https://www.showtimes.com.tw/',
+      sourceUrl: operatorOrigin + '/',
       researchOnly: true,
       bookingActionPerformed: false,
       actualSeatClicked: 0,
@@ -426,7 +430,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // Creating a new tab does not reliably inherit that state, even if
       // the openerTabId points to the signed-in tab. Use the *existing*
       // user-authorised Showtime tab without activating or focusing it.
-      const candidates = await chrome.tabs.query({ url: 'https://www.showtimes.com.tw/*' })
+      const candidates = await chrome.tabs.query({
+        url: ['https://www.showtimes.com.tw/*', 'https://showtimes.com.tw/*'],
+      })
       for (const candidate of candidates) {
         if (!Number.isInteger(candidate.id)) continue
         const memberState = await readMemberStatus(candidate.id).catch(() => 'unknown')

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import ChainDirectorySection from '../cinemas/ChainDirectorySection.vue'
 import type { GeoPoint } from '../auditoriums/proximity'
 import type { AuditoriumFormatFilter } from '../cinemas/cinema-discovery-metadata'
@@ -9,7 +10,7 @@ import { searchChainCinemaVenues, type CinemaDiscoveryModelFilter } from './disc
 
 type LocationStatus = 'idle' | 'loading' | 'ready' | 'denied' | 'unavailable' | 'timeout'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const search = ref('')
 const cityFilter = ref('all')
 const formatFilter = ref<AuditoriumFormatFilter>('all')
@@ -37,6 +38,19 @@ const chainBrands: { value: ChainBrand | 'all'; key: string; count: number }[] =
     key: 'home.chainMiranew',
     count: chainCinemas.filter((cinema) => cinema.brand === 'miranew').length,
   },
+  ...(
+    [
+      ['ambassador', 'home.chainAmbassador'],
+      ['in89', 'home.chainIn89'],
+      ['broadway', 'home.chainBroadway'],
+      ['centuryasia', 'home.chainCenturyAsia'],
+      ['skcinemas', 'home.chainSkcinemas'],
+    ] as const
+  ).map(([value, key]) => ({
+    value,
+    key,
+    count: chainCinemas.filter((cinema) => cinema.brand === value).length,
+  })),
 ]
 const currentPosition = ref<GeoPoint | null>(null)
 const locationStatus = ref<LocationStatus>('idle')
@@ -89,6 +103,15 @@ function locate() {
       <div class="home-intro">
         <h1>{{ t('home.headline') }}</h1>
         <p>{{ t('home.subhead') }}</p>
+        <RouterLink to="/3d" class="home-3d-entry">
+          <v-icon icon="mdi-cube-scan" size="21" aria-hidden="true" />
+          <span>{{
+            locale.startsWith('en')
+              ? 'Explore chain cinema 3D seat views'
+              : '探索連鎖影城 3D 座位圖'
+          }}</span>
+          <v-icon icon="mdi-chevron-right" size="20" aria-hidden="true" />
+        </RouterLink>
       </div>
 
       <div id="cinema-discovery" class="home-discovery">
@@ -188,3 +211,30 @@ function locate() {
     </div>
   </section>
 </template>
+
+<style scoped>
+.home-3d-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  min-height: 44px;
+  margin-top: 18px;
+  padding: 10px 16px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.33);
+  border-radius: 14px;
+  background: rgba(var(--v-theme-primary), 0.11);
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+.home-3d-entry:hover,
+.home-3d-entry:focus-visible {
+  outline: 2px solid rgba(var(--v-theme-primary), 0.6);
+  outline-offset: 2px;
+}
+.home-3d-entry .v-icon:first-child {
+  flex: 0 0 auto;
+}
+</style>

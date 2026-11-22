@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import {
   isReferenceSpecialSeat,
   seatLayoutReferencesForCinema,
@@ -10,15 +10,12 @@ import {
 
 const props = defineProps<{ cinemaSlug: string }>()
 const { t } = useI18n()
-const route = useRoute()
 const candidates = computed(() => seatLayoutReferencesForCinema(props.cinemaSlug))
 const activeId = ref('')
 watch(
-  [candidates, () => route.query.miranewPattern],
-  ([items, requested]) => {
-    if (typeof requested === 'string' && items.some((item) => item.id === requested)) {
-      activeId.value = requested
-    } else if (!items.some((item) => item.id === activeId.value)) {
+  candidates,
+  (items) => {
+    if (!items.some((item) => item.id === activeId.value)) {
       activeId.value = items[0]?.id ?? ''
     }
   },
@@ -87,14 +84,16 @@ const sourceLabel = (item: OfficialSeatLayoutReference): string => {
       </div>
       <p class="seat-references__notice" role="note">{{ t('seatRefs.unknownHall') }}</p>
       <RouterLink
-        class="seat-references__preview-3d"
-        :to="{
-          name: 'miranew-3d-pattern',
-          params: { slug: cinemaSlug, patternId: active.id },
-        }"
+        class="miranew-pattern-preview-link"
+        :to="'/cinemas/' + cinemaSlug + '/seat-patterns/' + active.id"
       >
-        <v-icon icon="mdi-cube-scan" size="18" />
-        {{ t('miranew3d.previewPattern') }}
+        <v-icon icon="mdi-cube-scan" size="19" />
+        {{
+          $i18n.locale.startsWith('en')
+            ? 'Explore observed pattern in estimated 3D'
+            : '以估算 3D 預覽這份來源座型'
+        }}
+        <v-icon icon="mdi-chevron-right" size="16" />
       </RouterLink>
 
       <div class="seat-references__scroll" tabindex="0" :aria-label="t('seatRefs.scrollMap')">
@@ -160,22 +159,23 @@ const sourceLabel = (item: OfficialSeatLayoutReference): string => {
 </template>
 
 <style scoped>
-.seat-references__preview-3d {
+.miranew-pattern-preview-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 11px 16px;
-  margin: 8px 0 14px;
-  border: 1px solid color-mix(in srgb, currentColor 26%, transparent);
-  border-radius: 16px;
-  background: color-mix(in srgb, currentColor 7%, transparent);
-  color: inherit;
-  font-size: 14px;
-  font-weight: 650;
+  gap: 10px;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 10px 0 16px;
+  padding: 10px 15px;
+  border-radius: 12px;
   text-decoration: none;
+  background: rgba(var(--v-theme-primary), 0.13);
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
 }
-.seat-references__preview-3d:focus-visible {
-  outline: 2px solid var(--tg-accent);
-  outline-offset: 3px;
+.miranew-pattern-preview-link:hover,
+.miranew-pattern-preview-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 </style>

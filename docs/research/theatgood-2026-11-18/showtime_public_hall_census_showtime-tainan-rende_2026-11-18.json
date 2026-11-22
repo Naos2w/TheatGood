@@ -1,0 +1,22 @@
+{
+  "cinemaSlug": "showtime-tainan-rende",
+  "cinemaName": "台南仁德秀泰影城",
+  "observedAt": "2026-11-18T08:54:08.0949393Z",
+  "sourceUrl": "https://www.showtimes.com.tw/ticketing",
+  "method": "Windows_UIAutomation_public_schedule_movie_hall_label_review",
+  "sourceScope": "public_movie_information_only_not_authenticated_seat_grid",
+  "moviesSeen": 4,
+  "moviesWithHallLabels": 4,
+  "publicHallLabels": ["2廳", "3廳", "4廳", "5廳"],
+  "hallOccurrenceCounts": {
+    "3廳": 1,
+    "5廳": 1,
+    "2廳": 1,
+    "4廳": 2
+  },
+  "errors": [],
+  "didNotOpenSeatPreview": true,
+  "didNotBook": true,
+  "hasCompleteSeatingGeometry": false,
+  "totalUniquePublicHalls": 4
+}

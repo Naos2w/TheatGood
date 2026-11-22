@@ -1,6 +1,18 @@
 # TheatGood｜秀泰座位唯讀研究 Chrome 擴充功能
 
-目前版本：**0.1.5**（2026-11-20 新增來源化「只查缺漏廳號」單次掃描；沿用 v0.1.4 的安全時間上限、v0.1.3 的逐場次影城歸屬驗證）。
+目前版本：**0.1.6**（2026-11-21 修復秀泰官網從 `www.showtimes.com.tw` 轉至 `showtimes.com.tw` 後，已登入分頁被擴充功能漏掉的問題；沿用 0.1.5 的缺廳定向掃描與既有安全閘門）。
+
+### v0.1.6｜官方根網域登入分頁相容性修復
+
+2026-11-21 的 TheatGood 專用 Chrome 在 `https://showtimes.com.tw/ticketing/` 明確顯示「會員中心」，但 v0.1.5 只查 `https://www.showtimes.com.tw/*`，因而錯誤回報「找不到已顯示會員中心的分頁」。本版只允許**秀泰官網的兩個精確 HTTPS 主機**，並依實際頁面 `origin` 保存來源網址；研究下載、稽核與估算 Viewer 只接受這兩個官方來源。依然不讀 Cookie、Token、密碼、不開新會員分頁、不選座與不購票。更新安裝後要在專用 Chrome 重新載入未封裝擴充功能；重載前舊版仍會拒絕無 `www` 網域，不能把改檔當作已生效。
+
+### 單分頁模式（2026-11-22 實測）
+
+預設直接在已登入秀泰的專用 Chrome **唯一官網分頁**上，點 Chrome 工具列的 TheatGood 擴充功能圖示，使用其**小視窗**選擇分館後執行唯讀採集。普通工具列模式每輪最多檢查 **3 張電影卡**，不會增加 Chrome 分頁。2026-11-22 已在此模式成功蒐集並驗證數館格線；掃描後關閉小視窗並保留原官網分頁。不要每掃一館就執行 `chrome --new-tab`。
+
+目前小視窗已增加「指定缺廳（以逗號分隔）」和「電影卡片起始位置（0、8、16、24、32）」控制：有填缺廳時每輪最多 8 張電影卡、每部最多 4 個缺漏廳別，先由小視窗核對公開來源廳名，再交給原背景工作流程做逐場次影城歸屬與會員登入安全驗證。**不新增分頁**，也不自動依序執行下一館。已在隔離測試與 MSI 專用 Chrome 的真實同一分頁完成多館驗收，並蒐集台東、欣欣、岡山、文心、夢時代、基隆、土城的來源。原本 159 個樣本廳號並非完整永久實體廳數；格線有衝突時必須隔離。可使用 `scripts/research_trigger_showtime_existing_popup_once.ps1` 操作已開小視窗，需先通過本地來源缺口稽核；腳本**不建立 Chrome 分頁**。
+
+下面舊版定向命令會開**新的分頁**，已在 PowerShell 腳本加上預設拒絕的保護。只有使用者**另行明確同意暫時增加一個分頁**時，才能以 `-AllowNewTab` 明確啟用；未同意時不得使用。
 
 ### v0.1.5｜缺漏廳號定向掃描（研究用）
 
@@ -8,7 +20,8 @@
 
 ```powershell
 pwsh -NoProfile -File scripts/research_trigger_showtime_targeted_once.ps1 -CinemaSlug showtime-yunlin-beigang -StartMovie 0 -DryRun
-pwsh -NoProfile -File scripts/research_trigger_showtime_targeted_once.ps1 -CinemaSlug showtime-yunlin-beigang -StartMovie 0
+# 僅限使用者另行明確同意『額外開啟單一暫時分頁』的情況：
+pwsh -NoProfile -File scripts/research_trigger_showtime_targeted_once.ps1 -CinemaSlug showtime-yunlin-beigang -StartMovie 0 -AllowNewTab
 ```
 
 - 執行前先**從 MSI 已保存來源**重新核對 15 館廳號缺口；只把該館尚缺的廳號、來源清單容許的 ID 與本輪電影卡片起始索引送進本地 `chrome-extension://` 頁。
@@ -37,7 +50,7 @@ v0.1.3 已通過**離線合成登入／座位下載測試**與「遇到其他分
 
 1. 在**已登入秀泰的 TheatGood 專用 Chrome** 開啟 `chrome://extensions`。
 2. 找到 **TheatGood｜秀泰座位研究（唯讀）**，點卡片上的**圓形「重新載入」圖示**（開發人員模式需保持啟用）。**不用移除、不用重新安裝、不用關閉瀏覽器、也不用重新登入。**
-3. 點工具列擴充功能圖示，標題應顯示 **v0.1.5**。
+3. 點工具列擴充功能圖示，標題應顯示 **v0.1.6**。
 4. 先選 **台東秀泰影城** 執行一輪（單輪上限 3 部電影、每部 4 種廳，以免長時間卡住），然後**不要再操作這個秀泰分頁**；可切換到 LINE、Edge 或其他程式繼續使用電腦。原秀泰分頁的畫面會隨採集切換。
 5. 完成後在擴充功能查看結果。成功資料會下載為 `Downloads/TheatGood/showtime_sample_showtime-taitung_*.json`（實際根路徑以 Chrome 下載設定為準），如失敗請**只回報新的完整錯誤文字**，不要反覆重試。
 
@@ -51,7 +64,7 @@ v0.1.3 已通過**離線合成登入／座位下載測試**與「遇到其他分
 
 ## 安全邊界
 
-- Manifest V3，網站權限**僅限** `https://www.showtimes.com.tw/*`。其他權限是 `scripting`、`downloads`、`storage`，**沒有** `cookies`、`debugger`、`webRequest`、`nativeMessaging`、其他網域。
+- Manifest V3，網站權限**僅限** `https://www.showtimes.com.tw/*` 與 `https://showtimes.com.tw/*`。其他權限是 `scripting`、`downloads`、`storage`，**沒有** `cookies`、`debugger`、`webRequest`、`nativeMessaging`、其他網域。
 - 不點實際座位、票種、訂單、付款或加入購物車；不保留會員個資、登入憑證、即時已售／可選座位狀態。每次最多一個分館、六部電影。
 - 僅保存排號、座號及**相對**格線；不宣稱已量測銀幕公尺尺寸、坡度、輪椅席或永久廳號建築對照。
 - 網站登出、Cloudflare 驗證、頁面 UI 改版或資料校驗失敗時停止，不繞過驗證。

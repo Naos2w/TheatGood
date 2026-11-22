@@ -7,16 +7,22 @@ Usage from clean TheatGood development worktree (original MSI research/downloads
 The helper recomputes a metadata-only source gap audit from original local
 downloads and the pre-existing public hall-name census. It never opens
 unknown/private APIs, reads credentials, clicks seats, or collects ticket states.
-Only installed, reloaded TheatGood extension v0.1.5 performs the actual scan.
-One browser tab and one venue per invocation; NO unattended loop.
+Only installed, reloaded TheatGood extension v0.1.6 performs the actual scan.
+This helper opens an extra browser tab: disabled by default unless explicitly opted in.
+For zero-new-tab scans use the already installed extension's toolbar popup.
+At most one venue per invocation; NO unattended loop.
 #>
 param(
   [Parameter(Mandatory=$true)][ValidatePattern('^showtime-[a-z0-9-]+$')]
   [string]$CinemaSlug,
   [ValidateRange(0,35)][int]$StartMovie=0,
-  [switch]$DryRun
+  [switch]$DryRun,
+  [switch]$AllowNewTab
 )
 $ErrorActionPreference='Stop'
+if(-not $DryRun -and -not $AllowNewTab){
+  throw 'Opening additional Chrome tabs is disabled. Use the existing TheatGood toolbar popup (no new tabs); -AllowNewTab requires explicit user opt-in.'
+}
 $worktree=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $sourceRoot=$worktree
 if(-not(Test-Path (Join-Path $sourceRoot 'docs\research\theatgood-2026-11-18'))){
@@ -72,8 +78,8 @@ try{
     throw 'Dedicated stock Chrome or installed extension source unavailable'
   }
   $version=Get-Content $manifest -Raw -Encoding UTF8|ConvertFrom-Json
-  if($version.version -ne '0.1.5'){
-    throw 'Install/reload version 0.1.5 before running targeted research'
+  if($version.version -ne '0.1.6'){
+    throw 'Install/reload version 0.1.6 before running targeted research'
   }
   $roots=@(Get-CimInstance Win32_Process -Filter "name='chrome.exe'"|
     Where-Object {$_.CommandLine -like '*theatgood-showtimes-chrome-profile*' -and $_.CommandLine -notmatch ' --type='})

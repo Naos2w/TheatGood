@@ -33,14 +33,14 @@ try {
     acceptDownloads: true,
     args: ['--disable-extensions-except=' + dir, '--load-extension=' + dir],
   })
-  await context.route('https://www.showtimes.com.tw/**', async (route) => {
+  await context.route('https://showtimes.com.tw/**', async (route) => {
     await route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: fixture })
   })
   const worker =
     context.serviceWorkers()[0] ?? (await context.waitForEvent('serviceworker', { timeout: 15000 }))
   const extensionHost = new URL(worker.url()).host
   const memberTab = await context.newPage()
-  await memberTab.goto('https://www.showtimes.com.tw/', { waitUntil: 'domcontentloaded' })
+  await memberTab.goto('https://showtimes.com.tw/', { waitUntil: 'domcontentloaded' })
   await memberTab.evaluate(() => {
     globalThis.sessionStorage.setItem('syntheticSignIn', 'yes')
   })

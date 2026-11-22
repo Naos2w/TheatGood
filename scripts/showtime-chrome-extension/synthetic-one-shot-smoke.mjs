@@ -96,7 +96,7 @@ try {
     .getByText('這個一次性研究指令已使用；不重複執行。')
     .waitFor({ timeout: 6000 })
 
-  // v0.1.5: the one-shot extension URL sends ONLY its explicitly missing
+  // v0.1.6: the one-shot extension URL sends ONLY its explicitly missing
   // hall labels. Real source hall 1 is present in the synthetic fixture.
   await popup.goto(
     'chrome-extension://' +

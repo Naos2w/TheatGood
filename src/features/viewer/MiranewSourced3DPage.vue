@@ -125,7 +125,7 @@ function switchSeat(direction: -1 | 1) {
 function switchPattern(id: string) {
   if (!patterns.value.some((item) => item.id === id)) return
   void router.push({
-    name: 'miranew-3d-pattern',
+    name: 'miranew-sourced-3d-pattern',
     params: { slug: cinemaSlug.value, patternId: id },
   })
 }

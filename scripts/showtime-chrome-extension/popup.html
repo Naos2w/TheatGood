@@ -26,6 +26,7 @@
         color: #555;
       }
       select,
+      input,
       button {
         display: block;
         width: 100%;
@@ -34,7 +35,8 @@
         border-radius: 8px;
         box-sizing: border-box;
       }
-      select {
+      select,
+      input {
         border: 1px solid #bbb;
         background: #fff;
         margin-bottom: 12px;
@@ -75,9 +77,19 @@
     </p>
     <label for="venue">分館</label>
     <select id="venue"></select>
+    <label for="target-halls">指定缺廳（選填；逗號分隔，留空為前三張一般掃描）</label>
+    <input id="target-halls" type="text" autocomplete="off" placeholder="例如：3廳,7廳,8廳" />
+    <label for="start-movie">從哪張電影卡開始（指定缺廳適用）</label>
+    <select id="start-movie">
+      <option value="0">第 1–8 張</option>
+      <option value="8">第 9–16 張</option>
+      <option value="16">第 17–24 張</option>
+      <option value="24">第 25–32 張</option>
+      <option value="32">第 33–40 張</option>
+    </select>
     <button id="run">讀取這間影城的座位預覽</button>
     <div id="status" role="status" aria-live="polite">
-      等待開始。每輪最多檢查 3 部電影、每部 4 種廳別。
+      等待開始。一般掃描前三張；指定缺廳掃描最多八張電影卡、每部四種廳別。
     </div>
     <small
       >完成後資料只會儲存至本機 Downloads/TheatGood。若遇 Cloudflare

@@ -230,6 +230,16 @@ export function venueBrandLabel(cinema: Pick<ChainCinema, 'slug' | 'brand'>): st
       return '美麗華影城'
     case 'miranew':
       return '美麗新影城'
+    case 'ambassador':
+      return '國賓影城'
+    case 'in89':
+      return 'in89 豪華影城'
+    case 'broadway':
+      return '百老匯影城'
+    case 'centuryasia':
+      return '喜樂時代影城'
+    case 'skcinemas':
+      return '新光影城'
   }
 }
 

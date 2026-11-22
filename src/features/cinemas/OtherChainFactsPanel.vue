@@ -12,7 +12,9 @@ const props = defineProps<{ cinema: ChainCinema }>()
 const { t } = useI18n()
 const facts = computed(() => cinemaPublishedFacts[props.cinema.slug])
 const namedHalls = computed(() => publishedNamedHallsForCinema(props.cinema.slug))
-const sourceUrl = computed(() => facts.value?.sourceUrl ?? props.cinema.sourceUrl)
+const sourceUrl = computed(
+  () => facts.value?.sourceUrl ?? namedHalls.value[0]?.sourceUrl ?? props.cinema.sourceUrl,
+)
 
 function countLabel(scope: HallCountScope | undefined): string {
   if (scope === 'digital-halls') return t('chainDetail.digitalHalls')
@@ -30,15 +32,7 @@ function displayHallName(label: string): string {
       <v-icon icon="mdi-information-outline" size="22" />
       <div>
         <h2 id="chain-facts-heading">{{ t('chainDetail.branchOverview') }}</h2>
-        <p>
-          {{
-            t(
-              cinema.brand === 'miranew'
-                ? 'chainDetail.miranewPatternNotice'
-                : 'chainDetail.noVerifiedSeatMap',
-            )
-          }}
-        </p>
+        <p>{{ t('chainDetail.noVerifiedSeatMap') }}</p>
       </div>
     </div>
 
