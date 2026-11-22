@@ -328,12 +328,7 @@ function zoomMap(delta: number) {
             >{{ reference.publishedHallLabel }} · {{ selectedId }}</span
           >
         </div>
-        <div class="viewer-immersive__adjustments viewer-immersive__adjustments--media">
-          <CinemaScreenMediaControls
-            v-if="webglAvailable && !sceneFailed && sceneComponent"
-            :english="english"
-            @video-element="onScreenVideoElement"
-          />
+        <div class="viewer-immersive__adjustments">
           <Cinema3DSeatTools
             :horizontal-fov="horizontalFov"
             :can-move-front="!!frontRow"
@@ -384,7 +379,12 @@ function zoomMap(delta: number) {
               <v-icon icon="mdi-chevron-right" size="30" aria-hidden="true" />
             </button>
           </div>
-          <div class="viewer-immersive__utility">
+          <div class="viewer-immersive__utility viewer-immersive__utility--media">
+            <CinemaScreenMediaControls
+              v-if="webglAvailable && !sceneFailed && sceneComponent"
+              :english="english"
+              @video-element="onScreenVideoElement"
+            />
             <button class="viewer-reset" type="button" @click="resetViewToken++">
               <v-icon icon="mdi-restore" size="19" aria-hidden="true" />
               {{ english ? 'Reset' : '重設視角' }}
