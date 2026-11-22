@@ -1,12 +1,12 @@
 # Showtime seat-layout research — safe source-control checkpoint
 
-**Status (Taiwan time, 21 November 2026):** TheatGood has source-verified relative seat grids for **142 of 159** *sampled* Showtime cinema/hall labels; **17** sampled hall labels still lack a conflict-free source. The private MSI research area holds 97 normalised hall snapshots with 12,104 seat labels. These figures are **not** a complete physical auditorium census, measured geometry, or a published 3D model count.
+**Status (Taiwan time, 21 November 2026):** TheatGood has source-verified relative seat grids for **142 of 159** _sampled_ Showtime cinema/hall labels; **17** sampled hall labels still lack a conflict-free source. The private MSI research area holds 97 normalised hall snapshots with 12,104 seat labels. These figures are **not** a complete physical auditorium census, measured geometry, or a published 3D model count.
 
 ## Source-control boundary
 
 This GitHub repository is **public**. The authenticated Showtime seat-preview source downloads, their SHA/audit archives, and the relative seat-coordinate JSON snapshots are retained **locally on MSI**, outside version control. Specific `.gitignore` rules prevent accidental inclusion. No session, cookie, booking state, account identifier, personal information, or operator image assets should be committed.
 
-The scripts and synthetic fixtures in this checkpoint can be reviewed and tested without access to the member session. They do **not** recreate the private geometry. Public hall names are *sampled from advertised screening cards* and are distinct from permanent hall identity or measured seating.
+The scripts and synthetic fixtures in this checkpoint can be reviewed and tested without access to the member session. They do **not** recreate the private geometry. Public hall names are _sampled from advertised screening cards_ and are distinct from permanent hall identity or measured seating.
 
 ## Reproducible, bounded workflow
 

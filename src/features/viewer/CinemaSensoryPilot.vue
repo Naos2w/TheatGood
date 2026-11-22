@@ -1,29 +1,46 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
 
 /**
  * Media preview for source-archived public seat diagrams. Published capacity
  * may still differ; the viewer displays unresolved differences separately.
  * Film audio stays separate from the Three.js screen texture.
  */
-defineProps<{
-  selectedSeatId: string
-  /** Explain any discrepancy between the public session diagram and operator capacity. */
-  seatCountWarning?: string
-  canPrevious: boolean
-  canNext: boolean
-  canMoveFront: boolean
-  canMoveBack: boolean
-  savedComparisonSeatId: string
-  horizontalFov: number
-  viewMode: 'seat' | 'overview'
-}>()
+withDefaults(
+  defineProps<{
+    selectedSeatId: string
+    /** Explain any discrepancy between the public session diagram and operator capacity. */
+    seatCountWarning?: string
+    canPrevious: boolean
+    canNext: boolean
+    canMoveFront?: boolean
+    canMoveBack?: boolean
+    savedComparisonSeatId?: string
+    horizontalFov?: number
+    eyeAim?: 'eye-level' | 'screen-centre'
+    verticalGaze?: number
+    horizontalGaze?: number
+    /** No permanent hall identity: never suggest recording this as a verified hall. */
+    recordSeatEnabled?: boolean
+    viewMode: 'seat' | 'overview'
+  }>(),
+  {
+    canMoveFront: false,
+    canMoveBack: false,
+    savedComparisonSeatId: '',
+    horizontalFov: DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV,
+    eyeAim: 'screen-centre',
+    recordSeatEnabled: true,
+  },
+)
 const emit = defineEmits<{
   'video-element': [video: HTMLVideoElement | null]
   'previous-seat': []
   'next-seat': []
   'toggle-view-mode': []
+  'toggle-eye-aim': []
   'reset-view': []
   'record-seat': []
   'move-row': [direction: -1 | 1]
@@ -56,6 +73,11 @@ const message = ref('播放電影後，可選擇是否開啟原聲；不同座�
 const progress = computed(() =>
   duration.value > 0 ? Math.min(100, (elapsed.value / duration.value) * 100) : 0,
 )
+function formatSignedAngle(degrees: number | undefined) {
+  if (degrees === undefined || !Number.isFinite(degrees)) return '—'
+  const rounded = Math.abs(degrees) < 0.05 ? 0 : degrees
+  return `${rounded > 0 ? '+' : ''}${rounded.toFixed(1)}°`
+}
 function formatTime(seconds: number) {
   const n = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0))
   return `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`
@@ -159,6 +181,22 @@ onUnmounted(() => {
           <v-icon icon="mdi-close" size="18" />
         </button>
       </div>
+      <p role="status">
+        {{ t('vieshow3d.currentEyeAim') }}:
+        {{ eyeAim === 'eye-level' ? t('vieshow3d.eyeLevel') : t('vieshow3d.screenCentred') }}
+      </p>
+      <button type="button" class="cinema-sensory-pilot__reset" @click="emit('toggle-eye-aim')">
+        <v-icon icon="mdi-eye-outline" size="16" />
+        {{ eyeAim === 'eye-level' ? t('vieshow3d.aimAtScreen') : t('vieshow3d.eyeLevel') }}
+      </button>
+      <p v-if="verticalGaze !== undefined && horizontalGaze !== undefined" role="note">
+        {{
+          t('vieshow3d.screenCentreAngles', {
+            vertical: formatSignedAngle(verticalGaze),
+            horizontal: formatSignedAngle(horizontalGaze),
+          })
+        }}
+      </p>
       <p>《The Daily Dweebs》｜Blender Foundation</p>
       <p>{{ formatTime(elapsed) }} / {{ formatTime(duration) }} · 座位 {{ selectedSeatId }}</p>
       <div class="cinema-sensory-pilot__progress" aria-hidden="true">
@@ -252,7 +290,12 @@ onUnmounted(() => {
       <button type="button" class="cinema-sensory-pilot__reset" @click="resetViewAndClose">
         <v-icon icon="mdi-restore" size="16" /> 重設視角
       </button>
-      <button type="button" class="cinema-sensory-pilot__reset" @click="emit('record-seat')">
+      <button
+        v-if="recordSeatEnabled"
+        type="button"
+        class="cinema-sensory-pilot__reset"
+        @click="emit('record-seat')"
+      >
         <v-icon icon="mdi-bookmark-outline" size="16" /> {{ t('history.recordSeat') }}
       </button>
     </aside>

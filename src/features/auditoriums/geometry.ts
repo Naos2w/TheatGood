@@ -1,5 +1,6 @@
 /** Coordinates use metres: Y is up; the screen faces +Z at z=0. */
 import type { AuditoriumDefinition, ScreenDefinition } from './schema'
+import { deriveScreenProjection } from './screen-projection'
 export type {
   AuditoriumDefinition,
   AuditoriumRow,
@@ -68,15 +69,14 @@ export function createSeats(auditorium: AuditoriumDefinition): AuditoriumSeat[] 
 
 /** Angles are in degrees; distance is the horizontal range to screen centre. */
 export function calculateSightline(seat: AuditoriumSeat, screen: ScreenDefinition): Sightline {
+  const projection = deriveScreenProjection(screen)
   const forward = seat.z - screen.z
-  if (forward <= 0 || screen.width <= 0 || screen.height <= 0) {
-    throw new RangeError('The screen must be ahead of the seat and have positive dimensions')
+  if (forward <= 0 || seat.z <= Math.max(projection.topZ, projection.bottomZ)) {
+    throw new RangeError('The entire projected screen must be ahead of the seat')
   }
 
-  const leftX = screen.centerX - screen.width / 2
-  const rightX = screen.centerX + screen.width / 2
-  const bottomY = screen.bottomY
-  const topY = bottomY + screen.height
+  const leftX = screen.centerX - projection.width / 2
+  const rightX = screen.centerX + projection.width / 2
   const radiansToDegrees = 180 / Math.PI
 
   return {
@@ -85,7 +85,8 @@ export function calculateSightline(seat: AuditoriumSeat, screen: ScreenDefinitio
       (Math.atan2(rightX - seat.x, forward) - Math.atan2(leftX - seat.x, forward)) *
       radiansToDegrees,
     verticalAngle:
-      (Math.atan2(topY - seat.eyeY, forward) - Math.atan2(bottomY - seat.eyeY, forward)) *
+      (Math.atan2(projection.topY - seat.eyeY, seat.z - projection.topZ) -
+        Math.atan2(projection.bottomY - seat.eyeY, seat.z - projection.bottomZ)) *
       radiansToDegrees,
     horizontalOffset: Math.atan2(screen.centerX - seat.x, forward) * radiansToDegrees,
   }

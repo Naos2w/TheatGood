@@ -35,7 +35,7 @@ describe('2D screen reference and estimated 3D viewport consistency', () => {
     )
   })
 
-  it('uses a less wide default camera without changing any estimated physical screen dimension', async () => {
+  it('restores the immersive seat-view lens without changing physical screen dimensions', async () => {
     const hall = (await loadVieShowArchiveForCinema('vieshow-hsinchu-bigcity')).find(
       (item) => item.hallNumber === 2,
     )!

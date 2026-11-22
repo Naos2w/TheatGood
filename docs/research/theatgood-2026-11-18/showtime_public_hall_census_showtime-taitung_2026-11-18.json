@@ -7,16 +7,7 @@
   "sourceScope": "public_movie_information_only_not_authenticated_seat_grid",
   "moviesSeen": 9,
   "moviesWithHallLabels": 9,
-  "publicHallLabels": [
-    "1廳",
-    "2廳",
-    "3廳",
-    "4廳",
-    "5廳",
-    "6廳",
-    "7廳",
-    "8廳"
-  ],
+  "publicHallLabels": ["1廳", "2廳", "3廳", "4廳", "5廳", "6廳", "7廳", "8廳"],
   "hallOccurrenceCounts": {
     "4廳": 1,
     "3廳": 2,

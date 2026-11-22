@@ -28,6 +28,10 @@ export const auditoriumSchema = z
       centerX: z.number(),
       bottomY: z.number(),
       z: z.number(),
+      // Optional physical tilt about the screen's horizontal centre; + tilts the top toward the audience.
+      tiltDegrees: z.number().min(-30).max(30).optional(),
+      // Active projected picture aspect. The physical screen can have letter/pillar boxing.
+      projectionAspectRatio: z.number().positive().optional(),
     }),
     seatWidth: z.number().positive(),
     seatSpacing: z.number().positive(),

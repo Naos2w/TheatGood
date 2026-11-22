@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   filterWatchHistory,
   makeManualDraft,
+  mustPreserveTextOnlyWatchEntry,
   summariseWatchHistory,
   todayInTaipei,
   watchCinemaOptions,
@@ -69,6 +70,32 @@ describe('free-text manual viewing footprint', () => {
     expect(cinema).toHaveLength(1)
     expect(cinema[0]).toEqual({ name: '光點電影院', modelId: 'spot-taipei' })
     expect(watchHallOptions('nonexistent')).toEqual([])
+  })
+
+  it('keeps archived and text-only records free of accidental legacy model links on edit', () => {
+    expect(
+      mustPreserveTextOnlyWatchEntry(
+        record({
+          cinemaSlug: 'vieshow-taipei-hsinyi',
+          hallName: '12 廳',
+          modelId: null,
+          modelVersion: null,
+        }),
+      ),
+    ).toBe(true)
+    expect(
+      mustPreserveTextOnlyWatchEntry(
+        record({
+          cinemaSlug: 'vieshow-taipei-hsinyi',
+          hallName: '12 廳',
+          seatLabel: 'FAKE999',
+          modelId: null,
+          modelVersion: null,
+        }),
+      ),
+    ).toBe(true)
+    expect(mustPreserveTextOnlyWatchEntry(record({ modelVersion: null }))).toBe(true)
+    expect(mustPreserveTextOnlyWatchEntry(record())).toBe(false)
   })
 
   it('reopens only real existing seat positions from unchanged official models', () => {

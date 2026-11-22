@@ -1,36 +1,29 @@
-import { z } from 'zod'
 import { cinemaDirectory } from '../auditoriums/directory'
 import { findAuditorium } from '../auditoriums/catalog'
 import { createSeats } from '../auditoriums/geometry'
 import { chainCinemas } from '../cinemas/chain-directory'
 import { loadVieShowArchiveForCinema } from '../cinemas/vieshow-seat-archive'
 import { publishedNamedHallsForCinema } from '../cinemas/other-chain-facts'
+import {
+  manualWatchDraftSchema,
+  type ManualWatchDraft,
+  type ManualWatchEntry,
+} from './manual-history-schema'
 
-/**
- * A user's own viewing memory, not an assertion that a film or session existed.
- * This is a browser-local prototype; cloud-authenticated history comes later.
- */
-export const manualWatchDraftSchema = z.object({
-  movieTitle: z.string().trim().min(1).max(250),
-  watchedOn: z.iso.date(),
-  cinemaSlug: z.string().max(120).nullable(),
-  cinemaName: z.string().trim().min(1).max(200),
-  hallName: z.string().trim().max(160),
-  seatLabel: z.string().trim().max(20),
-  modelId: z.string().max(120).nullable(),
-  modelVersion: z.number().int().positive().nullable(),
-  manualEntry: z.literal(true),
-  screeningId: z.null(),
-})
+export {
+  manualWatchDraftSchema,
+  manualWatchEntrySchema,
+  type ManualWatchDraft,
+  type ManualWatchEntry,
+} from './manual-history-schema'
 
-export const manualWatchEntrySchema = manualWatchDraftSchema.extend({
-  id: z.string().uuid(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-})
-
-export type ManualWatchDraft = z.infer<typeof manualWatchDraftSchema>
-export type ManualWatchEntry = z.infer<typeof manualWatchEntrySchema>
+/** When editing an unversioned/text-only visit, never infer a legacy
+ * 3D catalogue model solely from a matching display name. */
+export function mustPreserveTextOnlyWatchEntry(
+  entry: Pick<ManualWatchDraft, 'modelId' | 'modelVersion'>,
+): boolean {
+  return entry.modelId === null || entry.modelVersion === null
+}
 
 export interface WatchCinemaOption {
   slug: string

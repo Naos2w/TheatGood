@@ -4,8 +4,14 @@ import { TresCanvas } from '@tresjs/core'
 import { PerspectiveCamera } from 'three'
 import type { AuditoriumSeat } from '../auditoriums/geometry'
 import type { CinemaWheelchairSpot, SceneAuditoriumGeometry } from './cinema-scene-model'
-import { cinemaCameraDirection, cinemaCameraPosition, cinemaCameraTarget } from './cinema-camera'
-import { verticalFovFromHorizontal } from './view-projection'
+import {
+  cinemaCameraDirection,
+  cinemaCameraPosition,
+  cinemaCameraTarget,
+  DEFAULT_CINEMA_EYE_AIM,
+  type CinemaEyeAim,
+} from './cinema-camera'
+import { responsiveCinemaFov } from './view-projection'
 import { deriveCinemaRoomLayout } from './cinema-room-layout'
 import CinemaRoomRenderer from './CinemaRoomRenderer.vue'
 import CinemaScreenRenderer from './CinemaScreenRenderer.vue'
@@ -17,6 +23,8 @@ const props = defineProps<{
   selectedSeatId: string
   resetViewToken: number
   horizontalFov: number
+  /** Look at the screen centre by default; level reference is optional. */
+  eyeAim?: CinemaEyeAim
   viewMode?: 'seat' | 'overview'
   wheelchairSpots?: CinemaWheelchairSpot[]
   demoVideo?: HTMLVideoElement | null
@@ -49,7 +57,15 @@ function orientCamera() {
     props.viewMode ?? 'seat',
     camera.aspect,
   )
-  const direction = cinemaCameraDirection(camera.position, target, yaw, pitch)
+  const direction = cinemaCameraDirection(
+    camera.position,
+    target,
+    yaw,
+    pitch,
+    props.viewMode === 'overview'
+      ? DEFAULT_CINEMA_EYE_AIM
+      : (props.eyeAim ?? DEFAULT_CINEMA_EYE_AIM),
+  )
   camera.up.set(0, 1, 0)
   camera.lookAt(camera.position.clone().add(direction))
   camera.updateMatrixWorld()
@@ -124,7 +140,7 @@ function resizeCamera() {
   const height = box.clientHeight
   if (!width || !height) return
   camera.aspect = width / height
-  camera.fov = verticalFovFromHorizontal(props.horizontalFov, camera.aspect)
+  camera.fov = responsiveCinemaFov(props.horizontalFov, width, height).verticalDegrees
   camera.updateProjectionMatrix()
   if (props.viewMode === 'overview') orientCamera()
 }
@@ -145,6 +161,7 @@ watch(
   { immediate: true },
 )
 watch(() => props.resetViewToken, resetView)
+watch(() => props.eyeAim, resetView)
 watch(() => props.horizontalFov, resizeCamera)
 
 onMounted(() => {

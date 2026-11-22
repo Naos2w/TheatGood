@@ -5,5 +5,5 @@
  */
 export const DEFAULT_SCREEN_TO_SEAT_BLOCK_RATIO = 0.86
 
-/** Horizontal *camera* FOV, not screen size; a comfortable presentation preset. */
+/** The preferred immersive seat-screen viewing lens, not a calibrated human eye. */
 export const DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV = 65
