@@ -12,6 +12,7 @@ import {
 } from './showtime-local-research'
 import { deriveShowtimeEstimatedScene, type ShowtimeSeatSnapshot } from './showtime-estimated-scene'
 import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
+import CinemaScreenMediaControls from './CinemaScreenMediaControls.vue'
 import { swapObservedSeatComparison } from './seat-comparison'
 
 const route = useRoute()
@@ -37,6 +38,10 @@ const resetViewToken = ref(0)
 const webglAvailable = ref(true)
 const sceneFailed = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
+const screenVideo = shallowRef<HTMLVideoElement | null>(null)
+function onScreenVideoElement(video: HTMLVideoElement | null) {
+  screenVideo.value = video
+}
 
 const scene = computed(() =>
   source.value ? deriveShowtimeEstimatedScene(source.value, undefined, slug.value) : null,
@@ -413,6 +418,7 @@ function selectedMapSeatLabel(): string {
           :reset-view-token="resetViewToken"
           :horizontal-fov="horizontalFov"
           :view-mode="viewMode"
+          :demo-video="screenVideo"
         />
         <div class="viewer-immersive__top">
           <button class="viewer-glass-button" type="button" @click="set3D(false)">
@@ -423,7 +429,12 @@ function selectedMapSeatLabel(): string {
             {{ source.observedHallLabel }} · {{ selectedMapSeatLabel() }}
           </span>
         </div>
-        <div class="viewer-immersive__adjustments">
+        <div class="viewer-immersive__adjustments viewer-immersive__adjustments--media">
+          <CinemaScreenMediaControls
+            v-if="webglAvailable && !sceneFailed && sceneComponent"
+            :english="english"
+            @video-element="onScreenVideoElement"
+          />
           <Cinema3DSeatTools
             :horizontal-fov="horizontalFov"
             :can-move-front="!!frontRow"

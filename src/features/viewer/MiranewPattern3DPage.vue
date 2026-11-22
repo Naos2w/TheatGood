@@ -12,6 +12,7 @@ import { chainCinemas } from '../cinemas/chain-directory'
 import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
 import { deriveMiranewPattern3D, initialMiranewPatternSeat } from './miranew-pattern-3d'
 import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
+import CinemaScreenMediaControls from './CinemaScreenMediaControls.vue'
 import { swapObservedSeatComparison } from './seat-comparison'
 
 const route = useRoute()
@@ -44,6 +45,10 @@ const immersive = computed(() => route.query.view === '3d')
 const viewMode = ref<'seat' | 'overview'>('seat')
 const resetViewToken = ref(0)
 const sceneComponent = shallowRef<Component | null>(null)
+const screenVideo = shallowRef<HTMLVideoElement | null>(null)
+function onScreenVideoElement(video: HTMLVideoElement | null) {
+  screenVideo.value = video
+}
 const sceneFailed = ref(false)
 const webglAvailable = ref(true)
 const zoom = ref(1)
@@ -312,6 +317,7 @@ function zoomMap(delta: number) {
           :reset-view-token="resetViewToken"
           :horizontal-fov="horizontalFov"
           :view-mode="viewMode"
+          :demo-video="screenVideo"
         />
         <div class="viewer-immersive__top">
           <button class="viewer-glass-button" type="button" @click="setImmersive(false)">
@@ -322,7 +328,12 @@ function zoomMap(delta: number) {
             >{{ reference.publishedHallLabel }} · {{ selectedId }}</span
           >
         </div>
-        <div class="viewer-immersive__adjustments">
+        <div class="viewer-immersive__adjustments viewer-immersive__adjustments--media">
+          <CinemaScreenMediaControls
+            v-if="webglAvailable && !sceneFailed && sceneComponent"
+            :english="english"
+            @video-element="onScreenVideoElement"
+          />
           <Cinema3DSeatTools
             :horizontal-fov="horizontalFov"
             :can-move-front="!!frontRow"
