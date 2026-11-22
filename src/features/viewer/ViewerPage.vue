@@ -278,7 +278,7 @@ function swapComparison() {
         <span class="viewer-glass-button viewer-immersive__seat">{{ selectedSeat.id }}</span>
       </div>
 
-      <div class="viewer-immersive__bottom">
+      <div class="viewer-immersive__adjustments">
         <Cinema3DSeatTools
           :horizontal-fov="horizontalFov"
           :can-move-front="!!frontRow"
@@ -292,6 +292,8 @@ function swapComparison() {
           @swap-comparison="swapComparison"
           @clear-comparison="savedComparisonSeatId = ''"
         />
+      </div>
+      <div class="viewer-immersive__bottom">
         <p class="viewer-immersive__hint">{{ t('ux.dragHint') }}</p>
         <div class="viewer-switcher glass-panel">
           <button

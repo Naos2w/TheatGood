@@ -322,7 +322,7 @@ function zoomMap(delta: number) {
             >{{ reference.publishedHallLabel }} · {{ selectedId }}</span
           >
         </div>
-        <div class="viewer-immersive__bottom">
+        <div class="viewer-immersive__adjustments">
           <Cinema3DSeatTools
             :horizontal-fov="horizontalFov"
             :can-move-front="!!frontRow"
@@ -336,6 +336,8 @@ function zoomMap(delta: number) {
             @swap-comparison="swapComparison"
             @clear-comparison="savedComparisonSeatId = ''"
           />
+        </div>
+        <div class="viewer-immersive__bottom">
           <p class="viewer-immersive__hint">
             {{
               english
