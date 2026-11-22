@@ -27,6 +27,7 @@ import {
   initialVieShowPreviewSeat,
 } from './vieshow-approximate-scene'
 import Cinema3DSeatTools from './Cinema3DSeatTools.vue'
+import CinemaScreenMediaControls from './CinemaScreenMediaControls.vue'
 import { usesCinemaSensoryPilot } from './cinema-sensory-scope'
 import { swapObservedSeatComparison } from './seat-comparison'
 
@@ -48,6 +49,10 @@ const immersiveViewMode = ref<'seat' | 'overview'>('seat')
 const webglAvailable = ref(true)
 const sceneError = ref(false)
 const sceneComponent = shallowRef<Component | null>(null)
+const screenVideo = shallowRef<HTMLVideoElement | null>(null)
+function onScreenVideoElement(video: HTMLVideoElement | null) {
+  screenVideo.value = video
+}
 const CinemaSensoryPilot = defineAsyncComponent(() => import('./CinemaSensoryPilot.vue'))
 const pilotVideo = shallowRef<HTMLVideoElement | null>(null)
 
@@ -539,7 +544,7 @@ function recordSelectedSeat() {
           :reset-view-token="resetViewToken"
           :horizontal-fov="horizontalFov"
           :view-mode="immersiveViewMode"
-          :demo-video="pilotEnabled ? pilotVideo : null"
+          :demo-video="pilotEnabled ? pilotVideo : screenVideo"
         />
         <div class="viewer-immersive__top">
           <button type="button" class="viewer-glass-button" @click="setImmersive(false)">
@@ -573,7 +578,15 @@ function recordSelectedSeat() {
           @reset-view="resetViewToken++"
           @record-seat="recordSelectedSeat"
         />
-        <div v-if="!pilotEnabled" class="viewer-immersive__adjustments">
+        <div
+          v-if="!pilotEnabled"
+          class="viewer-immersive__adjustments viewer-immersive__adjustments--media"
+        >
+          <CinemaScreenMediaControls
+            v-if="webglAvailable && !sceneError && sceneComponent"
+            :english="english"
+            @video-element="onScreenVideoElement"
+          />
           <Cinema3DSeatTools
             :horizontal-fov="horizontalFov"
             :can-move-front="!!frontRow"
