@@ -39,7 +39,7 @@ describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
 
   it('uses Miramar operator-labelled halls and counts, never filling missing hall 4 or 6', () => {
     expect(miramarPublishedHalls).toHaveLength(10)
-    expect(publishedNamedHallSeatSum('miramar-dazhi')).toBe(2910)
+    expect(publishedNamedHallSeatSum('miramar-dazhi')).toBe(2879)
     const halls = publishedNamedHallsForCinema('miramar-dazhi')
     expect(halls.map((hall) => hall.label)).toEqual([
       '1',
@@ -54,8 +54,9 @@ describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
       'IMAX',
     ])
     expect(halls.find((hall) => hall.label === 'Dolby Cinema')?.publishedSeatCount).toBe(303)
-    expect(halls.find((hall) => hall.label === 'IMAX')?.publishedSeatCount).toBe(404)
+    expect(halls.find((hall) => hall.label === 'IMAX')?.publishedSeatCount).toBe(373)
     expect(halls.every((hall) => hall.sourceUrl === MIRAMAR_HALL_SOURCE)).toBe(true)
+    expect(halls.every((hall) => hall.sourceDate === '2026-11-23')).toBe(true)
     expect(halls.every((hall) => hall.dataLevel === 'published-count-only')).toBe(true)
   })
 
@@ -63,7 +64,7 @@ describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
     const halls = publishedNamedHallsForCinema('miramar-dazhi')
     const imax = halls.find((hall) => hall.label === 'IMAX')
     expect(imax).toMatchObject({
-      publishedSeatCount: 404,
+      publishedSeatCount: 373,
       screenWidthM: 28.4,
       screenHeightM: 20.54,
       screenShape: 'curved',
