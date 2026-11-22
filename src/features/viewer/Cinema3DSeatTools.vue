@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
 
 const props = defineProps<{
@@ -19,6 +19,24 @@ const emit = defineEmits<{
 }>()
 
 const isDefault = computed(() => props.horizontalFov === DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
+const settingsDetails = ref<HTMLDetailsElement | null>(null)
+
+function closeSettings() {
+  if (settingsDetails.value) settingsDetails.value.open = false
+}
+function moveRow(direction: -1 | 1) {
+  emit('move-row', direction)
+  closeSettings()
+}
+function saveComparison() {
+  emit('save-comparison')
+  closeSettings()
+}
+function switchComparison() {
+  emit('swap-comparison')
+  closeSettings()
+}
+watch(() => props.selectedSeatId, closeSettings)
 
 function updateLens(event: Event) {
   const input = event.target
@@ -31,11 +49,17 @@ function updateLens(event: Event) {
 </script>
 
 <template>
-  <details class="cinema-3d-adjustments">
+  <details ref="settingsDetails" class="cinema-3d-adjustments" @keydown.esc.stop="closeSettings">
     <summary>
       <v-icon icon="mdi-tune-variant" size="17" aria-hidden="true" />
-      {{ english ? 'Seat & camera settings' : '座位／鏡頭微調' }}
+      {{ english ? 'Seat & camera' : '座位／鏡頭' }}
       <span>{{ horizontalFov }}°</span>
+      <v-icon
+        class="cinema-3d-adjustments__chevron"
+        icon="mdi-chevron-down"
+        size="17"
+        aria-hidden="true"
+      />
     </summary>
     <div class="cinema-3d-adjustments__panel">
       <div class="cinema-3d-adjustments__rows">
@@ -43,7 +67,7 @@ function updateLens(event: Event) {
           type="button"
           :disabled="!canMoveFront"
           :aria-label="english ? 'Move one row towards the screen' : '往銀幕方向前一排'"
-          @click="emit('move-row', -1)"
+          @click="moveRow(-1)"
         >
           <v-icon icon="mdi-arrow-up" size="17" aria-hidden="true" />
           {{ english ? 'Front row' : '前一排' }}
@@ -52,7 +76,7 @@ function updateLens(event: Event) {
           type="button"
           :disabled="!canMoveBack"
           :aria-label="english ? 'Move one row away from the screen' : '往後一排'"
-          @click="emit('move-row', 1)"
+          @click="moveRow(1)"
         >
           <v-icon icon="mdi-arrow-down" size="17" aria-hidden="true" />
           {{ english ? 'Back row' : '後一排' }}
@@ -106,7 +130,7 @@ function updateLens(event: Event) {
             type="button"
             :disabled="!selectedSeatId"
             :aria-label="english ? 'Save current seat for comparison' : '儲存目前座位作為比較基準'"
-            @click="emit('save-comparison')"
+            @click="saveComparison"
           >
             {{ english ? 'Save seat' : '儲存此座位' }}
           </button>
@@ -114,7 +138,7 @@ function updateLens(event: Event) {
             type="button"
             :disabled="!savedComparisonSeatId || savedComparisonSeatId === selectedSeatId"
             :aria-label="english ? 'Switch between compared seats' : '切換兩個比較座位'"
-            @click="emit('swap-comparison')"
+            @click="switchComparison"
           >
             {{ english ? 'Switch seats' : '切換比較席' }}
           </button>
@@ -141,7 +165,9 @@ function updateLens(event: Event) {
 
 <style scoped>
 .cinema-3d-adjustments {
-  width: min(340px, calc(100vw - 32px));
+  width: 100%;
+  max-width: 340px;
+  margin-left: auto;
   border: 1px solid rgba(220, 230, 244, 0.19);
   border-radius: 15px;
   background: rgba(22, 33, 48, 0.75);
@@ -151,14 +177,24 @@ function updateLens(event: Event) {
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
+.cinema-3d-adjustments:not([open]) {
+  width: max-content;
+  max-width: 100%;
+}
+.cinema-3d-adjustments[open] {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 145px);
+}
 .cinema-3d-adjustments summary {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
   cursor: pointer;
   padding: 8px 13px;
-  min-height: 39px;
+  min-height: 44px;
   font-size: 12px;
   font-weight: 700;
   list-style: none;
@@ -167,12 +203,22 @@ function updateLens(event: Event) {
   display: none;
 }
 .cinema-3d-adjustments summary span {
-  opacity: 0.7;
+  opacity: 0.76;
+}
+.cinema-3d-adjustments__chevron {
+  transition: transform 160ms ease;
+}
+.cinema-3d-adjustments[open] .cinema-3d-adjustments__chevron {
+  transform: rotate(180deg);
 }
 .cinema-3d-adjustments[open] summary {
   border-bottom: 1px solid rgba(220, 230, 244, 0.16);
 }
 .cinema-3d-adjustments__panel {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 10px 12px 12px;
 }
 .cinema-3d-adjustments__rows {
@@ -261,10 +307,22 @@ function updateLens(event: Event) {
   font-size: 11px;
   line-height: 1.5;
 }
-@media (max-height: 620px) {
+@media (max-width: 1023px) {
+  .cinema-3d-adjustments {
+    margin-right: auto;
+  }
   .cinema-3d-adjustments[open] {
-    max-height: 48vh;
-    overflow: auto;
+    max-height: min(40dvh, 340px);
+  }
+}
+@media (max-height: 540px) {
+  .cinema-3d-adjustments[open] {
+    max-height: min(66dvh, 315px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinema-3d-adjustments__chevron {
+    transition: none;
   }
 }
 @media (prefers-reduced-transparency: reduce) {
