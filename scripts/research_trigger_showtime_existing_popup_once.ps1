@@ -90,7 +90,18 @@ if($popup.Count -eq 0){
   $r=$toolbar.Current.BoundingRectangle
   $x=[int]($r.Left+$r.Width/2)
   $y=[int]($r.Top+$r.Height/2)
-  if($x -lt 30 -or $x -gt 1840 -or $y -lt 30 -or $y -gt 1000){throw 'Chrome toolbar is not on the visible desktop; refuse to move or open windows'}
+  # The user's dedicated Chrome may be on any physical monitor. A hardcoded
+  # (30..1840, 30..1000) rectangle falsely excludes left/above monitors
+  # (negative coordinates) and larger displays. Check the real virtual desktop
+  # monitor containing this exact UIA toolbar button before moving the cursor.
+  Add-Type -AssemblyName System.Windows.Forms
+  if($toolbar.Current.IsOffscreen -or $r.Width -lt 12 -or $r.Height -lt 12){
+    throw 'Dedicated Chrome toolbar is hidden or has an invalid bounding rectangle; refuse to click'
+  }
+  $visibleMonitors=@([System.Windows.Forms.Screen]::AllScreens|Where-Object{$_.Bounds.Contains($x,$y)})
+  if($visibleMonitors.Count -ne 1){
+    throw 'Dedicated Chrome toolbar does not fall inside exactly one attached monitor; refuse to click'
+  }
   $front=[ToolbarMouse]::GetForegroundWindow()
   $frontPid=[uint32]0
   $frontThread=[ToolbarMouse]::GetWindowThreadProcessId($front,[ref]$frontPid)
