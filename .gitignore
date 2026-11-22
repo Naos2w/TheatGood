@@ -9,3 +9,17 @@ coverage/
 !.env.example
 .DS_Store
 *.log
+__pycache__/
+*.py[cod]
+
+# Private Showtime member-preview research: keep original evidence and seat grids on MSI only.
+# The GitHub repository is public; do not stage these with future blanket git add.
+docs/research/theatgood-2026-11-18/showtime_preview_showtime-*.json
+docs/research/theatgood-2026-11-18/showtime_extension_verified_raw_*.json
+docs/research/theatgood-2026-11-18/showtime_extension_verified_audit_*.json
+docs/research/theatgood-2026-11-18/showtime_extension_quarantine_*.json
+docs/research/theatgood-2026-11-18/showtime_extension_audit_*.json
+docs/research/theatgood-2026-11-18/showtime_3d_readiness_*.json
+docs/research/theatgood-2026-11-18/showtime_chain_coverage_*.json
+docs/research/theatgood-2026-11-18/showtime_conflict_backup_*.json
+docs/research/theatgood-2026-11-18/showtime_conflict_review_*.json

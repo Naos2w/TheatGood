@@ -1,0 +1,384 @@
+/* One visual rhythm for cinema cards: logo, information, map action. */
+.chain-cinema--mall-first {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 12px;
+  align-items: center;
+}
+.chain-cinema--mall-first .chain-cinema__whole {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) 20px;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 72px;
+}
+.chain-cinema--mall-first .chain-cinema__mall-symbol,
+.chain-cinema--mall-first .chain-cinema__mall-symbol--wide {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  flex: none;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: 15px;
+  background: #fff;
+  border: 1px solid var(--tg-border);
+  color: var(--tg-muted);
+  overflow: hidden;
+}
+.chain-cinema--mall-first .chain-cinema__mall-symbol img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+}
+.chain-cinema--mall-first .chain-cinema__mall-symbol .v-icon {
+  display: grid;
+  place-items: center;
+}
+.chain-cinema--mall-first .chain-cinema__details {
+  min-width: 0;
+  justify-content: center;
+}
+.chain-cinema--mall-first .chain-cinema__chevron {
+  justify-self: end;
+}
+.chain-cinema--mall-first .chain-cinema__link--map {
+  display: grid;
+  place-items: center;
+  grid-column: 2;
+  align-self: center;
+  justify-self: center;
+  box-sizing: border-box;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border-radius: 14px;
+}
+.chain-cinema--mall-first .chain-cinema__link--map .v-icon {
+  display: block;
+  line-height: 1;
+  margin: auto;
+}
+/* A chain/brand label and a premium-screen label have different meanings.
+ * Use different visual treatments so the latter never reads like a cinema brand. */
+.chain-directory__format-explanation {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 4px 0 8px;
+  color: var(--tg-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.chain-directory__format-explanation .v-icon {
+  flex: none;
+  margin-top: 1px;
+}
+.chain-cinema__brand-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--chain-accent) 27%, transparent);
+  border-radius: 999px;
+  background: var(--chain-tint);
+}
+.chain-cinema__brand-chip img {
+  display: block;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+.chain-cinema__format-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.chain-cinema__format-tags .chain-cinema__format-prefix {
+  padding: 0;
+  border: 0;
+  color: var(--tg-muted);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chain-cinema__format-tags .chain-cinema__format-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--tg-accent) 58%, var(--tg-border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tg-accent) 9%, var(--tg-surface));
+  color: var(--tg-text);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.015em;
+}
+.chain-cinema__format-tags .chain-cinema__format-badge--imax {
+  border-color: color-mix(in srgb, #3188dc 68%, var(--tg-border));
+}
+.chain-cinema__format-tags .chain-cinema__format-badge--giant {
+  border-color: color-mix(in srgb, #9165d4 68%, var(--tg-border));
+}
+
+/* Stable auditorium card geometry independent of how many format badges exist.
+ * Counts describe archived seat labels, not official sellable seat capacity. */
+.vieshow-hall-selector__legend-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--tg-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.vieshow-hall-selector__grid {
+  align-items: stretch;
+}
+.vieshow-hall-selector__tile.vieshow-hall-selector__link,
+.vieshow-hall-selector__tile.vieshow-hall-selector__tile--missing {
+  display: grid;
+  grid-template-rows: 34px minmax(28px, 1fr) 20px;
+  align-items: stretch;
+  align-content: stretch;
+  justify-content: stretch;
+  gap: 6px;
+  min-width: 0;
+  min-height: 126px;
+  padding: 12px;
+}
+.vieshow-hall-selector__link > .vieshow-hall-selector__tile-heading,
+.vieshow-hall-selector__tile-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+  color: var(--tg-text);
+  line-height: 1.25;
+}
+.vieshow-hall-selector__tile-heading strong {
+  display: block;
+  max-width: 100%;
+  font-size: 15px;
+  font-weight: 790;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.vieshow-hall-selector__tile-heading small {
+  display: block;
+  max-width: 100%;
+  color: var(--tg-muted);
+  font-size: 10px;
+  font-weight: 550;
+  line-height: 1.35;
+}
+.vieshow-hall-selector__link > .vieshow-hall-selector__format-slot,
+.vieshow-hall-selector__format-slot {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 28px;
+  width: 100%;
+  color: var(--tg-muted);
+  font-size: 11px;
+}
+.vieshow-hall-selector__formats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+.vieshow-hall-selector__format {
+  --tg-format-color: var(--tg-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--tg-format-color) 55%, var(--tg-border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--tg-format-color) 11%, var(--tg-surface));
+  color: var(--tg-text);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.vieshow-hall-selector__format--premium {
+  --tg-format-color: #a57725;
+}
+.vieshow-hall-selector__format--imax {
+  --tg-format-color: #327dcc;
+}
+.vieshow-hall-selector__format--titan {
+  --tg-format-color: #875fca;
+}
+.vieshow-hall-selector__format--inferred {
+  border-style: dashed;
+}
+.vieshow-hall-selector__format small {
+  font-size: 9px;
+  font-weight: 650;
+  color: var(--tg-muted);
+  line-height: 1.2;
+}
+.vieshow-hall-selector__format-default {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--tg-muted);
+  font-size: 10px;
+  font-weight: 550;
+}
+.vieshow-hall-selector__link > .vieshow-hall-selector__tile-action,
+.vieshow-hall-selector__tile-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: end;
+  width: 100%;
+  min-width: 0;
+  color: var(--tg-accent);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+.vieshow-hall-selector__tile--missing {
+  opacity: 1;
+  border-style: dashed;
+  background: color-mix(in srgb, var(--tg-secondary) 55%, var(--tg-surface));
+}
+.vieshow-hall-selector__tile--missing .vieshow-hall-selector__tile-action {
+  justify-content: flex-start;
+  gap: 5px;
+  color: var(--tg-muted);
+}
+html[data-theme='dark'] .vieshow-hall-selector__format--premium {
+  --tg-format-color: #dfbb70;
+}
+html[data-theme='dark'] .vieshow-hall-selector__format--imax {
+  --tg-format-color: #76b8ff;
+}
+html[data-theme='dark'] .vieshow-hall-selector__format--titan {
+  --tg-format-color: #be9aff;
+}
+@media (max-width: 599px) {
+  .chain-cinema--mall-first {
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 9px;
+  }
+  .chain-cinema--mall-first .chain-cinema__whole {
+    grid-template-columns: 48px minmax(0, 1fr);
+    min-height: 66px;
+    gap: 10px;
+  }
+  .chain-cinema--mall-first .chain-cinema__mall-symbol,
+  .chain-cinema--mall-first .chain-cinema__mall-symbol--wide {
+    width: 48px;
+    height: 48px;
+    padding: 4px;
+    border-radius: 13px;
+  }
+  .chain-cinema--mall-first .chain-cinema__chevron {
+    display: none;
+  }
+  .vieshow-hall-selector__format {
+    padding: 3px 5px;
+    font-size: 10px;
+  }
+}
+
+/* Major-chain directory: clear filters and truthful model availability. */
+.home-brand-switch {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 1px 5px;
+  margin-top: 5px;
+}
+.home-brand-switch::-webkit-scrollbar {
+  display: none;
+}
+.home-brand-switch button {
+  flex: 0 0 auto;
+  min-height: 39px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--tg-border);
+  border-radius: 999px;
+  background: var(--tg-surface);
+  color: var(--tg-muted);
+  font-size: 12px;
+  font-weight: 680;
+  white-space: nowrap;
+  padding: 6px 11px;
+}
+.home-brand-switch button.is-active {
+  color: var(--tg-text);
+  border-color: color-mix(in srgb, var(--tg-accent) 62%, var(--tg-border));
+  background: color-mix(in srgb, var(--tg-accent) 13%, var(--tg-surface));
+  font-weight: 820;
+}
+.home-brand-switch button:focus-visible {
+  outline: 3px solid var(--tg-accent);
+  outline-offset: 2px;
+}
+.home-brand-switch__count {
+  font-size: 10px;
+  opacity: 0.78;
+  font-variant-numeric: tabular-nums;
+}
+.chain-directory__count {
+  color: var(--tg-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.chain-cinema--mall-first .chain-cinema__model-status {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  max-width: 100%;
+  color: var(--tg-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.chain-cinema__model-status .v-icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+.chain-cinema--mall-first .chain-cinema__model-status--ready {
+  color: var(--tg-accent);
+}
+@media (min-width: 700px) {
+  .discovery-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 599px) {
+  .discovery-filters .discovery-filter.discovery-filter--availability {
+    grid-column: 1 / -1;
+  }
+  .chain-cinema--mall-first .chain-cinema__model-status {
+    font-size: 10px;
+  }
+}

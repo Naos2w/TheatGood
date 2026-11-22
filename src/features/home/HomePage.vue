@@ -1,53 +1,62 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
-import { appLocale } from '../../composables/usePreferences'
 import ChainDirectorySection from '../cinemas/ChainDirectorySection.vue'
-import { chainCinemas } from '../cinemas/chain-directory'
-import {
-  cinemaDirectory,
-  directoryCinemaName,
-  directoryHallName,
-  searchCinemaDirectory,
-} from '../auditoriums/directory'
-import { vieShowArchiveSummary } from '../cinemas/vieshow-seat-archive'
-import { directoryHallRoute } from '../cinemas/hall-navigation'
-import {
-  cinemaLocations,
-  distanceToCinemaKm,
-  sortHallsByDistance,
-  type GeoPoint,
-} from '../auditoriums/proximity'
+import type { GeoPoint } from '../auditoriums/proximity'
+import type { AuditoriumFormatFilter } from '../cinemas/cinema-discovery-metadata'
+import { chainCinemas, type ChainBrand } from '../cinemas/chain-directory'
+import { searchChainCinemaVenues, type CinemaDiscoveryModelFilter } from './discovery-categories'
 
 type LocationStatus = 'idle' | 'loading' | 'ready' | 'denied' | 'unavailable' | 'timeout'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const search = ref('')
 const cityFilter = ref('all')
-const modelFilter = ref<'all' | '3d' | 'information'>('all')
-const sortMode = ref<'models' | 'distance'>('models')
+const formatFilter = ref<AuditoriumFormatFilter>('all')
+const brandFilter = ref<ChainBrand | 'all'>('all')
+const modelFilter = ref<CinemaDiscoveryModelFilter>('all')
+const chainBrands: { value: ChainBrand | 'all'; key: string; count: number }[] = [
+  { value: 'all', key: 'home.chainAll', count: chainCinemas.length },
+  {
+    value: 'vieshow',
+    key: 'home.chainVieshow',
+    count: chainCinemas.filter((cinema) => cinema.brand === 'vieshow').length,
+  },
+  {
+    value: 'showtime',
+    key: 'home.chainShowtime',
+    count: chainCinemas.filter((cinema) => cinema.brand === 'showtime').length,
+  },
+  {
+    value: 'miramar',
+    key: 'home.chainMiramar',
+    count: chainCinemas.filter((cinema) => cinema.brand === 'miramar').length,
+  },
+  {
+    value: 'miranew',
+    key: 'home.chainMiranew',
+    count: chainCinemas.filter((cinema) => cinema.brand === 'miranew').length,
+  },
+  ...(
+    [
+      ['ambassador', 'home.chainAmbassador'],
+      ['in89', 'home.chainIn89'],
+      ['broadway', 'home.chainBroadway'],
+      ['centuryasia', 'home.chainCenturyAsia'],
+      ['skcinemas', 'home.chainSkcinemas'],
+    ] as const
+  ).map(([value, key]) => ({
+    value,
+    key,
+    count: chainCinemas.filter((cinema) => cinema.brand === value).length,
+  })),
+]
 const currentPosition = ref<GeoPoint | null>(null)
 const locationStatus = ref<LocationStatus>('idle')
 const cities = [
-  ...new Set([
-    ...cinemaDirectory.map((hall) => hall.city),
-    ...chainCinemas.map((cinema) => cinema.city),
-  ]),
+  ...new Set(searchChainCinemaVenues('', 'all', 'all').map((cinema) => cinema.city)),
 ].sort()
-
-const results = computed(() => {
-  const matches = searchCinemaDirectory(search.value).filter(
-    (hall) =>
-      (cityFilter.value === 'all' || hall.city === cityFilter.value) &&
-      (modelFilter.value === 'all' ||
-        (modelFilter.value === '3d' ? Boolean(hall.modelId) : !hall.modelId)),
-  )
-  if (sortMode.value === 'distance' && currentPosition.value) {
-    return sortHallsByDistance(matches, currentPosition.value)
-  }
-  return matches.sort((a, b) => Number(Boolean(b.modelId)) - Number(Boolean(a.modelId)))
-})
 
 const locationMessage = computed(() => {
   switch (locationStatus.value) {
@@ -75,28 +84,16 @@ function locate() {
   navigator.geolocation.getCurrentPosition(
     ({ coords }) => {
       currentPosition.value = { latitude: coords.latitude, longitude: coords.longitude }
-      sortMode.value = 'distance'
+      cityFilter.value = 'all'
       locationStatus.value = 'ready'
     },
     (error) => {
       currentPosition.value = null
-      sortMode.value = 'models'
       locationStatus.value =
         error.code === 1 ? 'denied' : error.code === 3 ? 'timeout' : 'unavailable'
     },
     { enableHighAccuracy: false, maximumAge: 60_000, timeout: 12_000 },
   )
-}
-
-function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | undefined {
-  if (!currentPosition.value) return undefined
-  const distance = distanceToCinemaKm(hall, currentPosition.value)
-  return distance === undefined
-    ? undefined
-    : new Intl.NumberFormat(appLocale.value, {
-        maximumFractionDigits: 1,
-        minimumFractionDigits: 1,
-      }).format(distance)
 }
 </script>
 
@@ -104,44 +101,61 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
   <section class="container home-page">
     <div class="home-layout">
       <div class="home-intro">
-        <div class="home-intro__curve" aria-hidden="true" />
-        <span class="eyebrow">{{ t('home.eyebrow') }}</span>
         <h1>{{ t('home.headline') }}</h1>
         <p>{{ t('home.subhead') }}</p>
-        <a class="home-model-entry" href="#chain-directory-heading">
-          <span class="home-model-entry__summary">
-            <v-icon icon="mdi-cube-scan" size="23" />
-            <strong>{{
-              t('home.availableVieShow3d', {
-                count: vieShowArchiveSummary.venues,
-                layouts: vieShowArchiveSummary.layouts,
-              })
-            }}</strong>
-          </span>
-          <span>{{ t('home.chooseCinemaFirst') }} <v-icon icon="mdi-arrow-down" size="17" /></span>
-        </a>
+        <RouterLink to="/3d" class="home-3d-entry">
+          <v-icon icon="mdi-cube-scan" size="21" aria-hidden="true" />
+          <span>{{
+            locale.startsWith('en')
+              ? 'Explore chain cinema 3D seat views'
+              : '探索連鎖影城 3D 座位圖'
+          }}</span>
+          <v-icon icon="mdi-chevron-right" size="20" aria-hidden="true" />
+        </RouterLink>
       </div>
 
-      <div class="home-discovery">
-        <label class="search-field">
-          <v-icon icon="mdi-magnify" size="24" />
-          <input
-            v-model="search"
-            type="search"
-            autocomplete="off"
-            :placeholder="t('home.search')"
-            :aria-label="t('home.searchAria')"
-          />
+      <div id="cinema-discovery" class="home-discovery">
+        <div class="home-search-location">
+          <label class="search-field">
+            <v-icon icon="mdi-magnify" size="23" />
+            <input
+              v-model="search"
+              type="search"
+              autocomplete="off"
+              :placeholder="t('home.search')"
+              :aria-label="t('home.searchAria')"
+            />
+            <button
+              v-if="search"
+              class="search-field__clear"
+              type="button"
+              :aria-label="t('home.clearSearch')"
+              @click="search = ''"
+            >
+              <v-icon icon="mdi-close-circle" size="20" />
+            </button>
+          </label>
           <button
-            v-if="search"
-            class="search-field__clear"
+            class="home-nearby glass-control"
             type="button"
-            :aria-label="t('home.clearSearch')"
-            @click="search = ''"
+            :disabled="locationStatus === 'loading'"
+            :aria-busy="locationStatus === 'loading'"
+            @click="locate"
           >
-            <v-icon icon="mdi-close-circle" size="20" />
+            <v-icon
+              :icon="
+                locationStatus === 'ready' ? 'mdi-crosshairs-gps' : 'mdi-map-marker-radius-outline'
+              "
+              size="21"
+            />
+            <span>{{
+              locationStatus === 'ready' ? t('home.sortNearest') : t('home.findNearby')
+            }}</span>
           </button>
-        </label>
+        </div>
+        <p v-if="locationMessage" class="home-location-status" role="status">
+          {{ locationMessage }}
+        </p>
 
         <div class="discovery-filters">
           <label class="discovery-filter">
@@ -152,6 +166,15 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
             </select>
           </label>
           <label class="discovery-filter">
+            <span>{{ t('home.hallFormatFilter') }}</span>
+            <select v-model="formatFilter">
+              <option value="all">{{ t('home.allHallFormats') }}</option>
+              <option value="imax">IMAX</option>
+              <option value="giant">{{ t('home.giantScreen') }}</option>
+              <option value="4dx">4DX</option>
+            </select>
+          </label>
+          <label class="discovery-filter discovery-filter--availability">
             <span>{{ t('home.modelFilter') }}</span>
             <select v-model="modelFilter">
               <option value="all">{{ t('home.allModels') }}</option>
@@ -159,121 +182,59 @@ function formattedDistance(hall: (typeof cinemaDirectory)[number]): string | und
               <option value="information">{{ t('home.onlyInformation') }}</option>
             </select>
           </label>
-          <label class="discovery-filter">
-            <span>{{ t('home.sortLabel') }}</span>
-            <select v-model="sortMode">
-              <option value="models">{{ t('home.sortModels') }}</option>
-              <option value="distance" :disabled="!currentPosition">
-                {{ t('home.sortNearest') }}
-              </option>
-            </select>
-          </label>
         </div>
 
-        <button
-          class="discovery-locate"
-          type="button"
-          :disabled="locationStatus === 'loading'"
-          @click="locate"
-        >
-          <v-icon icon="mdi-crosshairs-gps" size="20" />
-          {{ locationStatus === 'ready' ? t('home.refreshLocation') : t('home.findNearby') }}
-        </button>
-        <p
-          v-if="locationMessage"
-          class="discovery-location-status"
-          role="status"
-          aria-live="polite"
-        >
-          {{ locationMessage }}
-        </p>
+        <div class="home-brand-switch" role="group" :aria-label="t('home.chainBrand')">
+          <button
+            v-for="brand in chainBrands"
+            :key="brand.value"
+            type="button"
+            :class="{ 'is-active': brandFilter === brand.value }"
+            :aria-pressed="brandFilter === brand.value"
+            @click="brandFilter = brand.value"
+          >
+            {{ t(brand.key) }}
+            <span class="home-brand-switch__count">{{ brand.count }}</span>
+          </button>
+        </div>
+
         <ChainDirectorySection
           :query="search"
           :city="cityFilter"
           :origin="currentPosition"
-          :sort-by-distance="sortMode === 'distance'"
+          :sort-by-distance="Boolean(currentPosition)"
+          :format-filter="formatFilter"
+          :brand-filter="brandFilter"
           :model-filter="modelFilter"
         />
-
-        <p class="discovery-note discovery-note--summary">
-          {{ t('home.resultCount', { count: results.length, total: cinemaDirectory.length }) }}
-        </p>
-
-        <div v-if="results.length">
-          <div class="list-heading">
-            <h2>{{ t('home.discoveryTitle') }}</h2>
-            <span>{{ t('home.resultCountShort', { count: results.length }) }}</span>
-          </div>
-          <div class="auditorium-list">
-            <RouterLink
-              v-for="hall in results"
-              :key="hall.slug"
-              class="auditorium-item"
-              :class="{ 'auditorium-item--catalogue': !hall.modelId }"
-              :to="directoryHallRoute(hall)"
-              :aria-label="
-                hall.modelId
-                  ? t('home.openHall', { name: directoryHallName(hall, appLocale) })
-                  : t('home.viewDetails', { name: directoryHallName(hall, appLocale) })
-              "
-            >
-              <span
-                class="auditorium-item__visual"
-                :class="{ 'auditorium-item__visual--catalogue': !hall.modelId }"
-                aria-hidden="true"
-              >
-                <template v-if="hall.modelId">
-                  <span class="auditorium-item__screen" />
-                  <span class="auditorium-item__floor" />
-                </template>
-                <v-icon v-else icon="mdi-theater" size="31" />
-              </span>
-              <span class="auditorium-item__content">
-                <strong>{{ directoryHallName(hall, appLocale) }}</strong>
-                <span>
-                  {{ directoryCinemaName(hall, appLocale) }} · {{ hall.city }} ·
-                  {{ t('home.hallCount', { count: hall.seatCount }) }}
-                </span>
-                <span v-if="cinemaLocations[hall.cinemaSlug]" class="auditorium-item__address">
-                  {{ cinemaLocations[hall.cinemaSlug]?.address }}
-                </span>
-                <span v-if="formattedDistance(hall)" class="auditorium-item__distance">
-                  {{ t('home.distanceKm', { distance: formattedDistance(hall) }) }}
-                </span>
-                <small>{{
-                  hall.modelId === 'vieshow-hsinyi-12'
-                    ? t('home.currentHallInsteadOfFestival')
-                    : hall.modelId
-                      ? t('app.estimated')
-                      : t('home.no3dYet')
-                }}</small>
-              </span>
-              <v-icon icon="mdi-chevron-right" size="23" class="auditorium-item__chevron" />
-            </RouterLink>
-          </div>
-        </div>
-
-        <p v-else class="search-empty" role="status">
-          {{ t('home.noResults') }}
-        </p>
-        <p class="discovery-note">
-          <v-icon icon="mdi-information-outline" size="16" />
-          {{ t('home.provenanceHint') }}
-        </p>
-        <p class="discovery-note">
-          <v-icon icon="mdi-map-marker-outline" size="16" />
-          <span>
-            {{ t('home.distanceDisclaimer') }}
-            <a
-              href="https://www.openstreetmap.org/copyright"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              © OpenStreetMap contributors
-            </a>
-          </span>
-        </p>
       </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+.home-3d-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  min-height: 44px;
+  margin-top: 18px;
+  padding: 10px 16px;
+  border: 1px solid rgba(var(--v-theme-primary), 0.33);
+  border-radius: 14px;
+  background: rgba(var(--v-theme-primary), 0.11);
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+.home-3d-entry:hover,
+.home-3d-entry:focus-visible {
+  outline: 2px solid rgba(var(--v-theme-primary), 0.6);
+  outline-offset: 2px;
+}
+.home-3d-entry .v-icon:first-child {
+  flex: 0 0 auto;
+}
+</style>

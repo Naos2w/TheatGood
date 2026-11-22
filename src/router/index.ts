@@ -6,6 +6,11 @@ const router = createRouter({
     { path: '/', name: 'home', component: () => import('../features/home/HomePage.vue') },
     { path: '/cinemas', redirect: '/' },
     {
+      path: '/3d',
+      name: 'source-3d-explorer',
+      component: () => import('../features/viewer/Source3DExplorerPage.vue'),
+    },
+    {
       path: '/cinemas/:slug',
       name: 'chain-cinema',
       component: () => import('../features/cinemas/ChainCinemaPage.vue'),
@@ -13,7 +18,18 @@ const router = createRouter({
     {
       path: '/cinemas/:slug/halls/:hallId',
       name: 'vieshow-3d-preview',
-      component: () => import('../features/viewer/VieShowEstimated3DPage.vue'),
+      component: () => import('../features/viewer/CinemaHall3DPage.vue'),
+    },
+    {
+      path: '/cinemas/:slug/seat-patterns/:patternId',
+      name: 'miranew-3d-pattern',
+      component: () => import('../features/viewer/MiranewPattern3DPage.vue'),
+    },
+    {
+      // Pattern identity is source-linked. It does NOT assert a permanent numbered auditorium.
+      path: '/cinemas/:slug/patterns/:patternId',
+      name: 'miranew-sourced-3d-pattern',
+      component: () => import('../features/viewer/MiranewSourced3DPage.vue'),
     },
     {
       path: '/screenings',

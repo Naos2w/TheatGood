@@ -38,9 +38,10 @@ const currentScale = computed(() => fitScale.value * zoom.value)
 const viewportHeight = computed(() => Math.max(290, mapHeight.value * fitScale.value + 14))
 const mapTransform = computed(() => {
   const centreX = (viewportWidth.value - 680 * currentScale.value) / 2 + pan.x
+  const centreY = (viewportHeight.value - mapHeight.value * currentScale.value) / 2 + pan.y
   return {
     height: mapHeight.value + 'px',
-    transform: 'translate(' + centreX + 'px, ' + pan.y + 'px) scale(' + currentScale.value + ')',
+    transform: 'translate(' + centreX + 'px, ' + centreY + 'px) scale(' + currentScale.value + ')',
   }
 })
 const focusedRow = computed(() => rows.value.find((row) => row.label === selectedRow.value))

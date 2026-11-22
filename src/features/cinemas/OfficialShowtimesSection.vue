@@ -10,9 +10,16 @@ const query = ref('')
 const brand = ref<ChainBrand | 'all'>('all')
 const city = ref('all')
 const expanded = ref(false)
-const cities = [...new Set(chainCinemas.map((cinema) => cinema.city))].sort()
+// Timetable links are distinct from source-only venue listings. The extra 26
+// branch records have no independently validated timetable URL yet.
+const cinemaWithTimetables = chainCinemas.filter((cinema) => officialShowtimeLink(cinema.slug))
+const cities = [...new Set(cinemaWithTimetables.map((cinema) => cinema.city))].sort()
 const brands = ['all', 'vieshow', 'showtime', 'miramar', 'miranew'] as const
-const results = computed(() => searchChainCinemas(query.value, brand.value, city.value))
+const results = computed(() =>
+  searchChainCinemas(query.value, brand.value, city.value).filter((cinema) =>
+    officialShowtimeLink(cinema.slug),
+  ),
+)
 const visible = computed(() => (expanded.value ? results.value : results.value.slice(0, 8)))
 const remaining = computed(() => Math.max(0, results.value.length - 8))
 </script>
@@ -26,7 +33,12 @@ const remaining = computed(() => Math.max(0, results.value.length - 8))
         <p>{{ t('screenings.officialDescription') }}</p>
       </div>
       <span class="official-showtimes__count">
-        {{ t('screenings.officialCount', { count: results.length, total: chainCinemas.length }) }}
+        {{
+          t('screenings.officialCount', {
+            count: results.length,
+            total: cinemaWithTimetables.length,
+          })
+        }}
       </span>
     </div>
 

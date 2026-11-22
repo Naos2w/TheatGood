@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { chainCinemas } from './chain-directory'
+import historicalPublicSeatCounts from './data/additional-chain-published-seats-2026-11-18.json'
 import {
   cinemaPublishedFacts,
   MIRAMAR_HALL_SOURCE,
@@ -129,6 +130,38 @@ describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
     })
     expect(publishedNamedHallsForCinema('miranew-dazhi-royal')).toEqual([])
     expect(publishedNamedHallsForCinema('miranew-taimall')).toEqual([])
+  })
+
+  it('archives 222 public hall capacities across four chains without fabricating any seat grids', () => {
+    expect(historicalPublicSeatCounts.observedDate).toBe('2026-11-18')
+    expect(historicalPublicSeatCounts.checkedRealtimeNow).toBe(false)
+    expect(historicalPublicSeatCounts.physicalSeatGridVerified).toBe(false)
+    expect(historicalPublicSeatCounts.records).toHaveLength(222)
+    const counts = { ambassador: 81, in89: 54, broadway: 25, centuryasia: 62 }
+    for (const [brand, total] of Object.entries(counts)) {
+      const published = historicalPublicSeatCounts.records.filter((row) => row.brand === brand)
+      expect(published).toHaveLength(total)
+      expect(
+        published.every(
+          (row) =>
+            row.seatGridVerified === false &&
+            !('seatPositions' in row) &&
+            !('seatLabels' in row) &&
+            row.publishedSeatCount > 0 &&
+            row.sourceUrl.startsWith('https://'),
+        ),
+      ).toBe(true)
+    }
+    for (const slug of new Set(historicalPublicSeatCounts.records.map((row) => row.cinemaSlug))) {
+      const rows = historicalPublicSeatCounts.records.filter((row) => row.cinemaSlug === slug)
+      const displayed = publishedNamedHallsForCinema(slug)
+      expect(displayed).toHaveLength(rows.length)
+      expect(displayed.every((row) => row.dataLevel === 'published-count-only')).toBe(true)
+      expect(displayed.map((row) => row.label)).toEqual(rows.map((row) => row.hallLabel))
+    }
+    expect(publishedNamedHallsForCinema('skcinemas-taoyuan-qingpu')).toEqual([])
+    expect(publishedNamedHallsForCinema('in89-chiayi')).toHaveLength(9)
+    expect(publishedNamedHallsForCinema('ambassador-taipei-ximenting')).toHaveLength(3)
   })
 
   it('does not regress all 229 existing Vie Show source-derived hall counts', () => {

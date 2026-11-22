@@ -1,4 +1,5 @@
 import type { VieShowArchivedLayout } from './vieshow-seat-archive'
+import { DEFAULT_SCREEN_TO_SEAT_BLOCK_RATIO } from './seat-screen-assumptions'
 
 export interface CentredSeatGrid {
   width: number
@@ -22,22 +23,31 @@ export function centreSeatGrid(
   cellWidth = 30,
   cellHeight = 31,
   minWidth = 560,
+  screenToSeatBankWidthRatio = DEFAULT_SCREEN_TO_SEAT_BLOCK_RATIO,
 ): CentredSeatGrid {
   const columns = [
     ...layout.seatPositions.map((seat) => seat[2]),
     ...layout.wheelchairPositions.map((position) => position[1]),
   ]
   if (!columns.length) throw new Error('Cannot centre a seating chart with no positions')
-  if (!(cellWidth > 0 && cellHeight > 0 && minWidth > 0)) {
+  if (!(
+    cellWidth > 0 &&
+    cellHeight > 0 &&
+    minWidth > 0 &&
+    Number.isFinite(screenToSeatBankWidthRatio) &&
+    screenToSeatBankWidthRatio > 0
+  )) {
     throw new RangeError('Seating chart dimensions must be positive')
   }
   const minColumn = Math.min(...columns)
   const maxColumn = Math.max(...columns)
   const occupiedWidth = (maxColumn - minColumn) * cellWidth + 26
-  const width = Math.max(minWidth, occupiedWidth + 64)
+  // Allow a screen wider than the seating block when the 3D estimate requires it.
+  // Its SVG line must not silently be clipped by a layout width cap.
+  const screenWidth = occupiedWidth * screenToSeatBankWidthRatio
+  const width = Math.max(minWidth, occupiedWidth + 64, screenWidth + 96)
   const height = Math.max(210, layout.gridRows * cellHeight + 77)
   const leftX = (width - occupiedWidth) / 2
-  const screenWidth = Math.min(width - 96, occupiedWidth * 0.94)
 
   return {
     width,

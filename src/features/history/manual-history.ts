@@ -1,35 +1,29 @@
-import { z } from 'zod'
 import { cinemaDirectory } from '../auditoriums/directory'
 import { findAuditorium } from '../auditoriums/catalog'
 import { createSeats } from '../auditoriums/geometry'
 import { chainCinemas } from '../cinemas/chain-directory'
+import { loadVieShowArchiveForCinema } from '../cinemas/vieshow-seat-archive'
 import { publishedNamedHallsForCinema } from '../cinemas/other-chain-facts'
+import {
+  manualWatchDraftSchema,
+  type ManualWatchDraft,
+  type ManualWatchEntry,
+} from './manual-history-schema'
 
-/**
- * A user's own viewing memory, not an assertion that a film or session existed.
- * This is a browser-local prototype; cloud-authenticated history comes later.
- */
-export const manualWatchDraftSchema = z.object({
-  movieTitle: z.string().trim().min(1).max(250),
-  watchedOn: z.iso.date(),
-  cinemaSlug: z.string().max(120).nullable(),
-  cinemaName: z.string().trim().min(1).max(200),
-  hallName: z.string().trim().max(160),
-  seatLabel: z.string().trim().max(20),
-  modelId: z.string().max(120).nullable(),
-  modelVersion: z.number().int().positive().nullable(),
-  manualEntry: z.literal(true),
-  screeningId: z.null(),
-})
+export {
+  manualWatchDraftSchema,
+  manualWatchEntrySchema,
+  type ManualWatchDraft,
+  type ManualWatchEntry,
+} from './manual-history-schema'
 
-export const manualWatchEntrySchema = manualWatchDraftSchema.extend({
-  id: z.string().uuid(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime(),
-})
-
-export type ManualWatchDraft = z.infer<typeof manualWatchDraftSchema>
-export type ManualWatchEntry = z.infer<typeof manualWatchEntrySchema>
+/** When editing an unversioned/text-only visit, never infer a legacy
+ * 3D catalogue model solely from a matching display name. */
+export function mustPreserveTextOnlyWatchEntry(
+  entry: Pick<ManualWatchDraft, 'modelId' | 'modelVersion'>,
+): boolean {
+  return entry.modelId === null || entry.modelVersion === null
+}
 
 export interface WatchCinemaOption {
   slug: string
@@ -134,6 +128,41 @@ export function watchPreviewRoute(
   )
   if (!hall || !createSeats(model).some((seat) => seat.id === entry.seatLabel)) return null
   return { path: '/auditoriums/' + entry.modelId, query: { seat: entry.seatLabel } }
+}
+
+/**
+ * Reopen a sourced Vie Show seat only after matching its currently archived
+ * auditorium and actual seat label. Saved text alone is not a 3D model.
+ * The old versioned auditorium previews remain handled by watchPreviewRoute.
+ */
+export async function watchVieShowPreviewRoute(
+  entry: ManualWatchEntry,
+): Promise<{ path: string; query: { seat: string; view: '3d' } } | null> {
+  if (
+    !entry.cinemaSlug?.startsWith('vieshow-') ||
+    !entry.hallName ||
+    !entry.seatLabel ||
+    entry.modelId !== null ||
+    entry.modelVersion !== null
+  )
+    return null
+
+  const layouts = await loadVieShowArchiveForCinema(entry.cinemaSlug)
+  const hallName = entry.hallName.trim()
+  const numericHall = /^(?:第)?(\d+)\s*廳$/.exec(hallName)
+  const matched = layouts.filter((layout) =>
+    numericHall ? layout.hallNumber === Number(numericHall[1]) : layout.hallLabel === hallName,
+  )
+  if (
+    matched.length !== 1 ||
+    !matched[0]?.seatPositions.some(([label]) => label === entry.seatLabel)
+  )
+    return null
+
+  return {
+    path: `/cinemas/${entry.cinemaSlug}/halls/${matched[0].id}`,
+    query: { seat: entry.seatLabel, view: '3d' },
+  }
 }
 
 /** User text can always be saved without verifying an actual movie or screening. */

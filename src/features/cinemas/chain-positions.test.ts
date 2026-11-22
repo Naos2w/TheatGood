@@ -3,9 +3,10 @@ import { chainCinemas } from './chain-directory'
 import { chainDistanceKm, sortChainsByDistance, verifiedChainPositions } from './chain-positions'
 
 describe('sourced commercial cinema proximity', () => {
-  it('coordinates have traceable per-location sources for every current venue', () => {
+  it('retains 40 previously verified coordinates without inventing points for 26 new branches', () => {
     const slugs = new Set(chainCinemas.map((cinema) => cinema.slug))
     expect(Object.keys(verifiedChainPositions)).toHaveLength(40)
+    expect(chainCinemas.filter((venue) => !verifiedChainPositions[venue.slug])).toHaveLength(26)
     for (const [slug, position] of Object.entries(verifiedChainPositions)) {
       expect(slugs.has(slug)).toBe(true)
       expect(position.sourceUrl).toMatch(/^https:\/\//)
@@ -52,12 +53,13 @@ describe('sourced commercial cinema proximity', () => {
     const original = [...chainCinemas]
     const origin = { latitude: 25.05415, longitude: 121.52599 }
     const sorted = sortChainsByDistance(original, origin)
-    expect(sorted).toHaveLength(40)
+    expect(sorted).toHaveLength(66)
     expect(sorted[0]?.slug).toBe('showtime-taipei-xinxin')
     expect(chainDistanceKm(sorted[0]!, origin)).toBeCloseTo(0)
-    expect(new Set(sorted.map((item) => item.slug)).size).toBe(40)
+    expect(new Set(sorted.map((item) => item.slug)).size).toBe(66)
     expect(original).toEqual(chainCinemas)
-    expect(sorted.every((cinema) => verifiedChainPositions[cinema.slug])).toBe(true)
+    expect(sorted.slice(0, 40).every((cinema) => verifiedChainPositions[cinema.slug])).toBe(true)
+    expect(sorted.slice(40).every((cinema) => !verifiedChainPositions[cinema.slug])).toBe(true)
   })
 
   it('returns undefined for new unsourced venues, preserving them at the end', () => {
