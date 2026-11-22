@@ -20,6 +20,7 @@ const emit = defineEmits<{
 
 const isDefault = computed(() => props.horizontalFov === DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV)
 const settingsDetails = ref<HTMLDetailsElement | null>(null)
+const section = ref<'row' | 'camera' | 'compare'>('row')
 
 function closeSettings() {
   if (settingsDetails.value) settingsDetails.value.open = false
@@ -62,7 +63,22 @@ function updateLens(event: Event) {
       />
     </summary>
     <div class="cinema-3d-adjustments__panel">
-      <div class="cinema-3d-adjustments__rows">
+      <div
+        class="cinema-3d-adjustments__tabs"
+        role="group"
+        :aria-label="english ? 'Advanced seat settings' : '進階座位設定'"
+      >
+        <button type="button" :aria-pressed="section === 'row'" @click="section = 'row'">
+          {{ english ? 'Rows' : '換排' }}
+        </button>
+        <button type="button" :aria-pressed="section === 'camera'" @click="section = 'camera'">
+          {{ english ? 'Camera' : '鏡頭' }}
+        </button>
+        <button type="button" :aria-pressed="section === 'compare'" @click="section = 'compare'">
+          {{ english ? 'Compare' : '比較' }}
+        </button>
+      </div>
+      <div v-if="section === 'row'" class="cinema-3d-adjustments__rows">
         <button
           type="button"
           :disabled="!canMoveFront"
@@ -82,7 +98,7 @@ function updateLens(event: Event) {
           {{ english ? 'Back row' : '後一排' }}
         </button>
       </div>
-      <label class="cinema-3d-adjustments__lens">
+      <label v-if="section === 'camera'" class="cinema-3d-adjustments__lens">
         <span>
           {{ english ? 'Horizontal camera view' : '攝影機水平視角' }}
           <strong>{{ horizontalFov }}°</strong>
@@ -97,7 +113,7 @@ function updateLens(event: Event) {
           @input="updateLens"
         />
       </label>
-      <div class="cinema-3d-adjustments__foot">
+      <div v-if="section === 'camera'" class="cinema-3d-adjustments__foot">
         <span>{{ english ? 'Narrower' : '窄視野' }}</span>
         <button
           type="button"
@@ -108,7 +124,7 @@ function updateLens(event: Event) {
         </button>
         <span>{{ english ? 'Wider' : '廣視野' }}</span>
       </div>
-      <div class="cinema-3d-adjustments__compare">
+      <div v-if="section === 'compare'" class="cinema-3d-adjustments__compare">
         <div class="cinema-3d-adjustments__compare-heading">
           <v-icon icon="mdi-compare-horizontal" size="17" aria-hidden="true" />
           <strong>{{ english ? 'Compare two seats' : '比較兩個座位' }}</strong>
@@ -152,11 +168,11 @@ function updateLens(event: Event) {
           </button>
         </div>
       </div>
-      <p>
+      <p v-if="section === 'camera'">
         {{
           english
-            ? 'Camera field of view only, not the measured screen size. Row changes use observed seat positions.'
-            : '僅調整觀看鏡頭，不代表銀幕的實際大小；跨排移動依來源座位位置。'
+            ? 'Camera angle only; screen dimensions are not measured.'
+            : '僅調整觀看角度，不代表實測銀幕尺寸。'
         }}
       </p>
     </div>
@@ -221,6 +237,34 @@ function updateLens(event: Event) {
   -webkit-overflow-scrolling: touch;
   padding: 10px 12px 12px;
 }
+.cinema-3d-adjustments__tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  margin-bottom: 9px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.07);
+}
+.cinema-3d-adjustments__tabs button {
+  min-height: 34px;
+  padding: 5px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #d3deea;
+  font-size: 11px;
+  font-weight: 650;
+}
+.cinema-3d-adjustments__tabs button[aria-pressed='true'] {
+  background: rgba(218, 230, 245, 0.17);
+  border-color: rgba(218, 230, 245, 0.2);
+  color: #fff;
+}
+.cinema-3d-adjustments__tabs button:focus-visible {
+  outline: 2px solid #d0a879;
+  outline-offset: 2px;
+}
 .cinema-3d-adjustments__rows {
   display: flex;
   gap: 8px;
@@ -271,7 +315,7 @@ function updateLens(event: Event) {
   border: 1px solid rgba(220, 230, 244, 0.19);
 }
 .cinema-3d-adjustments__compare {
-  margin-top: 12px;
+  margin-top: 0;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.17);
 }
@@ -312,7 +356,7 @@ function updateLens(event: Event) {
     margin-right: auto;
   }
   .cinema-3d-adjustments[open] {
-    max-height: min(40dvh, 340px);
+    max-height: min(40dvh, 250px);
   }
 }
 @media (max-height: 540px) {
