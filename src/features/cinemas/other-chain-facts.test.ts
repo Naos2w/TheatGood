@@ -5,25 +5,27 @@ import {
   cinemaPublishedFacts,
   MIRAMAR_HALL_SOURCE,
   miramarPublishedHalls,
+  SKCINEMAS_OFFICIAL_LINE_SOURCE,
   publishedNamedHallsForCinema,
   publishedNamedHallSeatSum,
 } from './other-chain-facts'
 import { publishedHallsForCinema, publishedSeatTotal } from './vieshow-halls'
 
 describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
-  it('links all 15 Showtime and both Miranew venues plus Miramar to distinct official sources', () => {
+  it('links all 15 Showtime, two Miranew, Miramar and two venue-level Shin Kong facts to official sources', () => {
     const known = new Set(chainCinemas.map((cinema) => cinema.slug))
     const values = Object.values(cinemaPublishedFacts)
-    expect(values).toHaveLength(18)
+    expect(values).toHaveLength(20)
     expect(values.filter((item) => item.cinemaSlug.startsWith('showtime-'))).toHaveLength(15)
     expect(values.filter((item) => item.cinemaSlug.startsWith('miranew-'))).toHaveLength(2)
     const showtime = values.filter((item) => item.cinemaSlug.startsWith('showtime-'))
     expect(showtime.filter((item) => item.hallCount !== undefined)).toHaveLength(12)
     expect(showtime.filter((item) => item.publishedSeatCount !== undefined)).toHaveLength(8)
     expect(values.filter((item) => item.cinemaSlug.startsWith('miramar-'))).toHaveLength(1)
+    expect(values.filter((item) => item.cinemaSlug.startsWith('skcinemas-'))).toHaveLength(2)
     for (const item of values) {
       expect(known.has(item.cinemaSlug)).toBe(true)
-      expect(item.checkedAt).toBe('2026-11-16')
+      expect(['2026-11-16', '2026-11-23']).toContain(item.checkedAt)
       expect(item.sourceUrl).toMatch(/^https:\/\//)
       if (item.hallCount) {
         expect(item.hallCountScope).toMatch(/^(entire-cinema|digital-halls|royal-only)$/)
@@ -34,6 +36,39 @@ describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
       }
       expect(item).not.toHaveProperty('seatLabels')
       expect(item).not.toHaveProperty('modelId')
+    }
+  })
+
+  it('reports two operator-owned Shin Kong venue totals without creating numbered hall layouts', () => {
+    expect(cinemaPublishedFacts['skcinemas-taipei-shizilin']).toMatchObject({
+      cinemaSlug: 'skcinemas-taipei-shizilin',
+      hallCount: 3,
+      hallCountScope: 'entire-cinema',
+      publishedSeatCount: 939,
+      checkedAt: '2026-11-23',
+      sourceUrl: SKCINEMAS_OFFICIAL_LINE_SOURCE,
+    })
+    expect(cinemaPublishedFacts['skcinemas-taoyuan-qingpu']).toMatchObject({
+      cinemaSlug: 'skcinemas-taoyuan-qingpu',
+      hallCount: 12,
+      hallCountScope: 'entire-cinema',
+      publishedSeatCount: 1900,
+      checkedAt: '2026-11-23',
+      sourceUrl: SKCINEMAS_OFFICIAL_LINE_SOURCE,
+    })
+    for (const slug of ['skcinemas-taipei-shizilin', 'skcinemas-taoyuan-qingpu']) {
+      expect(publishedNamedHallsForCinema(slug)).toEqual([])
+      expect(publishedNamedHallSeatSum(slug)).toBe(0)
+      expect(cinemaPublishedFacts[slug]).not.toHaveProperty('seatPositions')
+      expect(cinemaPublishedFacts[slug]).not.toHaveProperty('modelId')
+    }
+    for (const slug of [
+      'skcinemas-taipei-tianmu',
+      'skcinemas-taichung-zhonggang',
+      'skcinemas-tainan-ximen',
+    ]) {
+      expect(cinemaPublishedFacts[slug]).toBeUndefined()
+      expect(publishedNamedHallsForCinema(slug)).toEqual([])
     }
   })
 
