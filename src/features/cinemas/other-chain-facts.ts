@@ -49,6 +49,8 @@ const showtime = (id: number): string => `https://www.showtimes.com.tw/cinemas/$
 const royalUrl = 'https://www.miranewcinemas.com/Special/Index?type=royal'
 export const MIRAMAR_HALL_SOURCE = 'https://www.miramarcinemas.tw/Home/groupticket2'
 export const MIRAMAR_IMAX_SCREEN_SOURCE = 'https://www.miramarcinemas.tw/Home/imaxcinema'
+export const SKCINEMAS_OFFICIAL_LINE_SOURCE =
+  'https://page.line.me/166sqgrt/showcase/315085793999016'
 
 /** Only those halls whose labels and capacities appear explicitly in the operator's group-booking page. */
 export const miramarPublishedHalls: readonly PublishedNamedHall[] = [
@@ -185,6 +187,25 @@ const observations: readonly CinemaPublishedFacts[] = [
     hallCount: 14,
     hallCountScope: 'entire-cinema',
     namedFormats: ['ULTRA 4DX', 'SCREENX', 'Dolby Vision + Atmos', 'REMMI'],
+  },
+  // Shin Kong's operator-owned LINE branch directory publishes *venue-wide*
+  // totals. Neither number is a numbered hall plan or a set of 3D seat grids.
+  // Observed on 2026-11-23; the operator page does not give a publication date.
+  {
+    cinemaSlug: 'skcinemas-taipei-shizilin',
+    sourceUrl: SKCINEMAS_OFFICIAL_LINE_SOURCE,
+    checkedAt: '2026-11-23',
+    hallCount: 3,
+    hallCountScope: 'entire-cinema',
+    publishedSeatCount: 939,
+  },
+  {
+    cinemaSlug: 'skcinemas-taoyuan-qingpu',
+    sourceUrl: SKCINEMAS_OFFICIAL_LINE_SOURCE,
+    checkedAt: '2026-11-23',
+    hallCount: 12,
+    hallCountScope: 'entire-cinema',
+    publishedSeatCount: 1900,
   },
   {
     cinemaSlug: 'miramar-dazhi',
