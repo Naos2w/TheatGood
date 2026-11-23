@@ -15,6 +15,18 @@ const namedHalls = computed(() => publishedNamedHallsForCinema(props.cinema.slug
 const sourceUrl = computed(
   () => facts.value?.sourceUrl ?? namedHalls.value[0]?.sourceUrl ?? props.cinema.sourceUrl,
 )
+// Prefer the latest checked date of the hall facts actually displayed, rather
+// than an older venue-level observation (e.g. Miramar's 2026-11-23 correction).
+const sourceCheckedAt = computed(() =>
+  [
+    props.cinema.checkedAt,
+    facts.value?.checkedAt,
+    ...namedHalls.value.map((hall) => hall.sourceDate),
+  ]
+    .filter((date): date is string => Boolean(date))
+    .sort()
+    .at(-1)!,
+)
 
 function countLabel(scope: HallCountScope | undefined): string {
   if (scope === 'digital-halls') return t('chainDetail.digitalHalls')
@@ -83,7 +95,7 @@ function displayHallName(label: string): string {
     </p>
 
     <div class="chain-facts__source">
-      <span>{{ t('chainDetail.checkedOn', { date: facts?.checkedAt ?? cinema.checkedAt }) }}</span>
+      <span>{{ t('chainDetail.checkedOn', { date: sourceCheckedAt }) }}</span>
       <a :href="sourceUrl" target="_blank" rel="noopener noreferrer">
         <v-icon icon="mdi-open-in-new" size="16" />
         {{ t('chainDetail.operatorFacts') }}
