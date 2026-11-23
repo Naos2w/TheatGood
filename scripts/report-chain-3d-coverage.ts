@@ -15,6 +15,12 @@ import { chainCinemas } from '../src/features/cinemas/chain-directory'
 import { pendingChainSeatSourceWorklist } from '../src/features/cinemas/chain-seat-evidence'
 import vieShowManifest from '../src/features/cinemas/data/vieshow-coverage-2026-11-16.json'
 import miranew from '../src/features/cinemas/data/miranew-observed-seats-2026-11-16.json'
+import { publishedVieshowHalls } from '../src/features/cinemas/vieshow-halls'
+import {
+  auditUnmatchedVieShowHallNumbers,
+  summarizeUnmatchedHallAudits,
+  type ObservedNamedHall,
+} from '../src/features/cinemas/vieshow-hall-crosswalk'
 
 const showtimeBranchCount = chainCinemas.filter((c) => c.brand === 'showtime').length
 const vieshowBranchCount = chainCinemas.filter((c) => c.brand === 'vieshow').length
@@ -52,6 +58,37 @@ const sumsOfVieshowVenueMissing = vieShowManifest.venues.reduce(
   (sum, venue) => sum + venue.missingOfficialHalls.length,
   0,
 )
+// These 24 historic 2026-05 numeric rows are *unmatched by direct number*.
+// Some have a capacity-compatible existing grid under a newer/format name,
+// which is only a CANDIDATE rather than an approved hall-identity mapping.
+const vieShowOldNumberCrosswalk = vieShowManifest.venues
+  .filter((venue) => venue.missingOfficialHalls.length > 0)
+  .flatMap((venue) => {
+    const filename = path.resolve(
+      'src/features/cinemas/data/vieshow-snapshots-2026-11-16',
+      venue.venueSlug + '.json',
+    )
+    const snapshot = JSON.parse(fs.readFileSync(filename, 'utf8')) as {
+      schemaVersion: number
+      venueSlug: string
+      layouts: ObservedNamedHall[]
+    }
+    if (
+      snapshot.schemaVersion !== 2 ||
+      snapshot.venueSlug !== venue.venueSlug ||
+      snapshot.layouts.length !== venue.observedLabels
+    ) {
+      throw new Error('Unexpected historical public archive version or venue data')
+    }
+    return auditUnmatchedVieShowHallNumbers(
+      venue.missingOfficialHalls,
+      publishedVieshowHalls.filter((item) => item.cinemaSlug === venue.venueSlug),
+      snapshot.layouts,
+    ).map((item) => ({ cinemaSlug: venue.venueSlug, ...item }))
+  })
+const vieShowCrosswalkCategories = summarizeUnmatchedHallAudits(vieShowOldNumberCrosswalk)
+const numberRowsWithCountCompatibleSavedGrid =
+  missingVieshowOfficialHallItems - vieShowCrosswalkCategories['no-capacity-compatible-saved-grid']
 
 if (
   chainCinemas.length !== 66 ||
@@ -64,6 +101,8 @@ if (
   publishedHallCountItems !== 232 ||
   branchWithoutHallCensus !== 5 ||
   sumsOfVieshowVenueMissing !== missingVieshowOfficialHallItems ||
+  vieShowOldNumberCrosswalk.length !== missingVieshowOfficialHallItems ||
+  numberRowsWithCountCompatibleSavedGrid !== 15 ||
   taiMallMissingGridCandidates !== 3
 ) {
   throw new Error('Source inventory has changed: re-audit counts before publishing this report')
@@ -137,7 +176,23 @@ const report = {
     branchesWithoutAnyCompleteGrid: pendingBranchCount,
     historicallyPublishedHallCapacityRecordsWithoutGrid: publishedHallCountItems,
     shinKongBranchesWithoutIndividualHallCensus: branchWithoutHallCensus,
+    // Backward-compatible legacy field: means same-*numeric*-ID source not
+    // found; 15 rows are also capacity-compatible with a differently labelled
+    // source diagram. These are NOT 24 proven missing physical halls.
     vieshowPublishedHallRecordsMissingAGrid: missingVieshowOfficialHallItems,
+    vieshowOldNumericRowsWithCapacityCompatibleExistingGrid: numberRowsWithCountCompatibleSavedGrid,
+    vieshowOldNumericRowsWithoutCapacityCompatibleSavedGrid:
+      vieShowCrosswalkCategories['no-capacity-compatible-saved-grid'],
+    vieshowCrosswalkCandidateTypes: vieShowCrosswalkCategories,
+    vieshowOldNumberToCurrentHallMappingVerified: false,
+    vieshowCapacityCrosswalkResearchOnly: vieShowOldNumberCrosswalk.map((item) => ({
+      cinemaSlug: item.cinemaSlug,
+      oldPublishedHallNumber: item.oldPublishedHallNumber,
+      oldPublishedSeatCount: item.oldPublishedSeatCount,
+      evidenceClass: item.status,
+      observedCandidateHallLabels: item.matches.map((match) => match.observedHallLabel),
+      permanentHallIdentityConfirmed: false,
+    })),
     vieshowMissingByVenue: vieShowManifest.venues
       .filter((venue) => venue.missingOfficialHalls.length > 0)
       .map((venue) => ({
