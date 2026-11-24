@@ -106,7 +106,7 @@ if (
   vieShowManifest.totals.venues !== vieshowBranchCount ||
   vieShowManifest.totals.layouts !== 222 ||
   miranew.layouts.length !== 13 ||
-  publishedHallCountItems !== 226 ||
+  publishedHallCountItems !== 225 ||
   branchesWithAtLeastOneOutstandingHall !== 27 ||
   branchWithoutHallCensus !== 5 ||
   sumsOfVieshowVenueMissing !== missingVieshowOfficialHallItems ||
@@ -228,7 +228,7 @@ const report = {
   },
   pendingChains: brandSummary,
   warning:
-    'Counts describe documented source records, not a confirmed census of operating halls. Three Broadway and three Century Asia public grid previews are verified; remaining halls are still unverified. Some records are historical, and other halls are still uncatalogued. Private Showtime previews are never published.',
+    'Counts describe documented source records, not a confirmed census of operating halls. Three Broadway and four Century Asia public grid previews are verified; remaining halls are still unverified. Some records are historical, and other halls are still uncatalogued. Private Showtime previews are never published.',
 }
 const json = JSON.stringify(report, null, 2) + '\n'
 if (process.argv.includes('--save')) {
