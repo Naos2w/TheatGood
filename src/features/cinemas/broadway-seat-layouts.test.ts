@@ -11,17 +11,28 @@ import { deriveVieShowPreviewGeometry } from '../viewer/vieshow-approximate-scen
 import { pendingChain3DVenues, source3DVenues } from '../viewer/source-3d-catalogue'
 
 describe('Broadway official public QUICK VIEW seat-grid verification', () => {
-  it('adds one authentic numbered public preview per previously uncovered cinema', () => {
+  it('keeps distinct authenticated numbered public previews in both cinemas', () => {
     expect(broadwayPublicSeatSummary).toMatchObject({
       observedAt: '2026-11-24',
-      verifiedHalls: 2,
+      verifiedHalls: 3,
       sourcedVenues: 2,
-      normalSeats: 71,
-      wheelchairPositions: 1,
+      normalSeats: 146,
+      wheelchairPositions: 3,
     })
-    expect(broadwaySeatLayoutsForCinema('broadway-zhubei')).toHaveLength(1)
+    expect(broadwaySeatLayoutsForCinema('broadway-zhubei')).toHaveLength(2)
     expect(broadwaySeatLayoutsForCinema('broadway-gongguan')).toHaveLength(1)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '7')).toBe(true)
+    expect(broadwayHasVerifiedHall('broadway-zhubei', '10')).toBe(true)
+    const additional = broadwaySeatLayoutsForCinema('broadway-zhubei').find(
+      (h) => h.hallNumber === 10,
+    )
+    expect(additional).toMatchObject({
+      ordinarySeatCount: 75,
+      wheelchairMarkers: 2,
+      publishedSeatCount: 77,
+      gridRows: 7,
+      gridColumns: 15,
+    })
     expect(broadwayHasVerifiedHall('broadway-gongguan', '10')).toBe(true)
     expect(broadwayHasVerifiedHall('broadway-gongguan', '7')).toBe(false)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '8')).toBe(false)
@@ -106,7 +117,7 @@ describe('Broadway official public QUICK VIEW seat-grid verification', () => {
     expect(() => validateBroadwayPublicLayout(wrongCount)).toThrow(/reconcile/)
   })
 
-  it('shows two Broadway supported venues while leaving their other 23 halls pending', () => {
+  it('shows two Broadway supported venues while leaving their other 22 halls pending', () => {
     const sourced = source3DVenues()
     expect(sourced.filter((x) => x.brand === 'broadway').length).toBe(2)
     expect(sourced.length).toBe(43)
