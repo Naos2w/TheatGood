@@ -8,24 +8,32 @@ import {
 import { deriveVieShowPreviewGeometry } from '../viewer/vieshow-approximate-scene'
 
 describe('Century Asia public numbered halls', () => {
-  it('reconciles both official capacities, excluding wheelchair positions from ordinary seats', () => {
+  it('reconciles all official capacities, excluding wheelchair positions from ordinary seats', () => {
     expect(centuryasiaPublicSeatSummary).toMatchObject({
-      verifiedHalls: 2,
+      verifiedHalls: 3,
       sourcedVenues: 2,
-      normalSeats: 85,
-      wheelchairPositions: 2,
+      normalSeats: 133,
+      wheelchairPositions: 3,
     })
     expect(
       centuryasiaPublicSeatLayouts.map((h) => [h.ordinarySeatCount, h.publishedSeatCount]),
     ).toEqual([
       [48, 49],
       [37, 38],
+      [48, 49],
     ])
     expect(centuryasiaPublicSeatLayouts[0].wheelchairPositions).toEqual([[1, 14]])
     expect(centuryasiaPublicSeatLayouts[1].wheelchairPositions).toEqual([[1, 9]])
     expect(
       centuryasiaPublicSeatLayouts[0].seatPositions.some(
         (p) => p[1] === 1 && [7, 8].includes(p[2]),
+      ),
+    ).toBe(false)
+    expect(centuryasiaPublicSeatLayouts[2].id).toBe('centuryasia-nangang-18')
+    expect(centuryasiaPublicSeatLayouts[2].wheelchairPositions).toEqual([[1, 14]])
+    expect(
+      centuryasiaPublicSeatLayouts[2].seatPositions.some(
+        (p) => p[1] === 2 && [7, 8].includes(p[2]),
       ),
     ).toBe(false)
     for (const hall of centuryasiaPublicSeatLayouts) {
