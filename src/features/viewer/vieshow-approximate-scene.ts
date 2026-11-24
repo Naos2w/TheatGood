@@ -1,4 +1,17 @@
 import type { VieShowArchivedLayout } from '../cinemas/vieshow-seat-archive'
+
+/** Shared public source fields required to construct original 2D/3D views. */
+export type PublicSourceHallLayout = Pick<
+  VieShowArchivedLayout,
+  | 'id'
+  | 'hallLabel'
+  | 'hallNumber'
+  | 'seatPositions'
+  | 'wheelchairPositions'
+  | 'ordinarySeatCount'
+  | 'gridRows'
+  | 'gridColumns'
+>
 import {
   vieShowScreenSpecification,
   type VieShowScreenSpecification,
@@ -34,7 +47,7 @@ export interface VieShowPreviewGeometry extends SourcedGridPreview {
  */
 export function deriveVieShowPreviewGeometry(
   cinemaSlug: string,
-  layout: VieShowArchivedLayout,
+  layout: PublicSourceHallLayout,
   params: VieShowPreviewParameters = { ...defaultVieShowPreviewParameters },
 ): VieShowPreviewGeometry {
   if (layout.gridRows < 1 || layout.gridColumns < 1) {
@@ -56,7 +69,8 @@ export function deriveVieShowPreviewGeometry(
     auditorium: {
       ...scene.auditorium,
       // Preserve the stable model identity of existing archived Vie Show links.
-      id: 'vieshow-preview-' + layout.id,
+      id:
+        (cinemaSlug.startsWith('broadway-') ? 'broadway-preview-' : 'vieshow-preview-') + layout.id,
     },
     screenSpecification,
     screenDimensionsProvenance: screenSpecification?.dimensionSource ?? 'estimated',

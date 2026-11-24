@@ -11,6 +11,7 @@ import {
 } from './showtime-local-research'
 import {
   miranewSource3DEntries,
+  broadwaySource3DEntries,
   pendingChain3DVenues,
   showtimeSource3DEntries,
   source3DTotalByBrand,
@@ -29,6 +30,7 @@ const brands: { id: FilterBrand; name: string; english: string }[] = [
   { id: 'vieshow', name: '威秀／MUVIE', english: 'Vie Show / MUVIE' },
   { id: 'showtime', name: '秀泰', english: 'Showtime' },
   { id: 'miranew', name: '美麗新', english: 'Miranew' },
+  { id: 'broadway', name: '百老匯', english: 'Broadway' },
 ]
 const allowed = new Set(brands.map((item) => item.id))
 const initialBrand = String(route.query.brand ?? 'all')
@@ -78,7 +80,7 @@ const displayedEntries = computed(() => {
   )
 })
 const sourcedCount = computed(() =>
-  (['vieshow', 'showtime', 'miranew'] as const).reduce((n, b) => {
+  (['vieshow', 'showtime', 'miranew', 'broadway'] as const).reduce((n, b) => {
     const value = source3DTotalByBrand(venues.value, b)
     return n + (value ?? 0)
   }, 0),
@@ -142,6 +144,8 @@ watch(
       if (venue.brand === 'vieshow') {
         const layout = await loadVieShowArchiveForCinema(venue.slug)
         nextItems = vieShowSource3DEntries(venue.slug, layout)
+      } else if (venue.brand === 'broadway') {
+        nextItems = broadwaySource3DEntries(venue.slug)
       } else if (venue.brand === 'showtime') {
         nextItems = showtimeSource3DEntries(venue.slug, showtimeIndex.value)
       } else {
