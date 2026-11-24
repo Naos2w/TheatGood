@@ -15,6 +15,7 @@ import { chainCinemas } from '../src/features/cinemas/chain-directory'
 import { pendingChainSeatSourceWorklist } from '../src/features/cinemas/chain-seat-evidence'
 import vieShowManifest from '../src/features/cinemas/data/vieshow-coverage-2026-11-16.json'
 import miranew from '../src/features/cinemas/data/miranew-observed-seats-2026-11-16.json'
+import { broadwayPublicSeatSummary } from '../src/features/cinemas/broadway-seat-layouts'
 import { publishedVieshowHalls } from '../src/features/cinemas/vieshow-halls'
 import {
   auditUnmatchedVieShowHallNumbers,
@@ -25,9 +26,14 @@ import {
 const showtimeBranchCount = chainCinemas.filter((c) => c.brand === 'showtime').length
 const vieshowBranchCount = chainCinemas.filter((c) => c.brand === 'vieshow').length
 const miranewSourceBranches = new Set(miranew.layouts.map((l) => l.cinemaSlug))
-const sourceBranches = vieshowBranchCount + showtimeBranchCount + miranewSourceBranches.size
+const sourceBranches =
+  vieshowBranchCount +
+  showtimeBranchCount +
+  miranewSourceBranches.size +
+  broadwayPublicSeatSummary.sourcedVenues
 const pending = pendingChainSeatSourceWorklist()
-const pendingBranchCount = new Set(pending.map((r) => r.cinemaSlug)).size
+const pendingBranchCount = chainCinemas.length - sourceBranches
+const branchesWithAtLeastOneOutstandingHall = new Set(pending.map((r) => r.cinemaSlug)).size
 const publishedHallCountItems = pending.filter((row) => row.publishedSeatCount !== null).length
 const branchWithoutHallCensus = pending.filter((row) => row.hallLabel === null).length
 
@@ -92,13 +98,14 @@ const numberRowsWithCountCompatibleSavedGrid =
 
 if (
   chainCinemas.length !== 66 ||
-  sourceBranches !== 39 ||
-  pendingBranchCount !== 27 ||
+  sourceBranches !== 41 ||
+  pendingBranchCount !== 25 ||
   sourceBranches + pendingBranchCount !== chainCinemas.length ||
   vieShowManifest.totals.venues !== vieshowBranchCount ||
   vieShowManifest.totals.layouts !== 222 ||
   miranew.layouts.length !== 13 ||
-  publishedHallCountItems !== 232 ||
+  publishedHallCountItems !== 230 ||
+  branchesWithAtLeastOneOutstandingHall !== 27 ||
   branchWithoutHallCensus !== 5 ||
   sumsOfVieshowVenueMissing !== missingVieshowOfficialHallItems ||
   vieShowOldNumberCrosswalk.length !== missingVieshowOfficialHallItems ||
@@ -167,13 +174,22 @@ const report = {
     showtimeSampled: privateShowtime?.sampledHallLabels ?? null,
     showtimeMissingFromSample: privateShowtime?.missingHallLabels ?? null,
     miranewPublicPatternsNotVerifiedUniquePhysicalHalls: miranew.layouts.length,
-    publicTotal: vieShowManifest.totals.layouts + miranew.layouts.length,
+    broadwayPublicGrids: broadwayPublicSeatSummary.verifiedHalls,
+    publicTotal:
+      vieShowManifest.totals.layouts +
+      miranew.layouts.length +
+      broadwayPublicSeatSummary.verifiedHalls,
     publicPlusPrivateTotal: privateShowtime
-      ? vieShowManifest.totals.layouts + miranew.layouts.length + privateShowtime.verifiedHallLabels
+      ? vieShowManifest.totals.layouts +
+        miranew.layouts.length +
+        broadwayPublicSeatSummary.verifiedHalls +
+        privateShowtime.verifiedHallLabels
       : null,
   },
   outstandingRecordedWork: {
     branchesWithoutAnyCompleteGrid: pendingBranchCount,
+    branchesWithStillUnverifiedHallRecords: branchesWithAtLeastOneOutstandingHall,
+    historicalHallCapacityRecords: 232,
     historicallyPublishedHallCapacityRecordsWithoutGrid: publishedHallCountItems,
     shinKongBranchesWithoutIndividualHallCensus: branchWithoutHallCensus,
     // Backward-compatible legacy field: means same-*numeric*-ID source not
@@ -207,7 +223,7 @@ const report = {
   },
   pendingChains: brandSummary,
   warning:
-    'Counts describe documented source records, not a confirmed census of operating halls. Some records are historical, and other halls are still uncatalogued. Private Showtime previews are never published.',
+    'Counts describe documented source records, not a confirmed census of operating halls. Two Broadway public grid previews are newly verified; remaining Broadway halls are still unverified. Some records are historical, and other halls are still uncatalogued. Private Showtime previews are never published.',
 }
 const json = JSON.stringify(report, null, 2) + '\n'
 if (process.argv.includes('--save')) {

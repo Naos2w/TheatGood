@@ -1,4 +1,5 @@
 import { chainCinemas } from '../cinemas/chain-directory'
+import { broadwayPublicSeatLayouts } from '../cinemas/broadway-seat-layouts'
 import { miranewSeatReferences } from '../cinemas/official-seat-layouts'
 import {
   vieShowCoverageForCinema,
@@ -10,7 +11,7 @@ import type { ShowtimeLocalResearchIndex } from './showtime-local-research'
  * Catalogue counts SOURCED seat-layout entries, not permanent physical halls.
  * Never infer missing seat positions from a published capacity.
  */
-export type Source3DBrand = 'vieshow' | 'showtime' | 'miranew'
+export type Source3DBrand = 'vieshow' | 'showtime' | 'miranew' | 'broadway'
 export interface Source3DVenue {
   key: string
   slug: string
@@ -51,6 +52,19 @@ export function source3DVenues(showtime?: ShowtimeLocalResearchIndex | null): So
         name: cinema.name,
         sourceCount: showtime ? (showtime.venues[cinema.slug]?.length ?? 0) : null,
         evidence: 'private-verified-grid',
+      })
+    } else if (cinema.brand === 'broadway') {
+      const count = broadwayPublicSeatLayouts.filter(
+        (item) => item.cinemaSlug === cinema.slug,
+      ).length
+      if (!count) continue
+      listed.push({
+        key: 'broadway|' + cinema.slug,
+        slug: cinema.slug,
+        brand: 'broadway',
+        name: cinema.name,
+        sourceCount: count,
+        evidence: 'public-operator-grid',
       })
     } else if (cinema.brand === 'miranew') {
       const count = miranewSeatReferences.filter((item) => item.cinemaSlug === cinema.slug).length
@@ -102,6 +116,19 @@ export function vieShowSource3DEntries(
           ? 'capacity-unpublished'
           : undefined,
   }))
+}
+
+export function broadwaySource3DEntries(cinemaSlug: string): Source3DEntry[] {
+  return broadwayPublicSeatLayouts
+    .filter((item) => item.cinemaSlug === cinemaSlug)
+    .map((item) => ({
+      id: item.id,
+      label: item.hallLabel,
+      detail: '百老匯官方 QUICK VIEW 完整座位格線，空間尺度估算',
+      count: item.ordinarySeatCount,
+      path: '/cinemas/' + cinemaSlug + '/halls/' + encodeURIComponent(item.id),
+      type: 'source-hall' as const,
+    }))
 }
 
 export function miranewSource3DEntries(cinemaSlug: string): Source3DEntry[] {
