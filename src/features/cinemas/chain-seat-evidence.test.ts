@@ -25,7 +25,7 @@ const sample: OperatorSeatGridCandidate = {
 }
 
 describe('future chain seat-grid evidence gate (synthetic only)', () => {
-  it('leaves 227 capacity-only research records after five fully sourced public halls', () => {
+  it('leaves 226 capacity-only research records after six fully sourced public halls', () => {
     const list = pendingChainSeatSourceWorklist()
     const byBrand = Object.fromEntries(
       [...new Set(list.map((item) => item.brand))].map((brand) => [
@@ -43,15 +43,15 @@ describe('future chain seat-grid evidence gate (synthetic only)', () => {
       ambassador: { branches: 9, capacityRecords: 81 },
       in89: { branches: 6, capacityRecords: 54 },
       broadway: { branches: 2, capacityRecords: 22 },
-      centuryasia: { branches: 4, capacityRecords: 60 },
+      centuryasia: { branches: 4, capacityRecords: 59 },
       skcinemas: { branches: 5, capacityRecords: 0 },
       miramar: { branches: 1, capacityRecords: 10 },
     })
-    expect(list).toHaveLength(232)
+    expect(list).toHaveLength(231)
     expect(
       list.filter((entry) => entry.status === 'need-official-hall-census-and-grid'),
     ).toHaveLength(5)
-    expect(list.filter((entry) => entry.status === 'capacity-only-needs-grid')).toHaveLength(227)
+    expect(list.filter((entry) => entry.status === 'capacity-only-needs-grid')).toHaveLength(226)
     expect(list.every((entry) => entry.seatGridVerified === false)).toBe(true)
     expect(list.every((entry) => !('seatPositions' in entry))).toBe(true)
   })

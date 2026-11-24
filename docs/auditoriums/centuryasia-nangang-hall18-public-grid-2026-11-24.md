@@ -1,0 +1,8 @@
+# Century Asia Nangang Hall 18 — public seating-grid audit
+
+- Observed in an unsigned Chrome context on 2026-11-24 at 23:32–23:33 (Taipei), using the normal official [session preview](https://www.centuryasia.com.tw/book.html?sid=Nangang), without selecting seats, entering the purchase flow or signing in.
+- Both the 2026-11-26 12:30 and 14:40 sessions for Hexed returned HTTP 200 and rendered the same complete labelled Nangang Hall 18 grid. The first source request is recorded in the static source file; the second was observed as https://www.centuryasia.com.tw/Movie/GetSeatView/Nangang/0001058/2026-11-26/14-40/0018 .
+- 48 numbered ordinary seats and one wheelchair marker (row 1, column 14), four rows and fourteen columns. The official capacity record in the existing source archive is 49 positions, published 2026-11-18. The aisle gaps in rows 1–3 and the contiguous last row were preserved.
+- The hall identity is shown in both rendered previews, not inferred from capacity or from another hall. Only factual labels, coordinates and source provenance are retained; no availability, account details, operator artwork or assets are copied. The public preview is described by the operator as a reference only; scene dimensions are estimated, not surveyed.
+- Existing gallery and original 2D/3D scene routes derive their content from the validated static grid. This adds one physical hall at an already-covered branch, not a new branch.
+- Local acceptance: 217 unit tests, production build, Chrome mobile 393x852 and Edge desktop 1280x800, 48 ordinary seats / 1 wheelchair marker, functioning WebGL, zero JavaScript errors and zero horizontal overflow.
