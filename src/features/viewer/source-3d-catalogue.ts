@@ -1,5 +1,6 @@
 import { chainCinemas } from '../cinemas/chain-directory'
 import { broadwayPublicSeatLayouts } from '../cinemas/broadway-seat-layouts'
+import { centuryasiaPublicSeatLayouts } from '../cinemas/centuryasia-seat-layouts'
 import { miranewSeatReferences } from '../cinemas/official-seat-layouts'
 import {
   vieShowCoverageForCinema,
@@ -11,7 +12,7 @@ import type { ShowtimeLocalResearchIndex } from './showtime-local-research'
  * Catalogue counts SOURCED seat-layout entries, not permanent physical halls.
  * Never infer missing seat positions from a published capacity.
  */
-export type Source3DBrand = 'vieshow' | 'showtime' | 'miranew' | 'broadway'
+export type Source3DBrand = 'vieshow' | 'showtime' | 'miranew' | 'broadway' | 'centuryasia'
 export interface Source3DVenue {
   key: string
   slug: string
@@ -53,15 +54,15 @@ export function source3DVenues(showtime?: ShowtimeLocalResearchIndex | null): So
         sourceCount: showtime ? (showtime.venues[cinema.slug]?.length ?? 0) : null,
         evidence: 'private-verified-grid',
       })
-    } else if (cinema.brand === 'broadway') {
-      const count = broadwayPublicSeatLayouts.filter(
+    } else if (cinema.brand === 'broadway' || cinema.brand === 'centuryasia') {
+      const count = [...broadwayPublicSeatLayouts, ...centuryasiaPublicSeatLayouts].filter(
         (item) => item.cinemaSlug === cinema.slug,
       ).length
       if (!count) continue
       listed.push({
-        key: 'broadway|' + cinema.slug,
+        key: cinema.brand + '|' + cinema.slug,
         slug: cinema.slug,
-        brand: 'broadway',
+        brand: cinema.brand,
         name: cinema.name,
         sourceCount: count,
         evidence: 'public-operator-grid',
@@ -125,6 +126,19 @@ export function broadwaySource3DEntries(cinemaSlug: string): Source3DEntry[] {
       id: item.id,
       label: item.hallLabel,
       detail: '百老匯官方 QUICK VIEW 完整座位格線，空間尺度估算',
+      count: item.ordinarySeatCount,
+      path: '/cinemas/' + cinemaSlug + '/halls/' + encodeURIComponent(item.id),
+      type: 'source-hall' as const,
+    }))
+}
+
+export function centuryasiaSource3DEntries(cinemaSlug: string): Source3DEntry[] {
+  return centuryasiaPublicSeatLayouts
+    .filter((item) => item.cinemaSlug === cinemaSlug)
+    .map((item) => ({
+      id: item.id,
+      label: item.hallLabel,
+      detail: '喜樂時代官方場次座位預覽，空間尺度估算',
       count: item.ordinarySeatCount,
       path: '/cinemas/' + cinemaSlug + '/halls/' + encodeURIComponent(item.id),
       type: 'source-hall' as const,

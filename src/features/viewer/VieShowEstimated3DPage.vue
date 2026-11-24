@@ -18,6 +18,10 @@ import {
   broadwaySeatLayoutsForCinema,
   type BroadwayPublicLayout,
 } from '../cinemas/broadway-seat-layouts'
+import {
+  centuryasiaSeatLayoutsForCinema,
+  type CenturyAsiaPublicLayout,
+} from '../cinemas/centuryasia-seat-layouts'
 import { centreSeatGrid } from '../cinemas/centred-seat-grid'
 import { DEFAULT_ESTIMATED_SEAT_POV_HORIZONTAL_FOV } from '../cinemas/seat-screen-assumptions'
 import {
@@ -38,9 +42,13 @@ import { swapObservedSeatComparison } from './seat-comparison'
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
-const layout = shallowRef<VieShowArchivedLayout | BroadwayPublicLayout | null>(null)
+const layout = shallowRef<
+  VieShowArchivedLayout | BroadwayPublicLayout | CenturyAsiaPublicLayout | null
+>(null)
 const mapScroll = ref<HTMLElement | null>(null)
-const venueLayouts = shallowRef<readonly (VieShowArchivedLayout | BroadwayPublicLayout)[]>([])
+const venueLayouts = shallowRef<
+  readonly (VieShowArchivedLayout | BroadwayPublicLayout | CenturyAsiaPublicLayout)[]
+>([])
 const loading = ref(false)
 const failed = ref(false)
 const seatId = ref('')
@@ -87,7 +95,11 @@ const cinemaHallListRoute = computed(() => ({
   path: '/cinemas/' + slug.value,
   query: layout.value ? { hall: String(layout.value.hallNumber ?? layout.value.hallLabel) } : {},
   hash:
-    venue.value?.brand === 'broadway' ? '#broadway-seat-references' : '#vieshow-seat-references',
+    venue.value?.brand === 'centuryasia'
+      ? '#centuryasia-seat-references'
+      : venue.value?.brand === 'broadway'
+        ? '#broadway-seat-references'
+        : '#vieshow-seat-references',
 }))
 const geometry = computed(() =>
   layout.value
@@ -218,7 +230,9 @@ watch(
     try {
       const data = nextSlug.startsWith('broadway-')
         ? broadwaySeatLayoutsForCinema(nextSlug)
-        : await loadVieShowArchiveForCinema(nextSlug)
+        : nextSlug.startsWith('centuryasia-')
+          ? centuryasiaSeatLayoutsForCinema(nextSlug)
+          : await loadVieShowArchiveForCinema(nextSlug)
       if (cancelled) return
       venueLayouts.value = data
       layout.value = data.find((item) => item.id === nextHall) ?? null
