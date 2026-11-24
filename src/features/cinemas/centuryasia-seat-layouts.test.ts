@@ -10,10 +10,10 @@ import { deriveVieShowPreviewGeometry } from '../viewer/vieshow-approximate-scen
 describe('Century Asia public numbered halls', () => {
   it('reconciles all official capacities, excluding wheelchair positions from ordinary seats', () => {
     expect(centuryasiaPublicSeatSummary).toMatchObject({
-      verifiedHalls: 3,
+      verifiedHalls: 4,
       sourcedVenues: 2,
-      normalSeats: 133,
-      wheelchairPositions: 3,
+      normalSeats: 176,
+      wheelchairPositions: 4,
     })
     expect(
       centuryasiaPublicSeatLayouts.map((h) => [h.ordinarySeatCount, h.publishedSeatCount]),
@@ -21,6 +21,7 @@ describe('Century Asia public numbered halls', () => {
       [48, 49],
       [37, 38],
       [48, 49],
+      [43, 44],
     ])
     expect(centuryasiaPublicSeatLayouts[0].wheelchairPositions).toEqual([[1, 14]])
     expect(centuryasiaPublicSeatLayouts[1].wheelchairPositions).toEqual([[1, 9]])
@@ -35,6 +36,12 @@ describe('Century Asia public numbered halls', () => {
       centuryasiaPublicSeatLayouts[2].seatPositions.some(
         (p) => p[1] === 2 && [7, 8].includes(p[2]),
       ),
+    ).toBe(false)
+    expect(centuryasiaPublicSeatLayouts[3].id).toBe('centuryasia-nangang-23')
+    expect(centuryasiaPublicSeatLayouts[3].wheelchairPositions).toEqual([[1, 12]])
+    expect(centuryasiaPublicSeatLayouts[3].gridColumns).toBe(13)
+    expect(
+      centuryasiaPublicSeatLayouts[3].seatPositions.some((p) => p[1] === 1 && p[2] === 1),
     ).toBe(false)
     for (const hall of centuryasiaPublicSeatLayouts) {
       const result = deriveVieShowPreviewGeometry(hall.cinemaSlug, hall)
