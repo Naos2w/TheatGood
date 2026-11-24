@@ -15,7 +15,9 @@ const vieshowPage = defineAsyncComponent(() => import('./VieShowEstimated3DPage.
   <component :is="showtimePage" v-if="cinema?.brand === 'showtime'" />
   <component
     :is="vieshowPage"
-    v-else-if="cinema?.brand === 'vieshow' || cinema?.brand === 'broadway'"
+    v-else-if="
+      cinema?.brand === 'vieshow' || cinema?.brand === 'broadway' || cinema?.brand === 'centuryasia'
+    "
   />
   <section v-else class="container" role="status">
     <p>此影城尚未有可驗證的 3D 座位排列來源。</p>

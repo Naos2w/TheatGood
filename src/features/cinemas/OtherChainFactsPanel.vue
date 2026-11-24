@@ -4,6 +4,7 @@ import { appLocale } from '../../composables/usePreferences'
 import { useI18n } from 'vue-i18n'
 import type { ChainCinema } from './chain-directory'
 import { broadwaySeatLayoutsForCinema } from './broadway-seat-layouts'
+import { centuryasiaSeatLayoutsForCinema } from './centuryasia-seat-layouts'
 import {
   cinemaPublishedFacts,
   publishedNamedHallsForCinema,
@@ -17,7 +18,8 @@ const facts = computed(() => cinemaPublishedFacts[props.cinema.slug])
 const namedHalls = computed(() => publishedNamedHallsForCinema(props.cinema.slug))
 const somePublicSeatGridVerified = computed(
   () =>
-    props.cinema.brand === 'broadway' && broadwaySeatLayoutsForCinema(props.cinema.slug).length > 0,
+    broadwaySeatLayoutsForCinema(props.cinema.slug).length > 0 ||
+    centuryasiaSeatLayoutsForCinema(props.cinema.slug).length > 0,
 )
 const sourceUrl = computed(
   () => facts.value?.sourceUrl ?? namedHalls.value[0]?.sourceUrl ?? props.cinema.sourceUrl,
