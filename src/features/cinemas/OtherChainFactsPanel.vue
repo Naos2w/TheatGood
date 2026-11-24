@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { appLocale } from '../../composables/usePreferences'
 import { useI18n } from 'vue-i18n'
 import type { ChainCinema } from './chain-directory'
+import { broadwaySeatLayoutsForCinema } from './broadway-seat-layouts'
 import {
   cinemaPublishedFacts,
   publishedNamedHallsForCinema,
@@ -10,8 +12,13 @@ import {
 
 const props = defineProps<{ cinema: ChainCinema }>()
 const { t } = useI18n()
+const english = computed(() => appLocale.value.startsWith('en'))
 const facts = computed(() => cinemaPublishedFacts[props.cinema.slug])
 const namedHalls = computed(() => publishedNamedHallsForCinema(props.cinema.slug))
+const somePublicSeatGridVerified = computed(
+  () =>
+    props.cinema.brand === 'broadway' && broadwaySeatLayoutsForCinema(props.cinema.slug).length > 0,
+)
 const sourceUrl = computed(
   () => facts.value?.sourceUrl ?? namedHalls.value[0]?.sourceUrl ?? props.cinema.sourceUrl,
 )
@@ -44,7 +51,7 @@ function displayHallName(label: string): string {
       <v-icon icon="mdi-information-outline" size="22" />
       <div>
         <h2 id="chain-facts-heading">{{ t('chainDetail.branchOverview') }}</h2>
-        <p>{{ t('chainDetail.noVerifiedSeatMap') }}</p>
+        <p v-if="!somePublicSeatGridVerified">{{ t('chainDetail.noVerifiedSeatMap') }}</p>
       </div>
     </div>
 
@@ -69,7 +76,14 @@ function displayHallName(label: string): string {
 
     <div v-if="namedHalls.length" class="chain-facts__halls">
       <h3>{{ t('chainDetail.publishedHalls') }}</h3>
-      <p>{{ t('chainDetail.publishedNamedHallsNote') }}</p>
+      <p v-if="!somePublicSeatGridVerified">{{ t('chainDetail.publishedNamedHallsNote') }}</p>
+      <p v-else>
+        {{
+          english
+            ? 'These are published hall capacities. Source-backed 2D/3D layouts are available below for selected halls only; other halls still need complete seat grids.'
+            : '以下是官方公布席數；部分影廳已取得完整公開座圖，其餘仍待補。已驗證的 2D／3D 入口見下方。'
+        }}
+      </p>
       <div class="chain-facts__hall-grid">
         <div v-for="hall in namedHalls" :key="hall.label" class="chain-facts__hall">
           <strong>{{ displayHallName(hall.label) }}</strong>

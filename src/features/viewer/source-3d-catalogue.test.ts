@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { chainCinemas } from '../cinemas/chain-directory'
 import { miranewSeatReferences } from '../cinemas/official-seat-layouts'
+import { broadwayPublicSeatLayouts } from '../cinemas/broadway-seat-layouts'
 import { loadVieShowArchiveForCinema } from '../cinemas/vieshow-seat-archive'
 import type { ShowtimeLocalResearchIndex } from './showtime-local-research'
 import {
   miranewSource3DEntries,
+  broadwaySource3DEntries,
   pendingChain3DVenues,
   showtimeSource3DEntries,
   source3DTotalByBrand,
@@ -18,9 +20,11 @@ describe('source-verified 3D catalogue', () => {
     expect(venues.filter((v) => v.brand === 'vieshow')).toHaveLength(22)
     expect(venues.filter((v) => v.brand === 'showtime')).toHaveLength(15)
     expect(venues.filter((v) => v.brand === 'miranew')).toHaveLength(2)
-    expect(venues).toHaveLength(39)
+    expect(venues.filter((v) => v.brand === 'broadway')).toHaveLength(2)
+    expect(venues).toHaveLength(41)
     expect(source3DTotalByBrand(venues, 'vieshow')).toBe(222)
     expect(source3DTotalByBrand(venues, 'miranew')).toBe(13)
+    expect(source3DTotalByBrand(venues, 'broadway')).toBe(2)
     expect(source3DTotalByBrand(venues, 'showtime')).toBeNull()
     expect(venues.every((v) => chainCinemas.some((cinema) => cinema.slug === v.slug))).toBe(true)
     expect(
@@ -28,8 +32,8 @@ describe('source-verified 3D catalogue', () => {
     ).toBe(false)
     expect(venues.every((v) => v.evidence !== ('curated-auditorium' as never))).toBe(true)
     expect(venues.every((v) => !v.key.startsWith('independent|'))).toBe(true)
-    expect(pendingChain3DVenues()).toHaveLength(27)
-    expect(pendingChain3DVenues().filter((v) => v.checkedAt === '2026-11-18')).toHaveLength(26)
+    expect(pendingChain3DVenues()).toHaveLength(25)
+    expect(pendingChain3DVenues().filter((v) => v.checkedAt === '2026-11-18')).toHaveLength(24)
     expect(pendingChain3DVenues().some((v) => v.slug === 'miramar-dazhi')).toBe(true)
     expect(
       pendingChain3DVenues().every((v) => !venues.some((ready) => ready.slug === v.slug)),
@@ -56,6 +60,19 @@ describe('source-verified 3D catalogue', () => {
       }),
     )
     expect(new Set(keys).size).toBe(222)
+  })
+
+  it('adds exactly two complete public Broadway previews, one in each previously uncovered branch', () => {
+    expect(broadwayPublicSeatLayouts.map((l) => l.id).sort()).toEqual([
+      'broadway-gongguan-10',
+      'broadway-zhubei-7',
+    ])
+    const paths = ['broadway-gongguan', 'broadway-zhubei'].flatMap((slug) =>
+      broadwaySource3DEntries(slug),
+    )
+    expect(paths).toHaveLength(2)
+    expect(paths.map((item) => item.count).sort((a, b) => a - b)).toEqual([29, 42])
+    expect(paths.every((item) => item.path.includes('/halls/broadway-'))).toBe(true)
   })
 
   it('offers all 13 observed Miranew patterns without claiming permanent halls', () => {

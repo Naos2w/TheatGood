@@ -8,6 +8,7 @@ import VieShowSeatReferenceGallery from './VieShowSeatReferenceGallery.vue'
 import ShowtimeResearchHallGallery from './ShowtimeResearchHallGallery.vue'
 import MiranewSeatReferenceGallery from './MiranewSeatReferenceGallery.vue'
 import OtherChainFactsPanel from './OtherChainFactsPanel.vue'
+import BroadwaySeatReferenceGallery from './BroadwaySeatReferenceGallery.vue'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -66,6 +67,7 @@ const slug = computed(() => cinema.value?.slug ?? '')
 
       <template v-else>
         <OtherChainFactsPanel :cinema="cinema" />
+        <BroadwaySeatReferenceGallery v-if="cinema.brand === 'broadway'" :cinema-slug="slug" />
         <ShowtimeResearchHallGallery v-if="cinema.brand === 'showtime'" :cinema-slug="slug" />
         <details v-if="cinema.brand === 'miranew'" class="chain-cinema-page__preview-details">
           <summary>{{ t('ux.exploreSeatReferences') }}</summary>

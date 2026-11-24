@@ -7,6 +7,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { pendingChainSeatSourceWorklist } from '../src/features/cinemas/chain-seat-evidence'
+import { broadwayPublicSeatSummary } from '../src/features/cinemas/broadway-seat-layouts'
 
 const outputDir = path.resolve('.tmp/chain-seat-source-worklist-20261123')
 mkdirSync(outputDir, { recursive: true })
@@ -20,13 +21,13 @@ const summary = brands.map((brand) => {
     branches: new Set(group.map((item) => item.cinemaSlug)).size,
     sourceCapacityRecords: group.filter((item) => item.publishedSeatCount !== null).length,
     noHallCensusBranches: group.filter((item) => item.hallLabel === null).length,
-    verifiedCompleteGrids: 0,
+    verifiedCompleteGrids: brand === 'broadway' ? broadwayPublicSeatSummary.verifiedHalls : 0,
   }
 })
 if (
   summary.reduce((n, item) => n + item.branches, 0) !== 27 ||
-  summary.reduce((n, item) => n + item.sourceCapacityRecords, 0) !== 232 ||
-  tasks.length !== 237 ||
+  summary.reduce((n, item) => n + item.sourceCapacityRecords, 0) !== 230 ||
+  tasks.length !== 235 ||
   tasks.some((item) => item.seatGridVerified || 'seatPositions' in item)
 ) {
   throw new Error('Unexpected pending-cinema source inventory; review source data before reporting')
