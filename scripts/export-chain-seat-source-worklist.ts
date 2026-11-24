@@ -32,8 +32,8 @@ const summary = brands.map((brand) => {
 })
 if (
   summary.reduce((n, item) => n + item.branches, 0) !== 27 ||
-  summary.reduce((n, item) => n + item.sourceCapacityRecords, 0) !== 228 ||
-  tasks.length !== 233 ||
+  summary.reduce((n, item) => n + item.sourceCapacityRecords, 0) !== 227 ||
+  tasks.length !== 232 ||
   tasks.some((item) => item.seatGridVerified || 'seatPositions' in item)
 ) {
   throw new Error('Unexpected pending-cinema source inventory; review source data before reporting')
@@ -48,7 +48,7 @@ const report = {
     'src/features/cinemas/data/additional-chain-published-seats-2026-11-18.json',
   ],
   truthfulStatus:
-    'Four complete public grids have been recovered; remaining tasks lack full grids. Every source capacity must stay separate from exact seat geometry.',
+    'Five complete public grids have been recovered; remaining tasks lack full grids. Every source capacity must stay separate from exact seat geometry.',
   summary,
   tasks,
 }
