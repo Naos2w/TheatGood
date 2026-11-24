@@ -16,6 +16,7 @@ import { pendingChainSeatSourceWorklist } from '../src/features/cinemas/chain-se
 import vieShowManifest from '../src/features/cinemas/data/vieshow-coverage-2026-11-16.json'
 import miranew from '../src/features/cinemas/data/miranew-observed-seats-2026-11-16.json'
 import { broadwayPublicSeatSummary } from '../src/features/cinemas/broadway-seat-layouts'
+import { centuryasiaPublicSeatSummary } from '../src/features/cinemas/centuryasia-seat-layouts'
 import { publishedVieshowHalls } from '../src/features/cinemas/vieshow-halls'
 import {
   auditUnmatchedVieShowHallNumbers,
@@ -30,7 +31,8 @@ const sourceBranches =
   vieshowBranchCount +
   showtimeBranchCount +
   miranewSourceBranches.size +
-  broadwayPublicSeatSummary.sourcedVenues
+  broadwayPublicSeatSummary.sourcedVenues +
+  centuryasiaPublicSeatSummary.sourcedVenues
 const pending = pendingChainSeatSourceWorklist()
 const pendingBranchCount = chainCinemas.length - sourceBranches
 const branchesWithAtLeastOneOutstandingHall = new Set(pending.map((r) => r.cinemaSlug)).size
@@ -98,13 +100,13 @@ const numberRowsWithCountCompatibleSavedGrid =
 
 if (
   chainCinemas.length !== 66 ||
-  sourceBranches !== 41 ||
-  pendingBranchCount !== 25 ||
+  sourceBranches !== 43 ||
+  pendingBranchCount !== 23 ||
   sourceBranches + pendingBranchCount !== chainCinemas.length ||
   vieShowManifest.totals.venues !== vieshowBranchCount ||
   vieShowManifest.totals.layouts !== 222 ||
   miranew.layouts.length !== 13 ||
-  publishedHallCountItems !== 230 ||
+  publishedHallCountItems !== 228 ||
   branchesWithAtLeastOneOutstandingHall !== 27 ||
   branchWithoutHallCensus !== 5 ||
   sumsOfVieshowVenueMissing !== missingVieshowOfficialHallItems ||
@@ -175,14 +177,17 @@ const report = {
     showtimeMissingFromSample: privateShowtime?.missingHallLabels ?? null,
     miranewPublicPatternsNotVerifiedUniquePhysicalHalls: miranew.layouts.length,
     broadwayPublicGrids: broadwayPublicSeatSummary.verifiedHalls,
+    centuryasiaPublicGrids: centuryasiaPublicSeatSummary.verifiedHalls,
     publicTotal:
       vieShowManifest.totals.layouts +
       miranew.layouts.length +
-      broadwayPublicSeatSummary.verifiedHalls,
+      broadwayPublicSeatSummary.verifiedHalls +
+      centuryasiaPublicSeatSummary.verifiedHalls,
     publicPlusPrivateTotal: privateShowtime
       ? vieShowManifest.totals.layouts +
         miranew.layouts.length +
         broadwayPublicSeatSummary.verifiedHalls +
+        centuryasiaPublicSeatSummary.verifiedHalls +
         privateShowtime.verifiedHallLabels
       : null,
   },
@@ -223,7 +228,7 @@ const report = {
   },
   pendingChains: brandSummary,
   warning:
-    'Counts describe documented source records, not a confirmed census of operating halls. Two Broadway public grid previews are newly verified; remaining Broadway halls are still unverified. Some records are historical, and other halls are still uncatalogued. Private Showtime previews are never published.',
+    'Counts describe documented source records, not a confirmed census of operating halls. Two Broadway and two Century Asia public grid previews are verified; remaining halls are still unverified. Some records are historical, and other halls are still uncatalogued. Private Showtime previews are never published.',
 }
 const json = JSON.stringify(report, null, 2) + '\n'
 if (process.argv.includes('--save')) {

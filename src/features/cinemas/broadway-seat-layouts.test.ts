@@ -109,8 +109,8 @@ describe('Broadway official public QUICK VIEW seat-grid verification', () => {
   it('shows two Broadway supported venues while leaving their other 23 halls pending', () => {
     const sourced = source3DVenues()
     expect(sourced.filter((x) => x.brand === 'broadway').length).toBe(2)
-    expect(sourced.length).toBe(41)
-    expect(pendingChain3DVenues()).toHaveLength(25)
+    expect(sourced.length).toBe(43)
+    expect(pendingChain3DVenues()).toHaveLength(23)
     expect(pendingChain3DVenues().some((c) => c.brand === 'broadway')).toBe(false)
   })
 })

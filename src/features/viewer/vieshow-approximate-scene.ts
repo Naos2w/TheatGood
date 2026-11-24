@@ -70,7 +70,11 @@ export function deriveVieShowPreviewGeometry(
       ...scene.auditorium,
       // Preserve the stable model identity of existing archived Vie Show links.
       id:
-        (cinemaSlug.startsWith('broadway-') ? 'broadway-preview-' : 'vieshow-preview-') + layout.id,
+        (cinemaSlug.startsWith('centuryasia-')
+          ? 'centuryasia-preview-'
+          : cinemaSlug.startsWith('broadway-')
+            ? 'broadway-preview-'
+            : 'vieshow-preview-') + layout.id,
     },
     screenSpecification,
     screenDimensionsProvenance: screenSpecification?.dimensionSource ?? 'estimated',

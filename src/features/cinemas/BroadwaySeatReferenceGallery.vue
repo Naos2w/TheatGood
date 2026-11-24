@@ -3,10 +3,19 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { appLocale } from '../../composables/usePreferences'
 import { broadwaySeatLayoutsForCinema } from './broadway-seat-layouts'
+import { centuryasiaSeatLayoutsForCinema } from './centuryasia-seat-layouts'
 
 const props = defineProps<{ cinemaSlug: string }>()
 const english = computed(() => appLocale.value.startsWith('en'))
-const layouts = computed(() => broadwaySeatLayoutsForCinema(props.cinemaSlug))
+const centuryAsia = computed(() => props.cinemaSlug.startsWith('centuryasia-'))
+const referenceId = computed(() =>
+  centuryAsia.value ? 'centuryasia-seat-references' : 'broadway-seat-references',
+)
+const layouts = computed(() =>
+  centuryAsia.value
+    ? centuryasiaSeatLayoutsForCinema(props.cinemaSlug)
+    : broadwaySeatLayoutsForCinema(props.cinemaSlug),
+)
 const linkFor = (hallId: string) =>
   '/cinemas/' + props.cinemaSlug + '/halls/' + encodeURIComponent(hallId)
 </script>
@@ -14,20 +23,26 @@ const linkFor = (hallId: string) =>
 <template>
   <section
     v-if="layouts.length"
-    id="broadway-seat-references"
+    :id="referenceId"
     class="seat-references"
-    aria-labelledby="broadway-seat-references-heading"
+    :aria-labelledby="referenceId + '-heading'"
   >
     <div class="seat-references__heading">
       <div>
-        <h2 id="broadway-seat-references-heading">
+        <h2 :id="referenceId + '-heading'">
           {{ english ? 'Verified public seating plans' : '已核對的公開座位圖' }}
         </h2>
         <p>
           {{
             english
-              ? 'Broadway official QUICK VIEW: numbered seats and aisle gaps are sourced; distance and screen size are estimated.'
-              : '來源：百老匯官方 QUICK VIEW。座號與走道有公開來源；銀幕尺寸、實際距離與坡度仍為估算。'
+              ? (centuryAsia
+                  ? 'Century Asia official SEAT PREVIEW'
+                  : 'Broadway official QUICK VIEW') +
+                ': numbered seats and aisle gaps are sourced; distance and screen size are estimated.'
+              : (centuryAsia
+                  ? '來源：喜樂時代官方場次座位預覽。'
+                  : '來源：百老匯官方 QUICK VIEW。') +
+                '座號與走道有公開來源；銀幕尺寸、實際距離與坡度仍為估算。'
           }}
         </p>
       </div>
