@@ -9,6 +9,7 @@ import path from 'node:path'
 import { pendingChainSeatSourceWorklist } from '../src/features/cinemas/chain-seat-evidence'
 import { broadwayPublicSeatSummary } from '../src/features/cinemas/broadway-seat-layouts'
 import { centuryasiaPublicSeatSummary } from '../src/features/cinemas/centuryasia-seat-layouts'
+import { in89PublicSeatSourceSummary } from '../src/features/cinemas/in89-public-seat-chart'
 
 const outputDir = path.resolve('.tmp/chain-seat-source-worklist-20261123')
 mkdirSync(outputDir, { recursive: true })
@@ -23,17 +24,19 @@ const summary = brands.map((brand) => {
     sourceCapacityRecords: group.filter((item) => item.publishedSeatCount !== null).length,
     noHallCensusBranches: group.filter((item) => item.hallLabel === null).length,
     verifiedCompleteGrids:
-      brand === 'broadway'
-        ? broadwayPublicSeatSummary.verifiedHalls
-        : brand === 'centuryasia'
-          ? centuryasiaPublicSeatSummary.verifiedHalls
-          : 0,
+      brand === 'in89'
+        ? in89PublicSeatSourceSummary.layoutCount
+        : brand === 'broadway'
+          ? broadwayPublicSeatSummary.verifiedHalls
+          : brand === 'centuryasia'
+            ? centuryasiaPublicSeatSummary.verifiedHalls
+            : 0,
   }
 })
 if (
   summary.reduce((n, item) => n + item.branches, 0) !== 27 ||
-  summary.reduce((n, item) => n + item.sourceCapacityRecords, 0) !== 227 ||
-  tasks.length !== 232 ||
+  summary.reduce((n, item) => n + item.sourceCapacityRecords, 0) !== 216 ||
+  tasks.length !== 221 ||
   tasks.some((item) => item.seatGridVerified || 'seatPositions' in item)
 ) {
   throw new Error('Unexpected pending-cinema source inventory; review source data before reporting')
@@ -48,7 +51,7 @@ const report = {
     'src/features/cinemas/data/additional-chain-published-seats-2026-11-18.json',
   ],
   truthfulStatus:
-    'Five complete public grids have been recovered; remaining tasks lack full grids. Every source capacity must stay separate from exact seat geometry.',
+    'Three Broadway and twelve Century Asia public operator previews plus one dated Chiayi institutional chart are represented. In89 current physical grid is not newly measured; remaining hall records lack complete sourced layouts. Every capacity stays separate from exact seat geometry.',
   summary,
   tasks,
 }

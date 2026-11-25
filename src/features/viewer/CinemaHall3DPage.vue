@@ -16,7 +16,10 @@ const vieshowPage = defineAsyncComponent(() => import('./VieShowEstimated3DPage.
   <component
     :is="vieshowPage"
     v-else-if="
-      cinema?.brand === 'vieshow' || cinema?.brand === 'broadway' || cinema?.brand === 'centuryasia'
+      cinema?.brand === 'vieshow' ||
+      cinema?.brand === 'broadway' ||
+      cinema?.brand === 'centuryasia' ||
+      cinema?.brand === 'in89'
     "
   />
   <section v-else class="container" role="status">
