@@ -29,11 +29,11 @@ describe('cross-chain evidence coverage counts (no private grids loaded)', () =>
     expect(tainan?.missingOfficialHalls).toEqual([11, 12, 13, 14, 15, 17, 19])
   })
 
-  it('keeps 209 remaining capacity-only records after adding a dated in89 source chart', () => {
+  it('keeps 208 remaining capacity-only records after adding a dated in89 source chart', () => {
     const work = pendingChainSeatSourceWorklist()
-    expect(work).toHaveLength(214)
+    expect(work).toHaveLength(213)
     expect(new Set(work.map((x) => x.cinemaSlug)).size).toBe(26)
-    expect(work.filter((x) => x.publishedSeatCount !== null)).toHaveLength(209)
+    expect(work.filter((x) => x.publishedSeatCount !== null)).toHaveLength(208)
     const noHallCensus = work.filter((x) => x.hallLabel === null)
     expect(noHallCensus).toHaveLength(5)
     expect(noHallCensus.every((x) => x.brand === 'skcinemas')).toBe(true)
@@ -58,9 +58,9 @@ describe('cross-chain evidence coverage counts (no private grids loaded)', () =>
       miranewPatterns.layouts.filter((x) => x.cinemaSlug === 'miranew-dazhi-royal'),
     ).toHaveLength(5)
     expect(miranewPatterns.layouts.every((x) => x.physicalHallNumber === null)).toBe(true)
-    // 209 remaining published capacities + 24 Vie Show unmatched halls + 3 Tai-Mall
-    // operator halls without a public chart = 236 *source record gaps*,
-    // NOT 236 verified operating physical auditoriums.
-    expect(209 + vieShowCoverage.totals.missingOfficialEntries + (11 - 8)).toBe(236)
+    // 208 remaining published capacities + 24 Vie Show unmatched halls + 3 Tai-Mall
+    // operator halls without a public chart = 235 *source record gaps*,
+    // NOT 235 verified operating physical auditoriums.
+    expect(208 + vieShowCoverage.totals.missingOfficialEntries + (11 - 8)).toBe(235)
   })
 })
