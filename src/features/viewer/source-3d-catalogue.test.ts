@@ -30,7 +30,7 @@ describe('source-verified 3D catalogue', () => {
     expect(source3DTotalByBrand(venues, 'vieshow')).toBe(222)
     expect(source3DTotalByBrand(venues, 'miranew')).toBe(13)
     expect(source3DTotalByBrand(venues, 'broadway')).toBe(3)
-    expect(source3DTotalByBrand(venues, 'centuryasia')).toBe(17)
+    expect(source3DTotalByBrand(venues, 'centuryasia')).toBe(18)
     expect(source3DTotalByBrand(venues, 'in89')).toBe(1)
     expect(source3DTotalByBrand(venues, 'showtime')).toBeNull()
     expect(venues.every((v) => chainCinemas.some((cinema) => cinema.slug === v.slug))).toBe(true)
@@ -92,18 +92,19 @@ describe('source-verified 3D catalogue', () => {
     expect(entries[0]?.detail).toContain('未實測')
   })
 
-  it('offers seventeen verified Century Asia halls, without claiming other halls', () => {
+  it('offers eighteen verified Century Asia halls, without claiming other halls', () => {
     const entries = ['centuryasia-nangang', 'centuryasia-yonghe'].flatMap(
       centuryasiaSource3DEntries,
     )
     expect(entries.map((e) => e.count)).toEqual([
-      48, 48, 43, 48, 37, 50, 38, 50, 31, 31, 28, 31, 31, 31, 30, 31, 31,
+      48, 48, 43, 48, 43, 37, 50, 38, 50, 31, 31, 28, 31, 31, 31, 30, 31, 31,
     ])
     expect(entries.map((e) => e.id)).toEqual([
       'centuryasia-nangang-5',
       'centuryasia-nangang-18',
       'centuryasia-nangang-23',
       'centuryasia-nangang-24',
+      'centuryasia-nangang-7',
       'centuryasia-yonghe-12',
       'centuryasia-yonghe-3',
       'centuryasia-yonghe-13',
