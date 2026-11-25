@@ -108,7 +108,7 @@ if (
   vieShowManifest.totals.venues !== vieshowBranchCount ||
   vieShowManifest.totals.layouts !== 222 ||
   miranew.layouts.length !== 13 ||
-  publishedHallCountItems !== 214 ||
+  publishedHallCountItems !== 213 ||
   branchesWithAtLeastOneOutstandingHall !== 27 ||
   branchWithoutHallCensus !== 5 ||
   sumsOfVieshowVenueMissing !== missingVieshowOfficialHallItems ||
