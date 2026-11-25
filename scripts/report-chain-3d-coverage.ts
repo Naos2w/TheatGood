@@ -108,8 +108,8 @@ if (
   vieShowManifest.totals.venues !== vieshowBranchCount ||
   vieShowManifest.totals.layouts !== 222 ||
   miranew.layouts.length !== 13 ||
-  publishedHallCountItems !== 213 ||
-  branchesWithAtLeastOneOutstandingHall !== 27 ||
+  publishedHallCountItems !== 211 ||
+  branchesWithAtLeastOneOutstandingHall !== 26 ||
   branchWithoutHallCensus !== 5 ||
   sumsOfVieshowVenueMissing !== missingVieshowOfficialHallItems ||
   vieShowOldNumberCrosswalk.length !== missingVieshowOfficialHallItems ||
@@ -234,7 +234,7 @@ const report = {
   },
   pendingChains: brandSummary,
   warning:
-    'Counts describe documented source records, not a census of physical halls. Three Broadway and fourteen Century Asia operator-public previews plus one dated Jan-Feb 2026 institutional in89 chart are source-backed. The November in89 physical layout has NOT been freshly verified, although current operator capacity still matches. Other halls remain unverified. Private Showtime previews never publish.',
+    'Counts describe documented source records, not a census of physical halls. Three Broadway and seventeen Century Asia operator-public previews plus one dated Jan-Feb 2026 institutional in89 chart are source-backed. The November in89 physical layout has NOT been freshly verified, although current operator capacity still matches. Other halls remain unverified. Private Showtime previews never publish.',
 }
 const json = JSON.stringify(report, null, 2) + '\n'
 if (process.argv.includes('--save')) {
