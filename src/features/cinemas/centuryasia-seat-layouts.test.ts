@@ -10,10 +10,10 @@ import { deriveVieShowPreviewGeometry } from '../viewer/vieshow-approximate-scen
 describe('Century Asia public numbered halls', () => {
   it('reconciles all official capacities, excluding wheelchair positions from ordinary seats', () => {
     expect(centuryasiaPublicSeatSummary).toMatchObject({
-      verifiedHalls: 29,
+      verifiedHalls: 31,
       sourcedVenues: 2,
-      normalSeats: 1192,
-      wheelchairPositions: 29,
+      normalSeats: 1266,
+      wheelchairPositions: 31,
     })
     expect(
       centuryasiaPublicSeatLayouts.map((h) => [h.ordinarySeatCount, h.publishedSeatCount]),
@@ -47,6 +47,8 @@ describe('Century Asia public numbered halls', () => {
       [48, 49],
       [43, 44],
       [31, 32],
+      [35, 36],
+      [39, 40],
     ])
     expect(centuryasiaPublicSeatLayouts[0].wheelchairPositions).toEqual([[1, 14]])
     expect(centuryasiaPublicSeatLayouts[1].wheelchairPositions).toEqual([[1, 9]])
@@ -140,6 +142,8 @@ describe('Century Asia public numbered halls', () => {
       [9, 14, 14, [10, 12, 12, 14]],
       [11, 13, 12, [9, 11, 11, 12]],
       [12, 10, 9, [6, 8, 8, 9]],
+      [13, 11, 10, [7, 9, 9, 10]],
+      [16, 12, 11, [8, 10, 10, 11]],
     ] as const) {
       const hall = centuryasiaPublicSeatLayouts.find(
         (item) => item.id === 'centuryasia-nangang-' + number,
