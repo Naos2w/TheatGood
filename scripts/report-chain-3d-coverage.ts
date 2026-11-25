@@ -17,6 +17,7 @@ import vieShowManifest from '../src/features/cinemas/data/vieshow-coverage-2026-
 import miranew from '../src/features/cinemas/data/miranew-observed-seats-2026-11-16.json'
 import { broadwayPublicSeatSummary } from '../src/features/cinemas/broadway-seat-layouts'
 import { centuryasiaPublicSeatSummary } from '../src/features/cinemas/centuryasia-seat-layouts'
+import { in89PublicSeatSourceSummary } from '../src/features/cinemas/in89-public-seat-chart'
 import { publishedVieshowHalls } from '../src/features/cinemas/vieshow-halls'
 import {
   auditUnmatchedVieShowHallNumbers,
@@ -32,7 +33,8 @@ const sourceBranches =
   showtimeBranchCount +
   miranewSourceBranches.size +
   broadwayPublicSeatSummary.sourcedVenues +
-  centuryasiaPublicSeatSummary.sourcedVenues
+  centuryasiaPublicSeatSummary.sourcedVenues +
+  in89PublicSeatSourceSummary.venueCount
 const pending = pendingChainSeatSourceWorklist()
 const pendingBranchCount = chainCinemas.length - sourceBranches
 const branchesWithAtLeastOneOutstandingHall = new Set(pending.map((r) => r.cinemaSlug)).size
@@ -100,13 +102,13 @@ const numberRowsWithCountCompatibleSavedGrid =
 
 if (
   chainCinemas.length !== 66 ||
-  sourceBranches !== 43 ||
-  pendingBranchCount !== 23 ||
+  sourceBranches !== 44 ||
+  pendingBranchCount !== 22 ||
   sourceBranches + pendingBranchCount !== chainCinemas.length ||
   vieShowManifest.totals.venues !== vieshowBranchCount ||
   vieShowManifest.totals.layouts !== 222 ||
   miranew.layouts.length !== 13 ||
-  publishedHallCountItems !== 217 ||
+  publishedHallCountItems !== 216 ||
   branchesWithAtLeastOneOutstandingHall !== 27 ||
   branchWithoutHallCensus !== 5 ||
   sumsOfVieshowVenueMissing !== missingVieshowOfficialHallItems ||
@@ -178,16 +180,20 @@ const report = {
     miranewPublicPatternsNotVerifiedUniquePhysicalHalls: miranew.layouts.length,
     broadwayPublicGrids: broadwayPublicSeatSummary.verifiedHalls,
     centuryasiaPublicGrids: centuryasiaPublicSeatSummary.verifiedHalls,
+    in89DatedPublicInstitutionGrids: in89PublicSeatSourceSummary.layoutCount,
+    in89LatestPhysicalGridReconfirmed: false,
     publicTotal:
       vieShowManifest.totals.layouts +
       miranew.layouts.length +
       broadwayPublicSeatSummary.verifiedHalls +
-      centuryasiaPublicSeatSummary.verifiedHalls,
+      centuryasiaPublicSeatSummary.verifiedHalls +
+      in89PublicSeatSourceSummary.layoutCount,
     publicPlusPrivateTotal: privateShowtime
       ? vieShowManifest.totals.layouts +
         miranew.layouts.length +
         broadwayPublicSeatSummary.verifiedHalls +
         centuryasiaPublicSeatSummary.verifiedHalls +
+        in89PublicSeatSourceSummary.layoutCount +
         privateShowtime.verifiedHallLabels
       : null,
   },
@@ -228,7 +234,7 @@ const report = {
   },
   pendingChains: brandSummary,
   warning:
-    'Counts describe documented source records, not a confirmed census of operating halls. Three Broadway and twelve Century Asia public grid previews are verified; remaining halls are still unverified. Some records are historical, and other halls are still uncatalogued. Private Showtime previews are never published.',
+    'Counts describe documented source records, not a census of physical halls. Three Broadway and twelve Century Asia operator-public previews plus one dated Jan-Feb 2026 institutional in89 chart are source-backed. The November in89 physical layout has NOT been freshly verified, although current operator capacity still matches. Other halls remain unverified. Private Showtime previews never publish.',
 }
 const json = JSON.stringify(report, null, 2) + '\n'
 if (process.argv.includes('--save')) {

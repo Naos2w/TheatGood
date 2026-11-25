@@ -37,7 +37,7 @@ export const calculateVieShowProportionalCalibration = calculateSourcedGridCalib
 export interface VieShowPreviewGeometry extends SourcedGridPreview {
   screenSpecification?: VieShowScreenSpecification
   screenDimensionsProvenance: 'operator-published' | 'independent-secondary' | 'estimated'
-  seatPositionsProvenance: 'operator-public-booking-preview'
+  seatPositionsProvenance: 'operator-public-booking-preview' | 'dated-public-institution-chart'
 }
 
 /**
@@ -70,15 +70,19 @@ export function deriveVieShowPreviewGeometry(
       ...scene.auditorium,
       // Preserve the stable model identity of existing archived Vie Show links.
       id:
-        (cinemaSlug.startsWith('centuryasia-')
-          ? 'centuryasia-preview-'
-          : cinemaSlug.startsWith('broadway-')
-            ? 'broadway-preview-'
-            : 'vieshow-preview-') + layout.id,
+        (cinemaSlug.startsWith('in89-')
+          ? 'in89-public-2026-preview-'
+          : cinemaSlug.startsWith('centuryasia-')
+            ? 'centuryasia-preview-'
+            : cinemaSlug.startsWith('broadway-')
+              ? 'broadway-preview-'
+              : 'vieshow-preview-') + layout.id,
     },
     screenSpecification,
     screenDimensionsProvenance: screenSpecification?.dimensionSource ?? 'estimated',
-    seatPositionsProvenance: 'operator-public-booking-preview',
+    seatPositionsProvenance: cinemaSlug.startsWith('in89-')
+      ? 'dated-public-institution-chart'
+      : 'operator-public-booking-preview',
   }
 }
 

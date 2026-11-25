@@ -8,6 +8,7 @@
 import { chainCinemas, type ChainBrand } from './chain-directory'
 import { broadwayHasVerifiedHall } from './broadway-seat-layouts'
 import { centuryasiaHasVerifiedHall } from './centuryasia-seat-layouts'
+import { in89HasPublishedFullGrid } from './in89-public-seat-chart'
 import { publishedNamedHallsForCinema } from './other-chain-facts'
 
 export type PendingGridBrand = Extract<
@@ -211,7 +212,8 @@ export function pendingChainSeatSourceWorklist(): PendingChainSeatResearchTask[]
         const halls = officialHalls.filter(
           (hall) =>
             !broadwayHasVerifiedHall(cinema.slug, hall.label) &&
-            !centuryasiaHasVerifiedHall(cinema.slug, hall.label),
+            !centuryasiaHasVerifiedHall(cinema.slug, hall.label) &&
+            !in89HasPublishedFullGrid(cinema.slug, hall.label),
         )
         if (!officialHalls.length) {
           return [

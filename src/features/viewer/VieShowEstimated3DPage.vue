@@ -15,6 +15,10 @@ import { useI18n } from 'vue-i18n'
 import { appLocale } from '../../composables/usePreferences'
 import { chainCinemas } from '../cinemas/chain-directory'
 import {
+  in89SeatChartsForCinema,
+  type In89PublicInstitutionLayout,
+} from '../cinemas/in89-public-seat-chart'
+import {
   broadwaySeatLayoutsForCinema,
   type BroadwayPublicLayout,
 } from '../cinemas/broadway-seat-layouts'
@@ -43,11 +47,20 @@ const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const layout = shallowRef<
-  VieShowArchivedLayout | BroadwayPublicLayout | CenturyAsiaPublicLayout | null
+  | VieShowArchivedLayout
+  | BroadwayPublicLayout
+  | CenturyAsiaPublicLayout
+  | In89PublicInstitutionLayout
+  | null
 >(null)
 const mapScroll = ref<HTMLElement | null>(null)
 const venueLayouts = shallowRef<
-  readonly (VieShowArchivedLayout | BroadwayPublicLayout | CenturyAsiaPublicLayout)[]
+  readonly (
+    | VieShowArchivedLayout
+    | BroadwayPublicLayout
+    | CenturyAsiaPublicLayout
+    | In89PublicInstitutionLayout
+  )[]
 >([])
 const loading = ref(false)
 const failed = ref(false)
@@ -95,11 +108,13 @@ const cinemaHallListRoute = computed(() => ({
   path: '/cinemas/' + slug.value,
   query: layout.value ? { hall: String(layout.value.hallNumber ?? layout.value.hallLabel) } : {},
   hash:
-    venue.value?.brand === 'centuryasia'
-      ? '#centuryasia-seat-references'
-      : venue.value?.brand === 'broadway'
-        ? '#broadway-seat-references'
-        : '#vieshow-seat-references',
+    venue.value?.brand === 'in89'
+      ? '#in89-institution-chart'
+      : venue.value?.brand === 'centuryasia'
+        ? '#centuryasia-seat-references'
+        : venue.value?.brand === 'broadway'
+          ? '#broadway-seat-references'
+          : '#vieshow-seat-references',
 }))
 const geometry = computed(() =>
   layout.value
@@ -232,7 +247,9 @@ watch(
         ? broadwaySeatLayoutsForCinema(nextSlug)
         : nextSlug.startsWith('centuryasia-')
           ? centuryasiaSeatLayoutsForCinema(nextSlug)
-          : await loadVieShowArchiveForCinema(nextSlug)
+          : nextSlug.startsWith('in89-')
+            ? in89SeatChartsForCinema(nextSlug)
+            : await loadVieShowArchiveForCinema(nextSlug)
       if (cancelled) return
       venueLayouts.value = data
       layout.value = data.find((item) => item.id === nextHall) ?? null
@@ -384,6 +401,13 @@ function recordSelectedSeat() {
           </h1>
           <p>{{ t('ux.chooseSeatHint') }}</p>
           <p v-if="seatCountWarning" role="note">{{ seatCountWarning }}</p>
+          <p v-if="venue?.brand === 'in89'" role="note">
+            {{
+              english
+                ? 'Hall layout from publicly dated January–February 2026 school seating charts; November hall capacity still matches, but this is not a current physical survey.'
+                : '本廳座圖取自學校2026年1／2月公開活動座位表；11月官方總位置數相符，但非目前實測影廳平面圖。'
+            }}
+          </p>
         </header>
 
         <section class="vieshow-3d-page__map-section">

@@ -13,6 +13,7 @@ import {
   miranewSource3DEntries,
   broadwaySource3DEntries,
   centuryasiaSource3DEntries,
+  in89PublicChartEntries,
   pendingChain3DVenues,
   showtimeSource3DEntries,
   source3DTotalByBrand,
@@ -33,6 +34,7 @@ const brands: { id: FilterBrand; name: string; english: string }[] = [
   { id: 'miranew', name: '美麗新', english: 'Miranew' },
   { id: 'broadway', name: '百老匯', english: 'Broadway' },
   { id: 'centuryasia', name: '喜樂時代', english: 'Century Asia' },
+  { id: 'in89', name: 'in89', english: 'in89' },
 ]
 const allowed = new Set(brands.map((item) => item.id))
 const initialBrand = String(route.query.brand ?? 'all')
@@ -82,10 +84,13 @@ const displayedEntries = computed(() => {
   )
 })
 const sourcedCount = computed(() =>
-  (['vieshow', 'showtime', 'miranew', 'broadway', 'centuryasia'] as const).reduce((n, b) => {
-    const value = source3DTotalByBrand(venues.value, b)
-    return n + (value ?? 0)
-  }, 0),
+  (['vieshow', 'showtime', 'miranew', 'broadway', 'centuryasia', 'in89'] as const).reduce(
+    (n, b) => {
+      const value = source3DTotalByBrand(venues.value, b)
+      return n + (value ?? 0)
+    },
+    0,
+  ),
 )
 function countOf(next: FilterBrand): number | null {
   return next === 'all' ? sourcedCount.value : source3DTotalByBrand(venues.value, next)
@@ -150,6 +155,8 @@ watch(
         nextItems = broadwaySource3DEntries(venue.slug)
       } else if (venue.brand === 'centuryasia') {
         nextItems = centuryasiaSource3DEntries(venue.slug)
+      } else if (venue.brand === 'in89') {
+        nextItems = in89PublicChartEntries(venue.slug)
       } else if (venue.brand === 'showtime') {
         nextItems = showtimeSource3DEntries(venue.slug, showtimeIndex.value)
       } else {
