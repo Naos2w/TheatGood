@@ -105,6 +105,9 @@ export function auditVieShowHallGeometry(
   layout: VieShowArchivedLayout,
 ): VieShowGeometryAudit {
   const geometry = deriveVieShowPreviewGeometry(cinemaSlug, layout)
+  if (geometry.seatPositionsProvenance !== 'operator-public-booking-preview') {
+    throw new Error('Vie Show-only geometry audit requires an operator-public booking grid')
+  }
   const rows = [...new Set(geometry.seats.map((seat) => seat.z))].sort((a, b) => a - b)
   if (!rows.length) throw new Error('Cannot audit an auditorium without sourced seat positions')
   const centreSeatInRow = (z: number): string => {

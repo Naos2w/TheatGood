@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { chainCinemas } from '../cinemas/chain-directory'
 import { miranewSeatReferences } from '../cinemas/official-seat-layouts'
 import { broadwayPublicSeatLayouts } from '../cinemas/broadway-seat-layouts'
+import { in89InstitutionSeatCharts } from '../cinemas/in89-public-seat-chart'
 import { loadVieShowArchiveForCinema } from '../cinemas/vieshow-seat-archive'
 import type { ShowtimeLocalResearchIndex } from './showtime-local-research'
 import {
   miranewSource3DEntries,
   broadwaySource3DEntries,
   centuryasiaSource3DEntries,
+  in89PublicChartEntries,
   pendingChain3DVenues,
   showtimeSource3DEntries,
   source3DTotalByBrand,
@@ -23,11 +25,13 @@ describe('source-verified 3D catalogue', () => {
     expect(venues.filter((v) => v.brand === 'miranew')).toHaveLength(2)
     expect(venues.filter((v) => v.brand === 'broadway')).toHaveLength(2)
     expect(venues.filter((v) => v.brand === 'centuryasia')).toHaveLength(2)
-    expect(venues).toHaveLength(43)
+    expect(venues.filter((v) => v.brand === 'in89')).toHaveLength(1)
+    expect(venues).toHaveLength(44)
     expect(source3DTotalByBrand(venues, 'vieshow')).toBe(222)
     expect(source3DTotalByBrand(venues, 'miranew')).toBe(13)
     expect(source3DTotalByBrand(venues, 'broadway')).toBe(3)
     expect(source3DTotalByBrand(venues, 'centuryasia')).toBe(12)
+    expect(source3DTotalByBrand(venues, 'in89')).toBe(1)
     expect(source3DTotalByBrand(venues, 'showtime')).toBeNull()
     expect(venues.every((v) => chainCinemas.some((cinema) => cinema.slug === v.slug))).toBe(true)
     expect(
@@ -35,8 +39,8 @@ describe('source-verified 3D catalogue', () => {
     ).toBe(false)
     expect(venues.every((v) => v.evidence !== ('curated-auditorium' as never))).toBe(true)
     expect(venues.every((v) => !v.key.startsWith('independent|'))).toBe(true)
-    expect(pendingChain3DVenues()).toHaveLength(23)
-    expect(pendingChain3DVenues().filter((v) => v.checkedAt === '2026-11-18')).toHaveLength(22)
+    expect(pendingChain3DVenues()).toHaveLength(22)
+    expect(pendingChain3DVenues().filter((v) => v.checkedAt === '2026-11-18')).toHaveLength(21)
     expect(pendingChain3DVenues().some((v) => v.slug === 'miramar-dazhi')).toBe(true)
     expect(
       pendingChain3DVenues().every((v) => !venues.some((ready) => ready.slug === v.slug)),
@@ -77,6 +81,15 @@ describe('source-verified 3D catalogue', () => {
     expect(paths).toHaveLength(3)
     expect(paths.map((item) => item.count).sort((a, b) => a - b)).toEqual([29, 42, 75])
     expect(paths.every((item) => item.path.includes('/halls/broadway-'))).toBe(true)
+  })
+
+  it('exposes only the dated institution chart for Chiayi in89 without asserting a current survey', () => {
+    expect(in89InstitutionSeatCharts).toHaveLength(1)
+    expect(in89InstitutionSeatCharts[0]?.verifiedCurrentPhysicalLayout).toBe(false)
+    const entries = in89PublicChartEntries('in89-chiayi')
+    expect(entries).toHaveLength(1)
+    expect(entries[0]).toMatchObject({ id: 'in89-chiayi-coach2', count: 93 })
+    expect(entries[0]?.detail).toContain('未實測')
   })
 
   it('offers twelve verified Century Asia halls, without claiming other halls', () => {

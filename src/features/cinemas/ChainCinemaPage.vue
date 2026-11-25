@@ -9,6 +9,7 @@ import ShowtimeResearchHallGallery from './ShowtimeResearchHallGallery.vue'
 import MiranewSeatReferenceGallery from './MiranewSeatReferenceGallery.vue'
 import OtherChainFactsPanel from './OtherChainFactsPanel.vue'
 import BroadwaySeatReferenceGallery from './BroadwaySeatReferenceGallery.vue'
+import In89InstitutionSeatGallery from './In89InstitutionSeatGallery.vue'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -71,6 +72,7 @@ const slug = computed(() => cinema.value?.slug ?? '')
           v-if="cinema.brand === 'broadway' || cinema.brand === 'centuryasia'"
           :cinema-slug="slug"
         />
+        <In89InstitutionSeatGallery v-if="cinema.brand === 'in89'" :cinema-slug="slug" />
         <ShowtimeResearchHallGallery v-if="cinema.brand === 'showtime'" :cinema-slug="slug" />
         <details v-if="cinema.brand === 'miranew'" class="chain-cinema-page__preview-details">
           <summary>{{ t('ux.exploreSeatReferences') }}</summary>
