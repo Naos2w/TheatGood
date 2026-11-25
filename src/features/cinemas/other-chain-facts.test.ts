@@ -200,6 +200,46 @@ describe('verified Showtime, Miramar and Miranew auditorium facts', () => {
     expect(publishedNamedHallsForCinema('ambassador-taipei-ximenting')).toHaveLength(3)
   })
 
+  it('reconciles all 62 Century Asia hall capacity categories without creating seat grids', () => {
+    const venues = [
+      ['centuryasia-nangang', 25, 1101, 25, 28],
+      ['centuryasia-yonghe', 13, 463, 13, 0],
+      ['centuryasia-kaohsiung', 14, 1452, 39, 0],
+      ['centuryasia-taipei-today', 10, 1358, 27, 0],
+    ] as const
+    for (const [slug, count, total, wheelchair, bedSeats] of venues) {
+      const halls = publishedNamedHallsForCinema(slug)
+      expect(halls).toHaveLength(count)
+      expect(publishedNamedHallSeatSum(slug)).toBe(total)
+      expect(
+        halls.reduce((sum, hall) => sum + (hall.seatComposition?.wheelchairPlaces ?? 0), 0),
+      ).toBe(wheelchair)
+      expect(halls.reduce((sum, hall) => sum + (hall.seatComposition?.bedSeats ?? 0), 0)).toBe(
+        bedSeats,
+      )
+      for (const hall of halls) {
+        const composition = hall.seatComposition!
+        expect(
+          composition.standardSeats + composition.bedSeats + composition.wheelchairPlaces,
+        ).toBe(hall.publishedSeatCount)
+        expect(composition.bedUnits * 2).toBe(composition.bedSeats)
+        expect(hall.sourceDate).toBe('2026-11-26')
+        expect(hall.dataLevel).toBe('published-count-only')
+        expect(hall).not.toHaveProperty('seatPositions')
+      }
+    }
+    expect(
+      publishedNamedHallsForCinema('centuryasia-nangang').find((hall) => hall.label === '19')
+        ?.seatComposition,
+    ).toEqual({
+      standardSeats: 34,
+      bedUnits: 4,
+      bedSeats: 8,
+      wheelchairPlaces: 1,
+      floor: '13F',
+    })
+  })
+
   it('does not regress all 229 existing Vie Show source-derived hall counts', () => {
     const halls = publishedHallsForCinema('vieshow-taipei-hsinyi')
     const unified = publishedNamedHallsForCinema('vieshow-taipei-hsinyi')
