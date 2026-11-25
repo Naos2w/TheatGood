@@ -29,7 +29,7 @@ describe('source-verified 3D catalogue', () => {
     expect(venues).toHaveLength(44)
     expect(source3DTotalByBrand(venues, 'vieshow')).toBe(222)
     expect(source3DTotalByBrand(venues, 'miranew')).toBe(13)
-    expect(source3DTotalByBrand(venues, 'broadway')).toBe(3)
+    expect(source3DTotalByBrand(venues, 'broadway')).toBe(4)
     expect(source3DTotalByBrand(venues, 'centuryasia')).toBe(34)
     expect(source3DTotalByBrand(venues, 'in89')).toBe(1)
     expect(source3DTotalByBrand(venues, 'showtime')).toBeNull()
@@ -69,17 +69,18 @@ describe('source-verified 3D catalogue', () => {
     expect(new Set(keys).size).toBe(222)
   })
 
-  it('adds three distinct public Broadway previews in two branches', () => {
+  it('adds four distinct public Broadway previews in two branches', () => {
     expect(broadwayPublicSeatLayouts.map((l) => l.id).sort()).toEqual([
       'broadway-gongguan-10',
       'broadway-zhubei-10',
+      'broadway-zhubei-13',
       'broadway-zhubei-7',
     ])
     const paths = ['broadway-gongguan', 'broadway-zhubei'].flatMap((slug) =>
       broadwaySource3DEntries(slug),
     )
-    expect(paths).toHaveLength(3)
-    expect(paths.map((item) => item.count).sort((a, b) => a - b)).toEqual([29, 42, 75])
+    expect(paths).toHaveLength(4)
+    expect(paths.map((item) => item.count).sort((a, b) => a - b)).toEqual([29, 42, 75, 75])
     expect(paths.every((item) => item.path.includes('/halls/broadway-'))).toBe(true)
   })
 

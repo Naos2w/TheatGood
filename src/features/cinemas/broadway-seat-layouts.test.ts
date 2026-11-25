@@ -13,13 +13,13 @@ import { pendingChain3DVenues, source3DVenues } from '../viewer/source-3d-catalo
 describe('Broadway official public QUICK VIEW seat-grid verification', () => {
   it('keeps distinct authenticated numbered public previews in both cinemas', () => {
     expect(broadwayPublicSeatSummary).toMatchObject({
-      observedAt: '2026-11-24',
-      verifiedHalls: 3,
+      observedAt: '2026-11-26',
+      verifiedHalls: 4,
       sourcedVenues: 2,
-      normalSeats: 146,
-      wheelchairPositions: 3,
+      normalSeats: 221,
+      wheelchairPositions: 5,
     })
-    expect(broadwaySeatLayoutsForCinema('broadway-zhubei')).toHaveLength(2)
+    expect(broadwaySeatLayoutsForCinema('broadway-zhubei')).toHaveLength(3)
     expect(broadwaySeatLayoutsForCinema('broadway-gongguan')).toHaveLength(1)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '7')).toBe(true)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '10')).toBe(true)
@@ -32,6 +32,20 @@ describe('Broadway official public QUICK VIEW seat-grid verification', () => {
       publishedSeatCount: 77,
       gridRows: 7,
       gridColumns: 15,
+    })
+    expect(broadwayHasVerifiedHall('broadway-zhubei', '13')).toBe(true)
+    expect(
+      broadwaySeatLayoutsForCinema('broadway-zhubei').find((h) => h.hallNumber === 13),
+    ).toMatchObject({
+      ordinarySeatCount: 75,
+      wheelchairMarkers: 2,
+      publishedSeatCount: 77,
+      gridRows: 7,
+      gridColumns: 15,
+      wheelchairPositions: [
+        [1, 13],
+        [1, 14],
+      ],
     })
     expect(broadwayHasVerifiedHall('broadway-gongguan', '10')).toBe(true)
     expect(broadwayHasVerifiedHall('broadway-gongguan', '7')).toBe(false)
@@ -117,7 +131,7 @@ describe('Broadway official public QUICK VIEW seat-grid verification', () => {
     expect(() => validateBroadwayPublicLayout(wrongCount)).toThrow(/reconcile/)
   })
 
-  it('shows two Broadway supported venues while leaving their other 22 halls pending', () => {
+  it('shows two Broadway supported venues while leaving their other 21 halls pending', () => {
     const sourced = source3DVenues()
     expect(sourced.filter((x) => x.brand === 'broadway').length).toBe(2)
     expect(sourced.length).toBe(44)
