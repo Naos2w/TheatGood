@@ -37,11 +37,173 @@ export interface PublishedNamedHall {
   sourceUrl: string
   sourceDate: string
   dataLevel: 'published-count-only'
+  /** Operator-published capacity categories, not physical seat coordinates. */
+  seatComposition?: {
+    standardSeats: number
+    bedUnits: number
+    bedSeats: number
+    wheelchairPlaces: number
+    floor: string
+  }
   /** Only populated when a separate operator source confirms actual screen dimensions. */
   screenWidthM?: number
   screenHeightM?: number
   screenShape?: 'curved' | 'flat'
   screenSourceUrl?: string
+}
+
+// Rechecked 2026-11-26 in the public FAQ's "喜樂全省影廳座位圖" tables.
+// The numbers are capacity categories and do not identify individual seat locations.
+export const CENTURYASIA_CAPACITY_SOURCE = 'https://www.centuryasia.com.tw/cinemaQA.html'
+type CenturyAsiaCapacityRow = [
+  label: number,
+  standard: number,
+  wheelchair: number,
+  beds?: number,
+  bedSeats?: number,
+]
+const centuryAsiaCapacityGroups: Record<string, [floor: string, rows: CenturyAsiaCapacityRow[]][]> =
+  {
+    'centuryasia-nangang': [
+      [
+        '11F',
+        [
+          [1, 103, 1],
+          [2, 43, 1],
+          [3, 35, 1],
+          [4, 31, 1],
+          [5, 48, 1],
+          [6, 48, 1],
+          [7, 43, 1],
+        ],
+      ],
+      [
+        '12F',
+        [
+          [8, 43, 1],
+          [9, 48, 1],
+          [10, 48, 1],
+          [11, 43, 1],
+          [12, 31, 1],
+          [13, 35, 1],
+        ],
+      ],
+      [
+        '13F',
+        [
+          [14, 25, 1, 3, 6],
+          [15, 29, 1, 3, 6],
+          [16, 39, 1],
+          [17, 34, 1, 4, 8],
+          [18, 48, 1],
+          [19, 34, 1, 4, 8],
+        ],
+      ],
+      [
+        '14F',
+        [
+          [20, 31, 1],
+          [21, 36, 1],
+          [22, 39, 1],
+          [23, 43, 1],
+          [24, 48, 1],
+          [25, 43, 1],
+        ],
+      ],
+    ],
+    'centuryasia-yonghe': [
+      [
+        '4F',
+        [
+          [1, 28, 1],
+          [2, 50, 1],
+          [3, 50, 1],
+          [4, 31, 1],
+          [5, 30, 1],
+          [6, 31, 1],
+          [7, 31, 1],
+          [8, 31, 1],
+          [9, 31, 1],
+          [10, 31, 1],
+          [11, 31, 1],
+          [12, 37, 1],
+          [13, 38, 1],
+        ],
+      ],
+    ],
+    'centuryasia-kaohsiung': [
+      [
+        'B1',
+        [
+          [1, 136, 4],
+          [2, 102, 4],
+          [3, 136, 4],
+        ],
+      ],
+      [
+        '2F',
+        [
+          [4, 154, 4],
+          [5, 141, 2],
+          [6, 154, 4],
+        ],
+      ],
+      [
+        '3F',
+        [
+          [7, 144, 4],
+          [8, 126, 4],
+          [9, 144, 4],
+          [10, 30, 1],
+          [11, 39, 1],
+          [12, 30, 1],
+        ],
+      ],
+      [
+        '4F',
+        [
+          [13, 39, 1],
+          [14, 38, 1],
+        ],
+      ],
+    ],
+    'centuryasia-taipei-today': [
+      [
+        '4F',
+        [
+          [1, 348, 7],
+          [2, 80, 2],
+          [3, 48, 1],
+          [4, 30, 1],
+        ],
+      ],
+      [
+        '6F',
+        [
+          [5, 360, 7],
+          [6, 81, 2],
+        ],
+      ],
+      [
+        '8F',
+        [
+          [7, 112, 2],
+          [8, 120, 2],
+          [9, 86, 2],
+          [10, 66, 1],
+        ],
+      ],
+    ],
+  }
+
+function centuryAsiaPublishedComposition(cinemaSlug: string, label: string) {
+  for (const [floor, rows] of centuryAsiaCapacityGroups[cinemaSlug] ?? []) {
+    const row = rows.find(([number]) => String(number) === label)
+    if (row) {
+      const [, standardSeats, wheelchairPlaces, bedUnits = 0, bedSeats = 0] = row
+      return { standardSeats, wheelchairPlaces, bedUnits, bedSeats, floor }
+    }
+  }
 }
 
 const checkedAt = '2026-11-16'
@@ -247,14 +409,27 @@ export function publishedNamedHallsForCinema(cinemaSlug: string): PublishedNamed
     if (historicalCounts.some((record) => record.seatGridVerified !== false)) {
       throw new Error('A historical operator capacity cannot be upgraded to a seat grid')
     }
-    return historicalCounts.map((record) => ({
-      cinemaSlug,
-      label: record.hallLabel,
-      publishedSeatCount: record.publishedSeatCount,
-      sourceUrl: record.sourceUrl,
-      sourceDate: record.publishedAt,
-      dataLevel: 'published-count-only' as const,
-    }))
+    return historicalCounts.map((record) => {
+      const seatComposition = centuryAsiaPublishedComposition(cinemaSlug, record.hallLabel)
+      if (
+        seatComposition &&
+        seatComposition.standardSeats +
+          seatComposition.bedSeats +
+          seatComposition.wheelchairPlaces !==
+          record.publishedSeatCount
+      ) {
+        throw new Error('Century Asia published capacity categories do not reconcile')
+      }
+      return {
+        cinemaSlug,
+        label: record.hallLabel,
+        publishedSeatCount: record.publishedSeatCount,
+        sourceUrl: seatComposition ? CENTURYASIA_CAPACITY_SOURCE : record.sourceUrl,
+        sourceDate: seatComposition ? '2026-11-26' : record.publishedAt,
+        dataLevel: 'published-count-only' as const,
+        ...(seatComposition ? { seatComposition } : {}),
+      }
+    })
   }
   return publishedHallsForCinema(cinemaSlug).map((hall) => ({
     cinemaSlug,
