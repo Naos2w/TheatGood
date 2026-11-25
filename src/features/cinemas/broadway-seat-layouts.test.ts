@@ -14,12 +14,12 @@ describe('Broadway official public QUICK VIEW seat-grid verification', () => {
   it('keeps distinct authenticated numbered public previews in both cinemas', () => {
     expect(broadwayPublicSeatSummary).toMatchObject({
       observedAt: '2026-11-26',
-      verifiedHalls: 4,
+      verifiedHalls: 5,
       sourcedVenues: 2,
-      normalSeats: 221,
-      wheelchairPositions: 5,
+      normalSeats: 292,
+      wheelchairPositions: 7,
     })
-    expect(broadwaySeatLayoutsForCinema('broadway-zhubei')).toHaveLength(3)
+    expect(broadwaySeatLayoutsForCinema('broadway-zhubei')).toHaveLength(4)
     expect(broadwaySeatLayoutsForCinema('broadway-gongguan')).toHaveLength(1)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '7')).toBe(true)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '10')).toBe(true)
@@ -47,6 +47,19 @@ describe('Broadway official public QUICK VIEW seat-grid verification', () => {
         [1, 14],
       ],
     })
+    const hall14 = broadwaySeatLayoutsForCinema('broadway-zhubei').find((h) => h.hallNumber === 14)
+    expect(hall14).toMatchObject({
+      ordinarySeatCount: 71,
+      wheelchairMarkers: 2,
+      publishedSeatCount: 73,
+      gridRows: 6,
+      gridColumns: 16,
+      wheelchairPositions: [
+        [1, 13],
+        [1, 14],
+      ],
+    })
+    expect(hall14?.seatPositions).toContainEqual(['5-06', 5, 9])
     expect(broadwayHasVerifiedHall('broadway-gongguan', '10')).toBe(true)
     expect(broadwayHasVerifiedHall('broadway-gongguan', '7')).toBe(false)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '8')).toBe(false)
