@@ -10,10 +10,10 @@ import { deriveVieShowPreviewGeometry } from '../viewer/vieshow-approximate-scen
 describe('Century Asia public numbered halls', () => {
   it('reconciles all official capacities, excluding wheelchair positions from ordinary seats', () => {
     expect(centuryasiaPublicSeatSummary).toMatchObject({
-      verifiedHalls: 21,
+      verifiedHalls: 25,
       sourcedVenues: 2,
-      normalSeats: 862,
-      wheelchairPositions: 21,
+      normalSeats: 1027,
+      wheelchairPositions: 25,
     })
     expect(
       centuryasiaPublicSeatLayouts.map((h) => [h.ordinarySeatCount, h.publishedSeatCount]),
@@ -39,6 +39,10 @@ describe('Century Asia public numbered halls', () => {
       [48, 49],
       [103, 104],
       [31, 32],
+      [35, 36],
+      [43, 44],
+      [48, 49],
+      [39, 40],
     ])
     expect(centuryasiaPublicSeatLayouts[0].wheelchairPositions).toEqual([[1, 14]])
     expect(centuryasiaPublicSeatLayouts[1].wheelchairPositions).toEqual([[1, 9]])
@@ -123,6 +127,22 @@ describe('Century Asia public numbered halls', () => {
     expect(nangang4.seatPositions.filter((p) => p[1] === 1)).toHaveLength(6)
     expect(nangang4.seatPositions).toContainEqual(['4-09', 4, 10])
     expect(nangang4.seatPositions.some((p) => p[2] === 1)).toBe(false)
+    for (const [number, columns, wheel, counts] of [
+      [3, 11, 10, [7, 9, 9, 10]],
+      [8, 13, 12, [9, 11, 11, 12]],
+      [10, 14, 14, [10, 12, 12, 14]],
+      [22, 13, 11, [8, 10, 10, 11]],
+    ] as const) {
+      const hall = centuryasiaPublicSeatLayouts.find(
+        (item) => item.id === 'centuryasia-nangang-' + number,
+      )!
+      expect(hall.gridRows).toBe(4)
+      expect(hall.gridColumns).toBe(columns)
+      expect(hall.wheelchairPositions).toEqual([[1, wheel]])
+      expect(
+        [1, 2, 3, 4].map((row) => hall.seatPositions.filter((p) => p[1] === row).length),
+      ).toEqual(counts)
+    }
     for (const hall of centuryasiaPublicSeatLayouts) {
       const result = deriveVieShowPreviewGeometry(hall.cinemaSlug, hall)
       expect(result.auditorium.id).toContain('centuryasia-preview-')
