@@ -14,12 +14,12 @@ describe('Broadway official public QUICK VIEW seat-grid verification', () => {
   it('keeps distinct authenticated numbered public previews in both cinemas', () => {
     expect(broadwayPublicSeatSummary).toMatchObject({
       observedAt: '2026-11-26',
-      verifiedHalls: 4,
+      verifiedHalls: 6,
       sourcedVenues: 2,
-      normalSeats: 221,
-      wheelchairPositions: 5,
+      normalSeats: 363,
+      wheelchairPositions: 9,
     })
-    expect(broadwaySeatLayoutsForCinema('broadway-zhubei')).toHaveLength(3)
+    expect(broadwaySeatLayoutsForCinema('broadway-zhubei')).toHaveLength(5)
     expect(broadwaySeatLayoutsForCinema('broadway-gongguan')).toHaveLength(1)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '7')).toBe(true)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '10')).toBe(true)
@@ -47,6 +47,33 @@ describe('Broadway official public QUICK VIEW seat-grid verification', () => {
         [1, 14],
       ],
     })
+    const hall14 = broadwaySeatLayoutsForCinema('broadway-zhubei').find((h) => h.hallNumber === 14)
+    expect(hall14).toMatchObject({
+      ordinarySeatCount: 71,
+      wheelchairMarkers: 2,
+      publishedSeatCount: 73,
+      gridRows: 6,
+      gridColumns: 16,
+      wheelchairPositions: [
+        [1, 13],
+        [1, 14],
+      ],
+    })
+    expect(hall14?.seatPositions).toContainEqual(['5-06', 5, 9])
+    const hall11 = broadwaySeatLayoutsForCinema('broadway-zhubei').find((h) => h.hallNumber === 11)
+    expect(hall11).toMatchObject({
+      ordinarySeatCount: 71,
+      wheelchairMarkers: 2,
+      publishedSeatCount: 73,
+      gridRows: 6,
+      gridColumns: 16,
+      wheelchairPositions: [
+        [1, 13],
+        [1, 14],
+      ],
+    })
+    expect(hall11?.seatPositions).toContainEqual(['1-01', 1, 3])
+    expect(hall11?.seatPositions).toContainEqual(['6-14', 6, 15])
     expect(broadwayHasVerifiedHall('broadway-gongguan', '10')).toBe(true)
     expect(broadwayHasVerifiedHall('broadway-gongguan', '7')).toBe(false)
     expect(broadwayHasVerifiedHall('broadway-zhubei', '8')).toBe(false)
@@ -131,7 +158,7 @@ describe('Broadway official public QUICK VIEW seat-grid verification', () => {
     expect(() => validateBroadwayPublicLayout(wrongCount)).toThrow(/reconcile/)
   })
 
-  it('shows two Broadway supported venues while leaving their other 21 halls pending', () => {
+  it('shows two Broadway supported venues while leaving their other halls pending', () => {
     const sourced = source3DVenues()
     expect(sourced.filter((x) => x.brand === 'broadway').length).toBe(2)
     expect(sourced.length).toBe(44)
