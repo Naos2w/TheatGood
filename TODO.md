@@ -266,3 +266,9 @@
 - **個人觀影足跡**：完全由使用者手動輸入電影名稱與日期，不保證內容等於實際上映事實，也不需要外部電影資料；重點是保存、回顧與跨裝置私密存取。
 - **Neon 功能差異**：Auth、Data API、Functions、Cron 和物件儲存各自以實際方案、限制及當前正式可用性確認；不可將尚未驗證的功能當成基礎需求。
 - **3D 視角**：是幾何估算，不等同現場視覺、生理觀看感受或聲學體驗；UI 必須顯示可信度。
+
+## 2026-11-25 — public-first seating-source acquisition
+
+- Complete already verified public grids first, then accessible public grids from new and existing venues; prefer new venues when equally accessible.
+- `deferred_login`: Ambassador member booking/seat-view route (https://booking.ambassador.com.tw/frontend/booking-selectseats.html). Prior observed Xinzhuang Jingguan hall 4: official 76 positions vs 72 visually counted icons, unresolved; halls 9 (76) and 11 (75) have capacity evidence only. Do not treat these as sourced layouts. The member route is deferred for all Ambassador venues, not an assertion that no separate public chart exists. No login, booking, seat selection, session changes or private-source collection. Preserve existing private Showtime data locally only.
+- Keep the 66 tracked venue denominator, historical charts explicitly dated, and unknown current physical-hall denominator unknown. Public alternatives remain eligible.
